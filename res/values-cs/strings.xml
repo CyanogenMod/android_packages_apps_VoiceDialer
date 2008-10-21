@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="examples">
+    Příklady:
+    <b>
+      \n\"Volat Jan Novák\"
+      \n\"Volat Jan Novák doma\"
+      \n\"Vytočit 123 456 7890\"
+    </b>
+  </string>
+  <string name="recognition_error">Chyba rozpoznávání řeči</string>
+  <string name="recognition_failure">Systém nerozumí. Opakujte akci.</string>
+  <string name="test_completed">Test byla dokončen</string>
+  <string name="title">Hlasové vytáčení</string>
+</resources>

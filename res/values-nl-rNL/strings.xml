@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="examples">
+    Voorbeeldnaam:
+    <b>
+      \n\"John Doe bellen\"
+      \n\"John Doe privé bellen\"
+      \n\"123 456 7890 bellen\"
+    </b>
+  </string>
+  <string name="recognition_error">Spraakherkenningsfout</string>
+  <string name="recognition_failure">Niet begrepen. Probeer het opnieuw.</string>
+  <string name="test_completed">Test voltooid</string>
+  <string name="title">Spraakgestuurde nummerkeuze</string>
+</resources>
