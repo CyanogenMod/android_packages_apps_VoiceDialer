@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
   
     <application android:theme="@android:style/Theme.Dialog"
         android:label="Voice Dialer"
@@ -29,6 +30,14 @@
       <!-- Voice Dialer clears compiled grammar file on boot -->
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
+      </intent-filter>
+      
+      <!-- VoiceDialer clears compiled grammar if apps change -->
+      <intent-filter>
+        <action android:name="android.intent.action.PACKAGE_ADDED" />
+        <action android:name="android.intent.action.PACKAGE_CHANGED" />
+        <action android:name="android.intent.action.PACKAGE_REMOVED" />
+        <data android:scheme="package" />
       </intent-filter>
       
       <!--  Voice Dialer Logging Enabled, *#*#VDL1#*#* -->

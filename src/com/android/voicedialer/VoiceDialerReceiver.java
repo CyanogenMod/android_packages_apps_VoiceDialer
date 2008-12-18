@@ -31,26 +31,32 @@ public class VoiceDialerReceiver extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Config.LOGD) {
-            Log.d(TAG, "onReceive " + intent);
-        }
+        if (Config.LOGD) Log.d(TAG, "onReceive " + intent);
 
         // fetch up useful stuff
         String action = intent.getAction();
         String host = intent.getData() != null ? intent.getData().getHost() : null;
         
-        if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+        // force recompilation of g2g on boot
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
+            RecognizerEngine.deleteAllG2GFiles(context);
+        }
+        
+        // force recompilation if apps change, for 'OPEN' command
+        else if (Intent.ACTION_PACKAGE_ADDED.equals(action) ||
+                Intent.ACTION_PACKAGE_CHANGED.equals(action) ||
+                Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
             RecognizerEngine.deleteAllG2GFiles(context);
         }
 
         // Voice Dialer Logging Enabled, *#*#8351#*#*
-        if (action.equals(Intents.SECRET_CODE_ACTION) && "8351".equals(host)) {
+        else if (Intents.SECRET_CODE_ACTION.equals(action) && "8351".equals(host)) {
             RecognizerLogger.enable(context);
             Toast.makeText(context, R.string.logging_enabled, Toast.LENGTH_LONG).show();
         }
 
         // Voice Dialer Logging Disabled, *#*#8350#*#*
-        if (action.equals(Intents.SECRET_CODE_ACTION) && "8350".equals(host)) {
+        else if (Intents.SECRET_CODE_ACTION.equals(action) && "8350".equals(host)) {
             RecognizerLogger.disable(context);
             Toast.makeText(context, R.string.logging_disabled, Toast.LENGTH_LONG).show();
         }

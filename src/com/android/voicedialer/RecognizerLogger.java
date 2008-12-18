@@ -3,23 +3,19 @@ package com.android.voicedialer;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.pim.DateFormat;
-import android.speech.recognition.AudioStream;
-import android.speech.recognition.MediaFileWriter;
-import android.speech.recognition.MediaFileWriterListener;
-import android.speech.recognition.Microphone;
-import android.speech.recognition.NBestRecognitionResult;
-import android.speech.recognition.impl.MediaFileWriterImpl;
+import android.text.format.DateFormat;
 import android.util.Config;
 import android.util.Log;
 
-import com.android.voicedialer.VoiceContact;
-
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,8 +41,7 @@ public class RecognizerLogger {
     private static final int MAX_FILES = 20;
     
     private final String mDatedPath;
-
-    private AudioStream mAudioStream;
+    private final BufferedWriter mWriter;
     
     /**
      * Determine if logging is enabled.  If the
@@ -70,7 +65,7 @@ public class RecognizerLogger {
             enabled.createNewFile();
         }
         catch (IOException e) {
-            Log.d(TAG, "enableLogging " + e);
+            Log.e(TAG, "enableLogging " + e);
         }
     }
     
@@ -85,7 +80,7 @@ public class RecognizerLogger {
             enabled.delete();
         }
         catch (SecurityException e) {
-            Log.d(TAG, "enableLogging " + e);
+            Log.e(TAG, "disableLogging " + e);
         }
     }
 
@@ -93,144 +88,92 @@ public class RecognizerLogger {
      * Constructor
      * @param dataDir directory to contain the log files.
      */
-    public RecognizerLogger(Context context) {
+    public RecognizerLogger(Context context) throws IOException {
+        if (Config.LOGD) Log.d(TAG, "RecognizerLogger");
+        
+        // generate new root filename
         File dir = context.getDir(LOGDIR, 0);
         mDatedPath = dir.toString() + File.separator + "log_" +
                 DateFormat.format("yyyy_MM_dd_kk_mm_ss",
                         System.currentTimeMillis());
-    }
-
-    /**
-     * Called when the {@link Microphone} is started.
-     * @param mic the {@link Microphone} to record.
-     */
-    public void onMicrophoneStart(Microphone mic) {
-        mAudioStream = mic.createAudio();
-    }
-
-    /**
-     * Helper to write the list of results to a file.
-     * @param msg message to write to the log file.
-     * @param contacts a List of {@link VoiceContact} or null.
-     * @param nbest an {@link NBestRecognitionResult} or null.
-     * @param intents an an array of {@link Intent} or null.
-     */
-    public void log(String msg, List<VoiceContact> contacts,
-            NBestRecognitionResult nbest, ArrayList<Intent> intents) {
-        if (Config.LOGD) {
-            Log.d(TAG, "log " + mDatedPath);
-        }
         
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(mDatedPath + ".log"), 8192);
-            
-            // header message
-            writer.write(msg);
-            writer.newLine();
-
-            writer.write(Build.FINGERPRINT);
-            writer.newLine();
-
-            // list results
-            if (nbest != null) {
-                writer.write("NBestRecognitionResult *****************");
-                writer.newLine();
-                for (int i = 0; i < nbest.getSize(); i++) {
-                    writer.write(RecognizerEngine.toString(nbest.getEntry(i)));
-                    writer.newLine();
-                }
-            }
-            
-            // list Intents
-            if (intents != null) {
-                writer.write("Intents *********************");
-                writer.newLine();
-                for (Intent intent : intents) {
-                    writer.write(intent.toString());
-                    writer.write(" ");
-                    writer.write(RecognizerEngine.SENTENCE_EXTRA + "=");
-                    writer.write(intent.getStringExtra(RecognizerEngine.SENTENCE_EXTRA));
-                    writer.newLine();
-                }
-            }
-            
-            // list of contacts
-            if (contacts != null) {
-                writer.write("Contacts *****************");
-                writer.newLine();
-                for (VoiceContact vc : contacts) {
-                    writer.write(vc.toString());
-                    writer.newLine();
-                }
-            }
-            
-            writer.flush();
-            
-        } catch (IOException ioe) {
-            if (Config.LOGD) {
-                Log.d(TAG, "log ", ioe);
-            }
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException ioe) {
-                } 
-            }
-        }
+        // delete oldest files
+        deleteOldest(".wav");
+        deleteOldest(".log");
         
-        // save utterance
-        if (mAudioStream != null) {
-            MediaFileWriter mfw =
-                    MediaFileWriter.create(mMediaFileWriterListener);
-            mfw.save(mAudioStream, mDatedPath + ".wav");
-            //bug work-around until dispose is exposed in MediaFileWriter
-            ((MediaFileWriterImpl) mfw).dispose();
-        }
-        
-        // delete oldest files in log directory
-        rotateAll();
+        // generate new text output log file
+        mWriter = new BufferedWriter(new FileWriter(mDatedPath + ".log"), 8192);
+        mWriter.write(Build.FINGERPRINT);
+        mWriter.newLine();
     }
     
-    private MediaFileWriterListener mMediaFileWriterListener =
-            new MediaFileWriterListener() {
-
-        private static final String TAG = RecognizerLogger.TAG +
-                ".MediaFileWriterListener";
-
-        public void onError(Exception e) {
-            if (Config.LOGD) {
-                Log.d(TAG, "MediaFileWriterListener.onError", e);
-            }
-        }
-
-        public void onStopped() {
-            if (Config.LOGD) {
-                Log.d(TAG, "MediaFileWriterListener.onStopped");
-            }
-        }
-    };
-
     /**
-     * Helper to delete oldest files, using the filename to determine.
+     * Write a line into the text log file.
      */
-    private void rotateAll() {
-        if (Config.LOGD) {
-            Log.d(TAG, "rotateAll");
+    public void logLine(String msg) {
+        try {
+            mWriter.write(msg);
+            mWriter.newLine();
         }
-        rotate(".wav");
-        rotate(".log");
-        if (Config.LOGD) {
-            Log.d(TAG, "rotateAll done");
+        catch (IOException e) {
+            Log.e(TAG, "logLine exception: " + e);
         }
+    }
+    
+    /**
+     * Write a header for the NBest lines into the text log file.
+     */
+    public void logNbestHeader() {
+        logLine("Nbest *****************");
+    }
+    
+    /**
+     * Write the list of contacts into the text log file.
+     * @param contacts
+     */
+    public void logContacts(List<VoiceContact> contacts) {
+        logLine("Contacts *****************");
+        for (VoiceContact vc : contacts) logLine(vc.toString());
+        try {
+            mWriter.flush();
+        }
+        catch (IOException e) {
+            Log.e(TAG, "logContacts exception: " + e);
+        }
+    }
+    
+    /**
+     * Write a list of Intents into the text log file.
+     * @param intents
+     */
+    public void logIntents(ArrayList<Intent> intents) {
+        logLine("Intents *********************");
+        StringBuffer sb = new StringBuffer();
+        for (Intent intent : intents) {
+            logLine(intent.toString() + " " + RecognizerEngine.SENTENCE_EXTRA + "=" +
+                    intent.getStringExtra(RecognizerEngine.SENTENCE_EXTRA));
+        }
+        try {
+            mWriter.flush();
+        }
+        catch (IOException e) {
+            Log.e(TAG, "logIntents exception: " + e);
+        }
+    }
+    
+    /**
+     * Close the text log file.
+     * @throws IOException
+     */
+    public void close() throws IOException {
+        mWriter.close();
     }
 
     /**
-     * Helper to rotateAll, which deleted the oldest files with a give suffix.
+     * Delete oldest files with a given suffix, if more than MAX_FILES.
      * @param suffix delete oldest files with this suffix.
      */
-    private void rotate(final String suffix) {
+    private void deleteOldest(final String suffix) {
         FileFilter ff = new FileFilter() {
             public boolean accept(File f) {
                 String name = f.getName();
@@ -243,6 +186,101 @@ public class RecognizerLogger {
         for (int i = 0; i < files.length - MAX_FILES; i++) {
             files[i].delete();            
         }
+    }
+
+    /**
+     * InputStream wrapper which will log the contents to a WAV file.
+     * @param inputStream
+     * @param sampleRate
+     * @return
+     */
+    public InputStream logInputStream(final InputStream inputStream, final int sampleRate) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream(sampleRate * 2 * 20);
+        
+        return new InputStream() {
+
+            public int available() throws IOException {
+                return inputStream.available();
+            }
+
+            public int read(byte[] b, int offset, int length) throws IOException {
+                int rtn = inputStream.read(b, offset, length);
+                if (rtn > 0) baos.write(b, offset, rtn);
+                return rtn;
+            }
+
+            public int read(byte[] b) throws IOException {
+                int rtn = inputStream.read(b);
+                if (rtn > 0) baos.write(b, 0, rtn);
+                return rtn;
+            }
+
+            public int read() throws IOException {
+                int rtn = inputStream.read();
+                if (rtn > 0) baos.write(rtn);
+                return rtn;
+            }
+
+            public long skip(long n) throws IOException {
+                throw new UnsupportedOperationException();
+            }
+
+            public void close() throws IOException {
+                try {
+                    OutputStream out = new FileOutputStream(mDatedPath + ".wav");
+                    try {
+                        byte[] pcm = baos.toByteArray();
+                        writeWavHeader(out, sampleRate, 1, 16, pcm.length);
+                        out.write(pcm);
+                    }
+                    finally {
+                        out.close();
+                    }
+                }
+                finally {
+                    inputStream.close();
+                    baos.close();
+                }
+            }
+
+            private void writeWavHeader(OutputStream out, int sampleRate, int numChannels,
+                    int bitsPerSample, int numBytes) throws IOException {
+                /* RIFF header */
+                writeId(out, "RIFF");
+                writeInt(out, 36 + numBytes);
+                writeId(out, "WAVE");
+
+                /* fmt chunk */
+                writeId(out, "fmt ");
+                writeInt(out, 16);
+                writeShort(out, 1);
+                writeShort(out, numChannels);
+                writeInt(out, sampleRate);
+                writeInt(out, numChannels * sampleRate * bitsPerSample / 8);
+                writeShort(out, numChannels * bitsPerSample / 8);
+                writeShort(out, bitsPerSample);
+
+                /* data chunk */
+                writeId(out, "data");
+                writeInt(out, numBytes);
+            }
+
+            private void writeId(OutputStream out, String id) throws IOException {
+                for (int i = 0; i < id.length(); i++) out.write(id.charAt(i));
+            }
+
+            private void writeInt(OutputStream out, int val) throws IOException {
+                out.write(val >> 0);
+                out.write(val >> 8);
+                out.write(val >> 16);
+                out.write(val >> 24);
+            }
+
+            private void writeShort(OutputStream out, int val) throws IOException {
+                out.write(val >> 0);
+                out.write(val >> 8);
+            }
+        };
     }
 
 }
