@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="tool_tip_title">"Informazioni utili"</string>
+    <string name="tool_tip_message">"Premi e tieni premuto il tasto verde Chiama per aprire il dialer vocale."</string>
+    <!-- no translation found for examples (3290190505497032124) -->
+    <skip />
+    <string name="title">"Dialer vocale"</string>
+    <string name="initializing">"Avvio in corso."</string>
+    <string name="listening">"In ascolto..."</string>
+    <string name="please_try_again">"Riprova."</string>
+    <string name="recognition_error">"Puoi anche provare a riavviare il sistema."</string>
+    <string name="at_home">"a casa"</string>
+    <string name="on_mobile">"al cellulare"</string>
+    <string name="at_work">"al lavoro"</string>
+    <string name="at_other">"ad altro numero"</string>
+    <string name="logging_enabled">"Accesso a dialer vocale attivo."</string>
+    <string name="logging_disabled">"Accesso a dialer vocale non attivo."</string>
+</resources>
