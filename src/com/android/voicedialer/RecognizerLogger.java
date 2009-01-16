@@ -1,8 +1,25 @@
+/*
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.voicedialer;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.speech.srec.WaveHeader;
 import android.text.format.DateFormat;
 import android.util.Config;
 import android.util.Log;
@@ -22,7 +39,8 @@ import java.util.List;
 
 /**
  * This class logs the inputs and results of a recognition session to
- * the files listed below, which reside in /sdcard/voicedialer.
+ * the files listed below, which reside in
+ * /data/data/com.android.voicedialer/app_logdir.
  * The files have the date encoded in the  name so that they will sort in
  * time order.  The newest RecognizerLogger.MAX_FILES are kept,
  * and the rest deleted to limit space used in the file system.
@@ -230,7 +248,9 @@ public class RecognizerLogger {
                     OutputStream out = new FileOutputStream(mDatedPath + ".wav");
                     try {
                         byte[] pcm = baos.toByteArray();
-                        writeWavHeader(out, sampleRate, 1, 16, pcm.length);
+                        WaveHeader hdr = new WaveHeader(WaveHeader.FORMAT_PCM,
+                                (short)1, sampleRate, (short)16, pcm.length);
+                        hdr.write(out);
                         out.write(pcm);
                     }
                     finally {
@@ -241,44 +261,6 @@ public class RecognizerLogger {
                     inputStream.close();
                     baos.close();
                 }
-            }
-
-            private void writeWavHeader(OutputStream out, int sampleRate, int numChannels,
-                    int bitsPerSample, int numBytes) throws IOException {
-                /* RIFF header */
-                writeId(out, "RIFF");
-                writeInt(out, 36 + numBytes);
-                writeId(out, "WAVE");
-
-                /* fmt chunk */
-                writeId(out, "fmt ");
-                writeInt(out, 16);
-                writeShort(out, 1);
-                writeShort(out, numChannels);
-                writeInt(out, sampleRate);
-                writeInt(out, numChannels * sampleRate * bitsPerSample / 8);
-                writeShort(out, numChannels * bitsPerSample / 8);
-                writeShort(out, bitsPerSample);
-
-                /* data chunk */
-                writeId(out, "data");
-                writeInt(out, numBytes);
-            }
-
-            private void writeId(OutputStream out, String id) throws IOException {
-                for (int i = 0; i < id.length(); i++) out.write(id.charAt(i));
-            }
-
-            private void writeInt(OutputStream out, int val) throws IOException {
-                out.write(val >> 0);
-                out.write(val >> 8);
-                out.write(val >> 16);
-                out.write(val >> 24);
-            }
-
-            private void writeShort(OutputStream out, int val) throws IOException {
-                out.write(val >> 0);
-                out.write(val >> 8);
             }
         };
     }

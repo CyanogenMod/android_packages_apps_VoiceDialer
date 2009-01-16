@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.provider.Contacts;
 import android.speech.srec.MicrophoneInputStream;
 import android.speech.srec.Recognizer;
+import android.speech.srec.WaveHeader;
 import android.util.Config;
 import android.util.Log;
 import com.android.voicedialer.RecognizerLogger;
@@ -81,6 +82,8 @@ public class RecognizerEngine {
     
     private static final int RESULT_LIMIT = 5;
 
+    private static final int SAMPLE_RATE = 11025;
+
     private VoiceDialerActivity mVoiceDialerActivity;
     
     private Recognizer mSrec;
@@ -133,9 +136,13 @@ public class RecognizerEngine {
             
             // start audio input
             if (Config.LOGD) Log.d(TAG, "start new MicrophoneInputStream");
-            mic = micFile != null ?
-                    new FileInputStream(micFile) :
-                    new MicrophoneInputStream(11025, 11025 * 10);
+            if (micFile != null) {
+                mic = new FileInputStream(micFile);
+                WaveHeader hdr = new WaveHeader();
+                hdr.read(mic);
+            } else {
+                mic = new MicrophoneInputStream(SAMPLE_RATE, SAMPLE_RATE * 10);
+            }
                     
             // notify UI
             voiceDialerActivity.onMicrophoneStart();
@@ -212,7 +219,7 @@ public class RecognizerEngine {
             recognizerStarted = true;
             
             // log audio if requested
-            if (mLogger != null) mic = mLogger.logInputStream(mic, 11025);
+            if (mLogger != null) mic = mLogger.logInputStream(mic, SAMPLE_RATE);
             
             // recognize
             while (true) {
