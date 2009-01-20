@@ -78,7 +78,7 @@ public class RecognizerEngine {
     
     public static final String SENTENCE_EXTRA = "sentence";
     
-    private static final String SREC_DIR = Recognizer.getConfigDir(null);
+    private final String SREC_DIR = Recognizer.getConfigDir(null);
     
     private static final int RESULT_LIMIT = 5;
 
@@ -141,7 +141,7 @@ public class RecognizerEngine {
                 WaveHeader hdr = new WaveHeader();
                 hdr.read(mic);
             } else {
-                mic = new MicrophoneInputStream(SAMPLE_RATE, SAMPLE_RATE * 10);
+                mic = new MicrophoneInputStream(SAMPLE_RATE, SAMPLE_RATE * 15);
             }
                     
             // notify UI
@@ -291,7 +291,7 @@ public class RecognizerEngine {
         for (VoiceContact contact : contacts) {
             if (Thread.interrupted()) throw new InterruptedException();
             String name = scrubName(contact.mName);
-            if (name.length() == 0 || entries.contains(name)) continue;
+            if (name.length() == 0 || !entries.add(name)) continue;
             sb.setLength(0);
             sb.append("V='");
             sb.append(contact.mPersonId).append(' ');
