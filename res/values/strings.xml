@@ -60,17 +60,32 @@
         You can also try restarting your phone.
     </string>
 
-    <!-- appended to recognition result on results list to indicate a
-            'home/mobile/work/other' number.
-            ie. 'Call John Smith' becomes 'Call John Smith at home'  -->
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'home' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
     <string name="at_home">" at home"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'mobile' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
     <string name="on_mobile">" on mobile"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'work' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
     <string name="at_work">" at work"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'other' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
     <string name="at_other">" at other"</string>
 
-    <!-- messages in popup which indicates that VoiceDialer logging
-            has been enabled/disabled -->
+    <!-- message in popup which indicates that VoiceDialer logging
+            has been enabled -->
     <string name="logging_enabled">Voice Dialer logging is enabled.</string>
+    
+    <!-- message in popup which indicates that VoiceDialer logging
+            has been disabled -->
     <string name="logging_disabled">Voice Dialer logging is disabled.</string>
 
 </resources>
