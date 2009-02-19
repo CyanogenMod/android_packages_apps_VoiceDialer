@@ -39,14 +39,14 @@ public class VoiceDialerReceiver extends BroadcastReceiver {
         
         // force recompilation of g2g on boot
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            RecognizerEngine.deleteAllG2GFiles(context);
+            RecognizerEngine.deleteCachedGrammarFiles(context);
         }
         
         // force recompilation if apps change, for 'OPEN' command
         else if (Intent.ACTION_PACKAGE_ADDED.equals(action) ||
                 Intent.ACTION_PACKAGE_CHANGED.equals(action) ||
                 Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
-            RecognizerEngine.deleteAllG2GFiles(context);
+            RecognizerEngine.deleteCachedGrammarFiles(context);
         }
 
         // Voice Dialer Logging Enabled, *#*#8351#*#*
