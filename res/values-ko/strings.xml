@@ -15,21 +15,18 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- no translation found for voiceDialer (5948204210436590941) -->
-    <skip />
     <string name="tool_tip_title">"알고 계십니까..."</string>
     <string name="tool_tip_message">"녹색의 전화걸기 버튼을 길게 누르면 음성인식 전화가 열립니다."</string>
-    <!-- no translation found for examples (2100807337052050741) -->
-    <skip />
+    <string name="examples">"예: "<b>" "\n"\'John Doe\' "\n"\'John Doe 집, …\' "\n"\'음성메일\' "\n"\'(866) 555 0123\' "\n"\'911, 811, …\' "\n"\'+44 7333 444 555\' "\n"\'다시 걸기\' "\n"\'캘린더 열기\' "</b></string>
     <string name="title">"음성인식 전화"</string>
     <string name="initializing">"시작 중"</string>
     <string name="listening">"청취 중..."</string>
     <string name="please_try_again">"다시 시도하세요."</string>
     <string name="recognition_error">"전화기를 다시 시작해 볼 수도 있습니다."</string>
-    <string name="at_home">" 집"</string>
-    <string name="on_mobile">" 휴대전화"</string>
-    <string name="at_work">" 회사"</string>
-    <string name="at_other">" 다른 연락처"</string>
+    <string name="at_home">"집"</string>
+    <string name="on_mobile">"휴대전화"</string>
+    <string name="at_work">"회사"</string>
+    <string name="at_other">"다른 연락처"</string>
     <string name="logging_enabled">"음성인식 전화 로깅을 사용합니다."</string>
     <string name="logging_disabled">"음성인식 전화 로깅을 사용하지 않습니다."</string>
 </resources>
