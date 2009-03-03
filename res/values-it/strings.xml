@@ -15,18 +15,21 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for voiceDialer (5948204210436590941) -->
+    <skip />
     <string name="tool_tip_title">"Informazioni utili"</string>
-    <string name="tool_tip_message">"Premi e tieni premuto il tasto verde Chiama per aprire il dialer vocale."</string>
-    <string name="examples">"Esempi: "<b>" "\n"\"Chiama Luca Neri\" "\n"\"Chiama Luca Neri a casa, …\" "\n"\"Chiama segreteria\" "\n"\"Componi (866) 555 0123\" "\n"\"Componi 911, 811, …\" "\n"\"Componi +44 7333 444 555\" "\n"\"Ricomponi\" "\n"\"Apri Calendario\" "</b></string>
-    <string name="title">"Dialer vocale"</string>
+    <string name="tool_tip_message">"Premi e tieni premuto il tasto verde Chiama per aprire il compositore vocale."</string>
+    <!-- no translation found for examples (2100807337052050741) -->
+    <skip />
+    <string name="title">"Compositore vocale"</string>
     <string name="initializing">"Avvio in corso."</string>
     <string name="listening">"In ascolto..."</string>
     <string name="please_try_again">"Riprova."</string>
     <string name="recognition_error">"Puoi anche provare a riavviare il sistema."</string>
-    <string name="at_home">"a casa"</string>
-    <string name="on_mobile">"al cellulare"</string>
-    <string name="at_work">"al lavoro"</string>
-    <string name="at_other">"ad altro numero"</string>
-    <string name="logging_enabled">"Accesso a dialer vocale attivo."</string>
-    <string name="logging_disabled">"Accesso a dialer vocale non attivo."</string>
+    <string name="at_home">" a casa"</string>
+    <string name="on_mobile">" al cellulare"</string>
+    <string name="at_work">" al lavoro"</string>
+    <string name="at_other">" ad altro numero"</string>
+    <string name="logging_enabled">"Accesso a compositore vocale attivo."</string>
+    <string name="logging_disabled">"Accesso a compositore vocale non attivo."</string>
 </resources>

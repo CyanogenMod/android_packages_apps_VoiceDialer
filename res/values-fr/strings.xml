@@ -15,18 +15,21 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for voiceDialer (5948204210436590941) -->
+    <skip />
     <string name="tool_tip_title">"Saviez-vous que..."</string>
     <string name="tool_tip_message">"En appuyant sur le bouton vert Appel et en maintenant la touche enfoncée, vous ouvrez Voice Dialer."</string>
-    <string name="examples">"Exemples : "<b>" "\n"\"Appeler Monsieur Durand\" "\n"\"Appeler Monsieur Durand à la maison, …\" "\n"\"Appeler la boîte vocale\" "\n"\"Composer le (0123) 911 811\" "\n"\"Composer le 112, le 115, ...\" "\n"\"Composer le +44 7333 444 555\" "\n"\"Recomposer\" "\n"\"Ouvrir l\'agenda\" "</b></string>
+    <!-- no translation found for examples (2100807337052050741) -->
+    <skip />
     <string name="title">"Voice Dialer"</string>
     <string name="initializing">"Démarrage en cours"</string>
     <string name="listening">"Écoute en cours…"</string>
     <string name="please_try_again">"Veuillez réessayer."</string>
     <string name="recognition_error">"Vous pouvez également essayer de redémarrer votre téléphone."</string>
-    <string name="at_home">"à la maison"</string>
-    <string name="on_mobile">"sur le téléphone portable"</string>
-    <string name="at_work">"au bureau"</string>
-    <string name="at_other">"autre"</string>
+    <string name="at_home">" à la maison"</string>
+    <string name="on_mobile">" sur le téléphone portable"</string>
+    <string name="at_work">" au bureau"</string>
+    <string name="at_other">" autre"</string>
     <string name="logging_enabled">"La connexion à Voice Dialer est activée."</string>
     <string name="logging_disabled">"La connexion à Voice Dialer est désactivée."</string>
 </resources>

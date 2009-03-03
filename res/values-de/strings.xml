@@ -15,18 +15,21 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for voiceDialer (5948204210436590941) -->
+    <skip />
     <string name="tool_tip_title">"Wussten Sie schon..."</string>
     <string name="tool_tip_message">"Durch Drücken und Halten der grünen Anruftaste wird der VoiceDialer geöffnet."</string>
-    <string name="examples">"Beispiele: "<b>" "\n"\"Martin Schmidt anrufen\" "\n"\"Martin Schmidt zu Hause anrufen, …\" "\n"\"Voicemail anrufen\" "\n"\"(866) 555 0123 wählen\" "\n"\"911, 811, … wählen\" "\n"\"+44 7333 444 555 wählen\" "\n"\"Wahlwiederholung\" "\n"\"Kalender öffnen\" "</b></string>
+    <!-- no translation found for examples (2100807337052050741) -->
+    <skip />
     <string name="title">"VoiceDialer"</string>
     <string name="initializing">"Startvorgang wird ausgeführt."</string>
     <string name="listening">"Spracheingabe erfolgt..."</string>
     <string name="please_try_again">"Bitte versuchen Sie es erneut."</string>
     <string name="recognition_error">"Sie können das Telefon auch neu starten."</string>
-    <string name="at_home">"Privat"</string>
-    <string name="on_mobile">"Mobil"</string>
-    <string name="at_work">"Geschäftlich"</string>
-    <string name="at_other">"Sonstige"</string>
+    <string name="at_home">" Privat"</string>
+    <string name="on_mobile">" Mobil"</string>
+    <string name="at_work">" Geschäftlich"</string>
+    <string name="at_other">" Sonstige"</string>
     <string name="logging_enabled">"VoiceDialer-Protokollierung ist aktiviert."</string>
     <string name="logging_disabled">"VoiceDialer-Protokollierung ist deaktiviert."</string>
 </resources>

@@ -15,18 +15,20 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for voiceDialer (5948204210436590941) -->
+    <skip />
     <string name="tool_tip_title">"Visste du at…"</string>
     <string name="tool_tip_message">"Stemmeringeren aktiveres om du holder nede den grønne ringeknappen."</string>
-    <string name="examples">"Eksempler: "<b>" "\n"\\\\\\\"Call John Doe\\\\\\\" "\n"\\\\\\\"Call John Doe at home, …\\\\\\\" "\n"\\\\\\\"Call voicemail\\\\\\\" "\n"\\\\\\\"Dial (866) 555 0123\\\\\\\" "\n"\\\\\\\"Dial 911, 811, …\\\\\\\" "\n"\\\\\\\"Dial +44 7333 444 555\\\\\\\" "\n"\\\\\\\"Redial\\\\\\\" "\n"\\\\\\\"Open Calendar\\\\\\\" "</b></string>
+    <string name="examples">" Eksempler: "<b>" "\n"\"Call John Doe\" "\n"\"Call John Doe at home, …\" "\n"\"Call voicemail\" "\n"\"Dial (866) 555 0123\" "\n"\"Dial 911, 811, …\" "\n"\"Dial +44 7333 444 555\" "\n"\"Redial\" "\n"\"Open Calendar\" "</b></string>
     <string name="title">"Stemmeringer"</string>
     <string name="initializing">"Starter."</string>
     <string name="listening">"Lytter…"</string>
     <string name="please_try_again">"Prøv igjen."</string>
     <string name="recognition_error">"Du kan også prøve å starte telefonen på nytt"</string>
-    <string name="at_home">"hjemme"</string>
-    <string name="on_mobile">"på mobilen"</string>
-    <string name="at_work">"på arbeid"</string>
-    <string name="at_other">"på annen"</string>
+    <string name="at_home">" hjemme"</string>
+    <string name="on_mobile">" på mobilen"</string>
+    <string name="at_work">" på arbeid"</string>
+    <string name="at_other">" på annen"</string>
     <string name="logging_enabled">"Logging av stemmeringeren er slått på."</string>
     <string name="logging_disabled">"Logging av stemmeringeren er slått av."</string>
 </resources>

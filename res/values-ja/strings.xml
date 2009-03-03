@@ -15,18 +15,21 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for voiceDialer (5948204210436590941) -->
+    <skip />
     <string name="tool_tip_title">"便利な使い方..."</string>
     <string name="tool_tip_message">"緑色の[発信]ボタンを押したまま&amp;を押すと、音声ダイヤラが開きます。"</string>
-    <string name="examples">"例:"<b>" "\n"「Call John Doe」"\n"「Call John Doe at home, ...」"\n"「Call voicemail」"\n"「Dial (866) 555 0123」"\n"「Dial 911, 811, ...」"\n"「Dial +44 7333 444 555」"\n"「Redial」"\n"「Open Calendar」"</b></string>
+    <!-- no translation found for examples (2100807337052050741) -->
+    <skip />
     <string name="title">"音声ダイヤラ"</string>
     <string name="initializing">"起動中です。"</string>
     <string name="listening">"リッスン中..."</string>
     <string name="please_try_again">"もう一度試してください。"</string>
     <string name="recognition_error">"また、この携帯電話を再起動してみることもできます。"</string>
-    <string name="at_home">"at home"</string>
-    <string name="on_mobile">"on mobile"</string>
-    <string name="at_work">"at work"</string>
-    <string name="at_other">"at other"</string>
+    <string name="at_home">" at home"</string>
+    <string name="on_mobile">" on mobile"</string>
+    <string name="at_work">" at work"</string>
+    <string name="at_other">" at other"</string>
     <string name="logging_enabled">"音声ダイヤラのログを有効にしました。"</string>
     <string name="logging_disabled">"音声ダイヤラのログを無効にしました。"</string>
 </resources>

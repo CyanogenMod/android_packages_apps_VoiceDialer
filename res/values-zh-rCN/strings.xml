@@ -15,18 +15,21 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for voiceDialer (5948204210436590941) -->
+    <skip />
     <string name="tool_tip_title">"您知道吗..."</string>
     <string name="tool_tip_message">"按住绿色呼叫按钮可打开语音拨号程序。"</string>
-    <string name="examples">"示例："<b>" "\n"“呼叫约翰·多伊 (John Doe)”"\n"“在家呼叫约翰·多伊 (John Doe)...”"\n"“呼叫语音信箱”"\n"“拨打 (866) 555 0123”"\n"“拨打 911, 811, ...”"\n"“拨打 +44 7333 444 555”"\n"“重拨”"\n"“打开 Google 日历”"</b></string>
+    <!-- no translation found for examples (2100807337052050741) -->
+    <skip />
     <string name="title">"语音拨号程序"</string>
     <string name="initializing">"正在启动。"</string>
     <string name="listening">"正在收听..."</string>
     <string name="please_try_again">"请重试。"</string>
     <string name="recognition_error">"您可以尝试重新启动手机。"</string>
-    <string name="at_home">"在家"</string>
-    <string name="on_mobile">"通过手机"</string>
-    <string name="at_work">"工作中"</string>
-    <string name="at_other">"在其他位置"</string>
+    <string name="at_home">" 在家"</string>
+    <string name="on_mobile">" 通过手机"</string>
+    <string name="at_work">" 工作中"</string>
+    <string name="at_other">" 在其他位置"</string>
     <string name="logging_enabled">"已启用语音拨号程序记录。"</string>
     <string name="logging_disabled">"已禁用语音拨号程序记录。"</string>
 </resources>

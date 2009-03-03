@@ -337,6 +337,7 @@ public class RecognizerEngine {
 
                 // fetch a scrubbed window label
                 String label = scrubName(ri.loadLabel(pm).toString());
+                if (label.length() == 0) continue;
 
                 // insert it into the result list
                 addClassName(openEntries, label, ri.activityInfo.name);
@@ -490,6 +491,15 @@ public class RecognizerEngine {
         
         // trim
         name = name.trim();
+
+        // ensure at least one alphanumeric character, or the pron engine will fail
+        for (int i = name.length() - 1; true; i--) {
+            if (i < 0) return "";
+            char ch = name.charAt(i);
+            if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ('0' <= ch && ch <= '9')) {
+                break;
+            }
+        }
         
         return name;
     }
