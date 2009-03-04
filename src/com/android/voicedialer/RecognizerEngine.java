@@ -1,0 +1,1242 @@
+/*
+ * Copyright (C) 2007 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.voicedialer;
+
+import android.content.ContentUris;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
+import android.net.Uri;
+import android.provider.Contacts;
+import android.speech.srec.MicrophoneInputStream;
+import android.speech.srec.Recognizer;
+import android.speech.srec.WaveHeader;
+import android.util.Config;
+import android.util.Log;
+import com.android.voicedialer.RecognizerLogger;
+import com.android.voicedialer.VoiceContact;
+import com.android.voicedialer.VoiceDialerActivity;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+
+
+/**
+ * This class knows how to recognize speech.  A usage cycle is as follows:
+ * <ul>
+ * <li>Create with a reference to the {@link VoiceDialerActivity}.
+ * <li>Signal the user to start speaking with the Vibrator or beep.
+ * <li>Start audio input by creating a {@link MicrophoneInputStream}.
+ * <li>Create and configure a {@link Recognizer}.
+ * <li>Fetch a List of {@link VoiceContact} and determine if there is a
+ * corresponding g2g file which is up-to-date.
+ * <li>If the g2g file is out-of-date, update and save it.
+ * <li>Start the {@link Recognizer} running using data already being
+ * collected by the {@link Microphone}.
+ * <li>Wait for the {@link Recognizer} to complete.
+ * <li>Pass a list of {@link Intent} corresponding to the recognition results
+ * to the {@link VoiceDialerActivity}, which notifies the user.
+ * <li>Shut down and clean up.
+ * </ul>
+ * Notes:
+ * <ul>
+ * <li>Audio many be read from a file.
+ * <li>A directory tree of audio files may be stepped through.
+ * <li>A contact list may be read from a file.
+ * <li>A {@link RecognizerLogger} may generate a set of log files from
+ * a recognition session.
+ * <li>A static instance of this class is held and reused by the
+ * {@link VoiceDialerActivity}, which saves setup time.
+ * </ul>
+ */
+public class RecognizerEngine {
+
+    private static final String TAG = "RecognizerEngine";
+    
+    public static final String SENTENCE_EXTRA = "sentence";
+    
+    private final String SREC_DIR = Recognizer.getConfigDir(null);
+    
+    private static final String OPEN_ENTRIES = "openentries.txt";
+    
+    private static final int RESULT_LIMIT = 5;
+
+    private static final int SAMPLE_RATE = 11025;
+
+    private VoiceDialerActivity mVoiceDialerActivity;
+    
+    private Recognizer mSrec;
+    private Recognizer.Grammar mSrecGrammar;
+    
+    private RecognizerLogger mLogger;
+
+    /**
+     * Constructor.
+     */
+    public RecognizerEngine() {
+    }
+
+    /**
+     * Start the recognition process.
+     * <ul>
+     * <li>Create and start the microphone.
+     * <li>Create a Recognizer.
+     * <li>Scan contacts and determine if the Grammar g2g file is stale.
+     * <li>If so, create and rebuild the Grammar,
+     * <li>Else create and load the Grammar from the file.
+     * <li>Start the Recognizer.
+     * <li>Feed the Recognizer audio until it provides a result.
+     * <li>Build a list of Intents corresponding to the results.
+     * <li>Stop the microphone.
+     * <li>Stop the Recognizer.
+     * </ul>
+     * 
+     * @param voiceDialerActivity VoiceDialerActivity instance.
+     * @param logDir write log files to this directory.
+     * @param micFile audio input from this file, or directory tree.
+     * @param contactsFile file containing a list of contacts to use.
+     * @param codec one of PCM/16bit/11KHz(default) or PCM/16bit/8KHz.
+     */
+    public void recognize(VoiceDialerActivity voiceDialerActivity,
+            File micFile, File contactsFile, String codec) {
+        InputStream mic = null;
+        boolean recognizerStarted = false;
+        try {
+            if (Config.LOGD) Log.d(TAG, "start");
+            
+            mVoiceDialerActivity = voiceDialerActivity;
+            
+            // set up logger
+            mLogger = null;
+            if (RecognizerLogger.isEnabled(mVoiceDialerActivity)) {
+                mLogger = new RecognizerLogger(mVoiceDialerActivity);
+            }
+            
+            // start audio input
+            if (Config.LOGD) Log.d(TAG, "start new MicrophoneInputStream");
+            if (micFile != null) {
+                mic = new FileInputStream(micFile);
+                WaveHeader hdr = new WaveHeader();
+                hdr.read(mic);
+            } else {
+                mic = new MicrophoneInputStream(SAMPLE_RATE, SAMPLE_RATE * 15);
+            }
+                    
+            // notify UI
+            voiceDialerActivity.onMicrophoneStart();
+
+            // create a new recognizer
+            if (Config.LOGD) Log.d(TAG, "start new Recognizer");
+            if (mSrec == null) mSrec = new Recognizer(SREC_DIR + "/baseline11k.par");
+
+            // fetch the contact list
+            if (Config.LOGD) Log.d(TAG, "start getVoiceContacts");
+            List<VoiceContact> contacts = contactsFile != null ?
+                    VoiceContact.getVoiceContactsFromFile(contactsFile) :
+                    VoiceContact.getVoiceContacts(mVoiceDialerActivity);
+                    
+            // log contacts if requested
+            if (mLogger != null) mLogger.logContacts(contacts);
+            
+            // generate g2g grammar file name
+            File g2g = mVoiceDialerActivity.getFileStreamPath("voicedialer." +
+                    Integer.toHexString(contacts.hashCode()) + ".g2g");
+            
+            // rebuild g2g file if current one is out of date
+            if (!g2g.exists()) {
+                // clean up existing Grammar and old file
+                deleteAllG2GFiles(mVoiceDialerActivity);
+                if (mSrecGrammar != null) {
+                    mSrecGrammar.destroy();
+                    mSrecGrammar = null;
+                }
+                
+                // load the empty Grammar
+                if (Config.LOGD) Log.d(TAG, "start new Grammar");
+                mSrecGrammar = mSrec.new Grammar(SREC_DIR + "/grammars/VoiceDialer.g2g");
+                mSrecGrammar.setupRecognizer();
+
+                // reset slots
+                if (Config.LOGD) Log.d(TAG, "start grammar.resetAllSlots");
+                mSrecGrammar.resetAllSlots();
+
+                // add names to the grammar
+                addNameEntriesToGrammar(contacts);
+                
+                // add 'open' entries to the grammar
+                addOpenEntriesToGrammar();
+
+                // compile the grammar
+                if (Config.LOGD) Log.d(TAG, "start grammar.compile");
+                mSrecGrammar.compile();
+
+                // update g2g file
+                if (Config.LOGD) Log.d(TAG, "start grammar.save " + g2g.getPath());
+                g2g.getParentFile().mkdirs();
+                mSrecGrammar.save(g2g.getPath());
+            }
+           
+            // g2g file exists, but is not loaded
+            else if (mSrecGrammar == null) {
+                if (Config.LOGD) Log.d(TAG, "start new Grammar loading " + g2g);
+                mSrecGrammar = mSrec.new Grammar(g2g.getPath());
+                mSrecGrammar.setupRecognizer();
+            }
+            
+            // start the recognition process
+            if (Config.LOGD) Log.d(TAG, "start mSrec.start");
+            mSrec.start();
+            recognizerStarted = true;
+            
+            // log audio if requested
+            if (mLogger != null) mic = mLogger.logInputStream(mic, SAMPLE_RATE);
+            
+            // recognize
+            while (true) {
+                if (Thread.interrupted()) throw new InterruptedException();
+                int event = mSrec.advance();
+                if (event != Recognizer.EVENT_INCOMPLETE &&
+                        event != Recognizer.EVENT_NEED_MORE_AUDIO) {
+                    if (Config.LOGD) Log.d(TAG, "start advance()=" +
+                            Recognizer.eventToString(event));
+                }
+                switch (event) {
+                case Recognizer.EVENT_INCOMPLETE:
+                case Recognizer.EVENT_STARTED:
+                case Recognizer.EVENT_START_OF_VOICING:
+                case Recognizer.EVENT_END_OF_VOICING:
+                    continue;
+                case Recognizer.EVENT_RECOGNITION_RESULT:
+                    onRecognitionSuccess();
+                    break;
+                case Recognizer.EVENT_NEED_MORE_AUDIO:
+                    mSrec.putAudio(mic);
+                    continue;
+                default:
+                    mVoiceDialerActivity.onRecognitionFailure(Recognizer.eventToString(event));
+                    break;
+                }
+                break;
+            }
+        } catch (InterruptedException e) {
+            if (Config.LOGD) Log.d(TAG, "start interrupted " + e);
+        } catch (IOException e) {
+            if (Config.LOGD) Log.d(TAG, "start new Srec failed " + e);
+            mVoiceDialerActivity.onRecognitionError(e.toString());
+        } finally {
+            // stop microphone
+            try {
+                if (mic != null) mic.close();
+            }
+            catch (IOException ex) {
+                if (Config.LOGD) Log.d(TAG, "start - mic.close failed - " + ex);
+            }
+            mic = null;
+
+            // shut down recognizer
+            if (Config.LOGD) Log.d(TAG, "start mSrec.stop");
+            if (mSrec != null && recognizerStarted) mSrec.stop();
+            
+            // close logger
+            try {
+                if (mLogger != null) mLogger.close();
+            }
+            catch (IOException ex) {
+                if (Config.LOGD) Log.d(TAG, "start - mLoggger.close failed - " + ex);
+            }
+            mLogger = null;
+        }
+        if (Config.LOGD) Log.d(TAG, "start bye");
+    }
+    
+    /**
+     * Add a list of names to the grammar
+     * @param contacts list of VoiceContacts to be added.
+     */
+    private void addNameEntriesToGrammar(List<VoiceContact> contacts) throws InterruptedException {
+        if (Config.LOGD) Log.d(TAG, "addNameEntriesToGrammar " + contacts.size());
+        
+        HashSet entries = new HashSet<String>();
+        StringBuffer sb = new StringBuffer();
+        for (VoiceContact contact : contacts) {
+            if (Thread.interrupted()) throw new InterruptedException();
+            String name = scrubName(contact.mName);
+            if (name.length() == 0 || !entries.add(name)) continue;
+            sb.setLength(0);
+            sb.append("V='");
+            sb.append(contact.mPersonId).append(' ');
+            sb.append(contact.mPrimaryId).append(' ');
+            sb.append(contact.mHomeId).append(' ');
+            sb.append(contact.mMobileId).append(' ');
+            sb.append(contact.mWorkId).append(' ');
+            sb.append(contact.mOtherId);
+            sb.append("'");
+            mSrecGrammar.addWordToSlot("@Names", name, null, 1, sb.toString());           
+        }
+    }
+    
+    /**
+     * add a list of application labels to the 'open x' grammar
+     */
+    private void addOpenEntriesToGrammar() throws InterruptedException, IOException {
+        if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar");
+
+        // fill this
+        HashMap<String, String> openEntries;
+        File oe = mVoiceDialerActivity.getFileStreamPath(OPEN_ENTRIES);
+        
+        // build and write list of entries
+        if (!oe.exists()) {
+            openEntries = new HashMap<String, String>();
+            
+            // build a list of 'open' entries
+            PackageManager pm = mVoiceDialerActivity.getPackageManager();
+            List<ResolveInfo> riList = pm.queryIntentActivities(
+                            new Intent(Intent.ACTION_MAIN).
+                            addCategory("android.intent.category.VOICE_LAUNCH"),
+                            PackageManager.GET_ACTIVITIES);
+            if (Thread.interrupted()) throw new InterruptedException();
+            riList.addAll(pm.queryIntentActivities(
+                            new Intent(Intent.ACTION_MAIN).
+                            addCategory("android.intent.category.LAUNCHER"),
+                            PackageManager.GET_ACTIVITIES));
+            String voiceDialerClassName = mVoiceDialerActivity.getComponentName().getClassName();
+
+            // scan list, adding complete phrases, as well as individual words
+            for (ResolveInfo ri : riList) {
+                if (Thread.interrupted()) throw new InterruptedException();
+
+                // skip self
+                if (voiceDialerClassName.equals(ri.activityInfo.name)) continue;
+
+                // fetch a scrubbed window label
+                String label = scrubName(ri.loadLabel(pm).toString());
+                if (label.length() == 0) continue;
+
+                // insert it into the result list
+                addClassName(openEntries, label, ri.activityInfo.name);
+
+                // split it into individual words, and insert them
+                String[] words = label.split(" ");
+                if (words.length > 1) {
+                    for (String word : words) {
+                        word = word.trim();
+                        // words must be three characters long, or two if capitalized
+                        int len = word.length();
+                        if (len <= 1) continue;
+                        if (len == 2 && !(Character.isUpperCase(word.charAt(0)) &&
+                                        Character.isUpperCase(word.charAt(1)))) continue;
+                        if ("and".equalsIgnoreCase(word) || "the".equalsIgnoreCase(word)) continue;
+                        // add the word
+                        addClassName(openEntries, word, ri.activityInfo.name);
+                    }
+                }
+            }
+
+            // write list
+            if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar writing " + oe);
+            try {
+                FileOutputStream fos = new FileOutputStream(oe);
+                try {
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
+                    oos.writeObject(openEntries);
+                    oos.close();
+                } finally {
+                    fos.close();
+                }
+            } catch (IOException ioe) {
+                deleteCachedGrammarFiles(mVoiceDialerActivity);
+                throw ioe;
+            }
+        }
+        
+        // read the list
+        else {
+            if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar reading " + oe);
+            try {
+                FileInputStream fis = new FileInputStream(oe);
+                try {
+                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    openEntries = (HashMap<String, String>)ois.readObject();
+                    ois.close();
+                } finally {
+                    fis.close();
+                }
+            } catch (Exception e) {
+                deleteCachedGrammarFiles(mVoiceDialerActivity);
+                throw new IOException(e.toString());
+            }
+        }
+
+        // add list of 'open' entries to the grammar
+        for (String label : openEntries.keySet()) {
+            if (Thread.interrupted()) throw new InterruptedException();
+            String entry = openEntries.get(label);
+            // don't add if too many results
+            int count = 0;
+            for (int i = 0; 0 != (i = entry.indexOf(' ', i) + 1); count++) ;
+            if (count > RESULT_LIMIT) continue;
+            // add the word to the grammar
+            mSrecGrammar.addWordToSlot("@Opens", label, null, 1, "V='" + entry + "'");
+        }
+    }
+    
+    /**
+     * Add a className to a hash table of class name lists.
+     * @param openEntries HashMap of lists of class names.
+     * @param label a label or word corresponding to the list of classes.
+     * @param className class name to add
+     * @return
+     */
+    private static void addClassName(HashMap<String,String> openEntries,
+            String label, String className) {
+        String labelLowerCase = label.toLowerCase();
+        String classList = openEntries.get(labelLowerCase);
+        
+        // first item in the list
+        if (classList == null) {
+            openEntries.put(labelLowerCase, className);
+            return;
+        }
+        // already in list
+        int index = classList.indexOf(className);
+        int after = index + className.length();
+        if (index != -1 && (index == 0 || classList.charAt(index - 1) == ' ') &&
+                (after == classList.length() || classList.charAt(after) == ' ')) return;
+        
+        // add it to the end
+        openEntries.put(labelLowerCase, classList + ' ' + className);
+    }
+    
+
+    // map letters in Latin1 Supplement to basic ascii
+    // from http://en.wikipedia.org/wiki/Latin-1_Supplement_unicode_block
+    // not all letters map well, including Eth and Thorn
+    // TODO: this should really be all handled in the pronunciation engine
+    private final static char[] mLatin1Letters =
+            "AAAAAAACEEEEIIIIDNOOOOO OUUUUYDsaaaaaaaceeeeiiiidnooooo ouuuuydy".
+            toCharArray();
+    private final static int mLatin1Base = 0x00c0;
+    
+    /**
+     * Reformat a raw name from the contact list into a form a
+     * {@link SrecEmbeddedGrammar} can digest.
+     * @param name the raw name.
+     * @return the reformatted name.
+     */
+    private static String scrubName(String name) {
+        // replace '&' with ' and '
+        name = name.replace("&", " and ");
+        
+        // replace '@' with ' at '
+        name = name.replace("@", " at ");
+        
+        // remove '(...)'
+        while (true) {
+            int i = name.indexOf('(');
+            if (i == -1) break;
+            int j = name.indexOf(')', i);
+            if (j == -1) break;
+            name = name.substring(0, i) + " " + name.substring(j + 1);
+        }
+        
+        // map letters of Latin1 Supplement to basic ascii
+        char[] nm = null;
+        for (int i = name.length() - 1; i >= 0; i--) {
+            char ch = name.charAt(i);
+            if (ch < ' ' || '~' < ch) {
+                if (nm == null) nm = name.toCharArray();
+                nm[i] = mLatin1Base <= ch && ch < mLatin1Base + mLatin1Letters.length ?
+                    mLatin1Letters[ch - mLatin1Base] : ' ';
+            }
+        }
+        if (nm != null) {
+            name = new String(nm);
+        }
+        
+        // if '.' followed by alnum, replace with ' dot '
+        while (true) {
+            int i = name.indexOf('.');
+            if (i == -1 ||
+                    i + 1 >= name.length() ||
+                    !Character.isLetterOrDigit(name.charAt(i + 1))) break;
+            name = name.substring(0, i) + " dot " + name.substring(i + 1);
+        }
+        
+        // trim
+        name = name.trim();
+
+        // ensure at least one alphanumeric character, or the pron engine will fail
+        for (int i = name.length() - 1; true; i--) {
+            if (i < 0) return "";
+            char ch = name.charAt(i);
+            if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ('0' <= ch && ch <= '9')) {
+                break;
+            }
+        }
+        
+        return name;
+    }
+    
+    /**
+     * Delete all g2g files in the directory indicated by {@link File},
+     * which is typically /data/data/com.android.voicedialer/files.
+     * There should only be one g2g file at any one time, with a hashcode
+     * embedded in it's name, but if stale ones are present, this will delete
+     * them all.
+     * @param context fetch directory for the stuffed and compiled g2g file.
+     */
+    private static void deleteAllG2GFiles(Context context) {
+        FileFilter ff = new FileFilter() {
+            public boolean accept(File f) {
+                String name = f.getName();
+                return name.endsWith(".g2g");
+            }
+        };
+        File[] files = context.getFilesDir().listFiles(ff);
+        if (files != null) {
+            for (File file : files) {
+                if (Config.LOGD) Log.d(TAG, "deleteAllG2GFiles " + file);
+                file.delete();            
+            }
+        }
+    }
+    
+    /**
+     * Delete G2G and OpenEntries files, to force regeneration of the g2g file
+     * from scratch.
+     * @param context fetch directory for file.
+     */
+    public static void deleteCachedGrammarFiles(Context context) {
+        deleteAllG2GFiles(context);
+        File oe = context.getFileStreamPath(OPEN_ENTRIES);
+        if (Config.LOGD) Log.d(TAG, "deleteCachedGrammarFiles " + oe);
+        if (oe.exists()) oe.delete();
+    }
+    
+    // NANP number formats
+    private final static String mNanpFormats =
+        "xxx xxx xxxx\n" +
+        "xxx xxxx\n" +
+        "x11\n";
+    
+    // a list of country codes
+    private final static String mPlusFormats =
+
+        ////////////////////////////////////////////////////////////
+        // zone 1: nanp (north american numbering plan), us, canada, caribbean
+        ////////////////////////////////////////////////////////////
+        
+        "+1 xxx xxx xxxx\n" +         // nanp
+        
+        ////////////////////////////////////////////////////////////
+        // zone 2: africa, some atlantic and indian ocean islands
+        ////////////////////////////////////////////////////////////
+        
+        "+20 x xxx xxxx\n" +          // Egypt
+        "+20 1x xxx xxxx\n" +         // Egypt
+        "+20 xx xxx xxxx\n" +         // Egypt
+        "+20 xxx xxx xxxx\n" +        // Egypt
+        
+        "+212 xxxx xxxx\n" +          // Morocco
+        
+        "+213 xx xx xx xx\n" +        // Algeria
+        "+213 xx xxx xxxx\n" +        // Algeria
+        
+        "+216 xx xxx xxx\n" +         // Tunisia
+        
+        "+218 xx xxx xxx\n" +         // Libya
+        
+        "+22x \n" +  
+        "+23x \n" +  
+        "+24x \n" +  
+        "+25x \n" +  
+        "+26x \n" +  
+
+        "+27 xx xxx xxxx\n" +         // South africa
+        
+        "+290 x xxx\n" +              // Saint Helena, Tristan da Cunha
+
+        "+291 x xxx xxx\n" +          // Eritrea
+        
+        "+297 xxx xxxx\n" +           // Aruba
+        
+        "+298 xxx xxx\n" +            // Faroe Islands
+        
+        "+299 xxx xxx\n" +            // Greenland
+
+        ////////////////////////////////////////////////////////////
+        // zone 3: europe, southern and small countries
+        ////////////////////////////////////////////////////////////
+        
+        "+30 xxx xxx xxxx\n" +        // Greece
+        
+        "+31 6 xxxx xxxx\n" +         // Netherlands
+        "+31 xx xxx xxxx\n" +         // Netherlands
+        "+31 xxx xx xxxx\n" +         // Netherlands
+        
+        "+32 2 xxx xx xx\n" +         // Belgium
+        "+32 3 xxx xx xx\n" +         // Belgium
+        "+32 4xx xx xx xx\n" +        // Belgium
+        "+32 9 xxx xx xx\n" +         // Belgium
+        "+32 xx xx xx xx\n" +         // Belgium
+        
+        "+33 xxx xxx xxx\n" +         // France
+        
+        "+34 xxx xxx xxx\n" +        // Spain
+        
+        "+351 3xx xxx xxx\n" +       // Portugal
+        "+351 7xx xxx xxx\n" +       // Portugal
+        "+351 8xx xxx xxx\n" +       // Portugal
+        "+351 xx xxx xxxx\n" +       // Portugal
+        
+        "+352 xx xxxx\n" +           // Luxembourg
+        "+352 6x1 xxx xxx\n" +       // Luxembourg
+        "+352 \n" +                  // Luxembourg
+        
+        "+353 xxx xxxx\n" +          // Ireland
+        "+353 xxxx xxxx\n" +         // Ireland
+        "+353 xx xxx xxxx\n" +       // Ireland
+
+        "+354 3xx xxx xxx\n" +       // Iceland
+        "+354 xxx xxxx\n" +          // Iceland
+
+        "+355 6x xxx xxxx\n" +       // Albania
+        "+355 xxx xxxx\n" +          // Albania
+        
+        "+356 xx xx xx xx\n" +       // Malta
+        
+        "+357 xx xx xx xx\n" +       // Cyprus
+        
+        "+358 \n" +                  // Finland
+        
+        "+359 \n" +                  // Bulgaria
+        
+        "+36 1 xxx xxxx\n" +         // Hungary
+        "+36 20 xxx xxxx\n" +        // Hungary
+        "+36 21 xxx xxxx\n" +        // Hungary
+        "+36 30 xxx xxxx\n" +        // Hungary
+        "+36 70 xxx xxxx\n" +        // Hungary
+        "+36 71 xxx xxxx\n" +        // Hungary
+        "+36 xx xxx xxx\n" +         // Hungary
+
+        "+370 6x xxx xxx\n" +        // Lithuania
+        "+370 xxx xx xxx\n" +        // Lithuania
+        
+        "+371 xxxx xxxx\n" +         // Latvia
+
+        "+372 5 xxx xxxx\n" +        // Estonia
+        "+372 xxx xxxx\n" +          // Estonia
+
+        "+373 6xx xx xxx\n" +        // Moldova
+        "+373 7xx xx xxx\n" +        // Moldova
+        "+373 xxx xxxxx\n" +         // Moldova
+        
+        "+374 xx xxx xxx\n" +        // Armenia
+
+        "+375 xx xxx xxxx\n" +       // Belarus
+        
+        "+376 xx xx xx\n" +          // Andorra
+        
+        "+377 xxxx xxxx\n" +         // Monaco
+
+        "+378 xxx xxx xxxx\n" +      // San Marino
+        
+        "+380 xxx xx xx xx\n" +      // Ukraine
+        
+        "+381 xx xxx xxxx\n" +       // Serbia
+        
+        "+382 xx xxx xxxx\n" +       // Montenegro
+        
+        "+385 xx xxx xxxx\n" +       // Croatia
+        
+        "+386 x xxx xxxx\n" +        // Slovenia
+        
+        "+387 xx xx xx xx\n" +       // Bosnia and herzegovina
+        
+        "+389 2 xxx xx xx\n" +       // Macedonia
+        "+389 xx xx xx xx\n" +       // Macedonia
+        
+        "+39 xxx xxx xxx\n" +        // Italy
+        "+39 3xx xxx xxxx\n" +       // Italy
+        "+39 xx xxxx xxxx\n" +       // Italy
+
+        ////////////////////////////////////////////////////////////
+        // zone 4: europe, northern countries
+        ////////////////////////////////////////////////////////////
+        
+        "+40 xxx xxx xxx\n" +        // Romania
+        
+        "+41 xx xxx xx xx\n" +       // Switzerland
+        
+        "+420 xxx xxx xxx\n" +       // Czech republic
+        
+        "+421 xxx xxx xxx\n" +       // Slovakia
+        
+        "+421 xxx xxx xxxx\n" +      // Liechtenstein
+        
+        "+43 \n" +                   // Austria
+        
+        "+44 xxx xxx xxxx\n" +       // UK
+        
+        "+45 xx xx xx xx\n" +        // Denmark
+        
+        "+46 \n" +                   // Sweden
+        
+        "+47 xxxx xxxx\n" +          // Norway
+        
+        "+48 xx xxx xxxx\n" +        // Poland
+        
+        "+49 1xx xxxx xxx\n" +       // Germany
+        "+49 1xx xxxx xxxx\n" +      // Germany
+        "+49 \n" +                   // Germany
+
+        ////////////////////////////////////////////////////////////
+        // zone 5: latin america
+        ////////////////////////////////////////////////////////////
+        
+        "+50x \n" +  
+        
+        "+51 9xx xxx xxx\n" +        // Peru
+        "+51 1 xxx xxxx\n" +         // Peru
+        "+51 xx xx xxxx\n" +         // Peru
+        
+        "+52 1 xxx xxx xxxx\n" +     // Mexico
+        "+52 xxx xxx xxxx\n" +       // Mexico
+        
+        "+53 xxxx xxxx\n" +          // Cuba
+        
+        "+54 9 11 xxxx xxxx\n" +     // Argentina
+        "+54 9 xxx xxx xxxx\n" +     // Argentina
+        "+54 11 xxxx xxxx\n" +       // Argentina
+        "+54 xxx xxx xxxx\n" +       // Argentina
+        
+        "+55 xx xxxx xxxx\n" +       // Brazil
+        
+        "+56 2 xxxxxx\n" +           // Chile
+        "+56 9 xxxx xxxx\n" +        // Chile
+        "+56 xx xxxxxx\n" +          // Chile
+        "+56 xx xxxxxxx\n" +         // Chile
+        
+        "+57 x xxx xxxx\n" +         // Columbia
+        "+57 3xx xxx xxxx\n" +       // Columbia
+        
+        "+58 xxx xxx xxxx\n" +       // Venezuela
+        
+        "+59x \n" +  
+
+        ////////////////////////////////////////////////////////////
+        // zone 6: southeast asia and oceania
+        ////////////////////////////////////////////////////////////
+        
+        // TODO is this right?
+        "+60 3 xxxx xxxx\n" +        // Malaysia
+        "+60 8x xxxxxx\n" +          // Malaysia
+        "+60 x xxx xxxx\n" +         // Malaysia
+        "+60 14 x xxx xxxx\n" +      // Malaysia
+        "+60 1x xxx xxxx\n" +        // Malaysia
+        "+60 x xxxx xxxx\n" +        // Malaysia
+        "+60 \n" +                   // Malaysia
+        
+        "+61 4xx xxx xxx\n" +        // Australia
+        "+61 x xxxx xxxx\n" +        // Australia
+        
+        // TODO: is this right?
+        "+62 8xx xxxx xxxx\n" +      // Indonesia
+        "+62 21 xxxxx\n" +           // Indonesia
+        "+62 xx xxxxxx\n" +          // Indonesia
+        "+62 xx xxx xxxx\n" +        // Indonesia
+        "+62 xx xxxx xxxx\n" +       // Indonesia
+        
+        "+63 2 xxx xxxx\n" +         // Phillipines
+        "+63 xx xxx xxxx\n" +        // Phillipines
+        "+63 9xx xxx xxxx\n" +       // Phillipines
+        
+        // TODO: is this right?
+        "+64 2 xxx xxxx\n" +         // New Zealand
+        "+64 2 xxx xxxx x\n" +       // New Zealand
+        "+64 2 xxx xxxx xx\n" +      // New Zealand
+        "+64 x xxx xxxx\n" +         // New Zealand
+        
+        "+65 xxxx xxxx\n" +          // Singapore
+        
+        "+66 8 xxxx xxxx\n" +        // Thailand
+        "+66 2 xxx xxxx\n" +         // Thailand
+        "+66 xx xx xxxx\n" +         // Thailand
+        
+        "+67x \n" +  
+        "+68x \n" +  
+        
+        "+690 x xxx\n" +             // Tokelau
+        
+        "+691 xxx xxxx\n" +          // Micronesia
+        
+        "+692 xxx xxxx\n" +          // marshall Islands
+
+        ////////////////////////////////////////////////////////////
+        // zone 7: russia and kazakstan
+        ////////////////////////////////////////////////////////////
+        
+        "+7 6xx xx xxxxx\n" +        // Kazakstan
+        "+7 7xx 2 xxxxxx\n" +        // Kazakstan
+        "+7 7xx xx xxxxx\n" +        // Kazakstan
+        
+        "+7 xxx xxx xx xx\n" +       // Russia
+
+        ////////////////////////////////////////////////////////////
+        // zone 8: east asia
+        ////////////////////////////////////////////////////////////
+        
+        "+81 3 xxxx xxxx\n" +        // Japan
+        "+81 6 xxxx xxxx\n" +        // Japan
+        "+81 xx xxx xxxx\n" +        // Japan
+        "+81 x0 xxxx xxxx\n" +       // Japan
+        
+        "+82 2 xxx xxxx\n" +         // South korea
+        "+82 2 xxxx xxxx\n" +        // South korea
+        "+82 xx xxxx xxxx\n" +       // South korea
+        "+82 xx xxx xxxx\n" +        // South korea
+        
+        "+84 4 xxxx xxxx\n" +        // Vietnam
+        "+84 xx xxxx xxx\n" +        // Vietnam
+        "+84 xx xxxx xxxx\n" +       // Vietnam
+        
+        "+850 \n" +                  // North Korea
+        
+        "+852 xxxx xxxx\n" +         // Hong Kong
+        
+        "+853 xxxx xxxx\n" +         // Macau
+        
+        "+855 1x xxx xxx\n" +        // Cambodia
+        "+855 9x xxx xxx\n" +        // Cambodia
+        "+855 xx xx xx xx\n" +       // Cambodia
+        
+        "+856 20 x xxx xxx\n" +      // Laos
+        "+856 xx xxx xxx\n" +        // Laos
+        
+        "+852 xxxx xxxx\n" +         // Hong kong
+        
+        "+86 10 xxxx xxxx\n" +       // China
+        "+86 2x xxxx xxxx\n" +       // China
+        "+86 xxx xxx xxxx\n" +       // China
+        "+86 xxx xxxx xxxx\n" +      // China
+        
+        "+880 xx xxxx xxxx\n" +      // Bangladesh
+        
+        "+886 \n" +                  // Taiwan
+
+        ////////////////////////////////////////////////////////////
+        // zone 9: south asia, west asia, central asia, middle east
+        ////////////////////////////////////////////////////////////
+        
+        "+90 xxx xxx xxxx\n" +       // Turkey
+        
+        "+91 9x xx xxxxxx\n" +       // India
+        "+91 xx xxxx xxxx\n" +       // India
+        
+        "+92 xx xxx xxxx\n" +        // Pakistan
+        "+92 3xx xxx xxxx\n" +       // Pakistan
+        
+        "+93 70 xxx xxx\n" +         // Afghanistan
+        "+93 xx xxx xxxx\n" +        // Afghanistan
+        
+        "+94 xx xxx xxxx\n" +        // Sri Lanka
+        
+        "+95 1 xxx xxx\n" +          // Burma
+        "+95 2 xxx xxx\n" +          // Burma
+        "+95 xx xxxxx\n" +           // Burma
+        "+95 9 xxx xxxx\n" +         // Burma
+        
+        "+960 xxx xxxx\n" +          // Maldives
+        
+        "+961 x xxx xxx\n" +         // Lebanon
+        "+961 xx xxx xxx\n" +        // Lebanon
+
+        "+962 7 xxxx xxxx\n" +       // Jordan
+        "+962 x xxx xxxx\n" +        // Jordan
+
+        "+963 11 xxx xxxx\n" +       // Syria
+        "+963 xx xxx xxx\n" +        // Syria
+
+        "+964 \n" +                  // Iraq
+        
+        "+965 xxxx xxxx\n" +         // Kuwait
+
+        "+966 5x xxx xxxx\n" +       // Saudi Arabia
+        "+966 x xxx xxxx\n" +        // Saudi Arabia
+
+        "+967 7xx xxx xxx\n" +       // Yemen
+        "+967 x xxx xxx\n" +         // Yemen
+        
+        "+968 xxxx xxxx\n" +         // Oman
+
+        "+970 5x xxx xxxx\n" +       // Palestinian Authority
+        "+970 x xxx xxxx\n" +        // Palestinian Authority
+
+        "+971 5x xxx xxxx\n" +       // United Arab Emirates
+        "+971 x xxx xxxx\n" +        // United Arab Emirates
+
+        "+972 5x xxx xxxx\n" +       // Israel
+        "+972 x xxx xxxx\n" +        // Israel
+        
+        "+973 xxxx xxxx\n" +         // Bahrain
+        
+        "+974 xxx xxxx\n" +          // Qatar
+
+        "+975 1x xxx xxx\n" +        // Bhutan
+        "+975 x xxx xxx\n" +         // Bhutan
+        
+        "+976 \n" +                  // Mongolia
+
+        "+977 xxxx xxxx\n" +         // Nepal
+        "+977 98 xxxx xxxx\n" +      // Nepal
+        
+        "+98 xxx xxx xxxx\n" +       // Iran
+        
+        "+992 xxx xxx xxx\n" +       // Tajikistan
+        
+        "+993 xxxx xxxx\n" +         // Turkmenistan
+
+        "+994 xx xxx xxxx\n" +       // Azerbaijan
+        "+994 xxx xxxxx\n" +         // Azerbaijan
+        
+        "+995 xx xxx xxx\n" +        // Georgia
+        
+        "+996 xxx xxx xxx\n" +       // Kyrgyzstan
+        
+        "+998 xx xxx xxxx\n";        // Uzbekistan
+    
+
+    // TODO: need to handle variable number notation
+    private static String formatNumber(String formats, String number) {
+        number = number.trim();
+        final int nlen = number.length();
+        final int formatslen = formats.length();
+        StringBuffer sb = new StringBuffer();
+        
+        // loop over country codes
+        for (int f = 0; f < formatslen; ) {
+            sb.setLength(0);
+            int n = 0;
+            
+            // loop over letters of pattern
+            while (true) {
+                final char fch = formats.charAt(f);
+                if (fch == '\n' && n >= nlen) return sb.toString();
+                if (fch == '\n' || n >= nlen) break;
+                final char nch = number.charAt(n);
+                // pattern matches number
+                if (fch == nch || (fch == 'x' && Character.isDigit(nch))) {
+                    f++;
+                    n++;
+                    sb.append(nch);
+                }
+                // don't match ' ' in pattern, but insert into result
+                else if (fch == ' ') {
+                    f++;
+                    sb.append(' ');
+                    // ' ' at end -> match all the rest
+                    if (formats.charAt(f) == '\n') return sb.append(number, n, nlen).toString();
+                }
+                // match failed
+                else break;
+            }
+            
+            // step to the next pattern
+            f = formats.indexOf('\n', f) + 1;
+            if (f == 0) break;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Format a phone number string.
+     * At some point, PhoneNumberUtils.formatNumber will handle this.
+     * @param num phone number string.
+     * @return formatted phone number string.
+     */
+    private static String formatNumber(String num) {
+        String fmt = null;
+        
+        fmt = formatNumber(mPlusFormats, num);
+        if (fmt != null) return fmt;
+        
+        fmt = formatNumber(mNanpFormats, num);
+        if (fmt != null) return fmt;
+        
+        return null;
+    }
+
+    /**
+     * Called when recognition succeeds.  It receives a list
+     * of results, builds a corresponding list of Intents, and
+     * passes them to the {@link VoiceDialerActivity}, which selects and
+     * performs a corresponding action.
+     * @param nbest a list of recognition results.
+     */
+    private void onRecognitionSuccess() throws InterruptedException {
+        if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess");
+        
+        if (mLogger != null) mLogger.logNbestHeader();
+
+        ArrayList<Intent> intents = new ArrayList<Intent>();
+
+        // loop over results
+        for (int result = 0; result < mSrec.getResultCount() &&
+                intents.size() < RESULT_LIMIT; result++) {
+
+            // parse the semanticMeaning string and build an Intent
+            String conf = mSrec.getResult(result, Recognizer.KEY_CONFIDENCE);
+            String literal = mSrec.getResult(result, Recognizer.KEY_LITERAL);
+            String semantic = mSrec.getResult(result, Recognizer.KEY_MEANING);
+            String msg = "conf=" + conf + " lit=" + literal + " sem=" + semantic;
+            if (Config.LOGD) Log.d(TAG, msg);
+            if (mLogger != null) mLogger.logLine(msg);
+            String[] commands = semantic.trim().split(" ");
+
+            // DIAL 650 867 5309
+            // DIAL 867 5309
+            // DIAL 911
+            if ("DIAL".equals(commands[0])) {
+                Uri uri = Uri.fromParts("tel", commands[1], null);
+                String num =  formatNumber(commands[1]);
+                if (num != null) {
+                    addCallIntent(intents, uri,
+                            literal.split(" ")[0].trim() + " " + num, 0);
+                }
+            }
+
+            // CALL JACK JONES
+            else if ("CALL".equals(commands[0]) && commands.length >= 7) {
+                // parse the ids
+                long personId = Long.parseLong(commands[1]); // people table
+                long phoneId  = Long.parseLong(commands[2]); // phones table
+                long homeId   = Long.parseLong(commands[3]); // phones table
+                long mobileId = Long.parseLong(commands[4]); // phones table
+                long workId   = Long.parseLong(commands[5]); // phones table
+                long otherId  = Long.parseLong(commands[6]); // phones table
+                Resources res = mVoiceDialerActivity.getResources();
+
+                int count = 0;
+
+                //
+                // generate the best entry corresponding to what was said
+                //
+
+                // 'CALL JACK JONES AT HOME|MOBILE|WORK|OTHER'
+                if (commands.length == 8) {
+                    long spokenPhoneId =
+                            "H".equalsIgnoreCase(commands[7]) ? homeId :
+                            "M".equalsIgnoreCase(commands[7]) ? mobileId :
+                            "W".equalsIgnoreCase(commands[7]) ? workId :
+                            "O".equalsIgnoreCase(commands[7]) ? otherId :
+                             VoiceContact.ID_UNDEFINED;
+                    if (spokenPhoneId != VoiceContact.ID_UNDEFINED) {
+                        addCallIntent(intents, ContentUris.withAppendedId(
+                                Contacts.Phones.CONTENT_URI, spokenPhoneId),
+                                literal, 0);
+                        count++;
+                    }
+                }
+
+                // 'CALL JACK JONES', with valid default phoneId
+                else if (commands.length == 7) {
+                    CharSequence phoneIdMsg =
+                            phoneId == VoiceContact.ID_UNDEFINED ? null :
+                            phoneId == homeId ? res.getText(R.string.at_home) :
+                            phoneId == mobileId ? res.getText(R.string.on_mobile) :
+                            phoneId == workId ? res.getText(R.string.at_work) :
+                            phoneId == otherId ? res.getText(R.string.at_other) :
+                            null;
+                    if (phoneIdMsg != null) {
+                        addCallIntent(intents, ContentUris.withAppendedId(
+                                Contacts.Phones.CONTENT_URI, phoneId),
+                                literal + phoneIdMsg, 0);
+                        count++;
+                    }
+                }
+
+                //
+                // generate all other entries
+                //
+
+                // trim last two words, ie 'at home', etc
+                String lit = literal;
+                if (commands.length == 8) {
+                    String[] words = literal.trim().split(" ");
+                    StringBuffer sb = new StringBuffer();
+                    for (int i = 0; i < words.length - 2; i++) {
+                        if (i != 0) {
+                            sb.append(' ');
+                        }
+                        sb.append(words[i]);
+                    }
+                    lit = sb.toString();
+                }
+
+                //  add 'CALL JACK JONES at home' using phoneId
+                if (homeId != VoiceContact.ID_UNDEFINED) {
+                    addCallIntent(intents, ContentUris.withAppendedId(
+                            Contacts.Phones.CONTENT_URI, homeId),
+                            lit + res.getText(R.string.at_home), 0);
+                    count++;
+                }
+
+                //  add 'CALL JACK JONES on mobile' using mobileId
+                if (mobileId != VoiceContact.ID_UNDEFINED) {
+                    addCallIntent(intents, ContentUris.withAppendedId(
+                            Contacts.Phones.CONTENT_URI, mobileId),
+                            lit + res.getText(R.string.on_mobile), 0);
+                    count++;
+                }
+
+                //  add 'CALL JACK JONES at work' using workId
+                if (workId != VoiceContact.ID_UNDEFINED) {
+                    addCallIntent(intents, ContentUris.withAppendedId(
+                            Contacts.Phones.CONTENT_URI, workId),
+                            lit + res.getText(R.string.at_work), 0);
+                    count++;
+                }
+
+                //  add 'CALL JACK JONES at other' using otherId
+                if (otherId != VoiceContact.ID_UNDEFINED) {
+                    addCallIntent(intents, ContentUris.withAppendedId(
+                            Contacts.Phones.CONTENT_URI, otherId),
+                            lit + res.getText(R.string.at_other), 0);
+                    count++;
+                }
+
+                //
+                // if no other entries were generated, use the personId
+                //
+
+                // add 'CALL JACK JONES', with valid personId
+                if (count == 0 && personId != VoiceContact.ID_UNDEFINED) {
+                    addCallIntent(intents, ContentUris.withAppendedId(
+                            Contacts.People.CONTENT_URI, personId), literal, 0);
+                }
+            }
+
+            // "CALL VoiceMail"
+            else if ("voicemail".equals(commands[0]) && commands.length == 1) {
+                addCallIntent(intents, Uri.fromParts("voicemail", "x", null),
+                        literal, Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            }
+
+            // "REDIAL"
+            else if ("redial".equals(commands[0]) && commands.length == 1) {
+                String number = VoiceContact.redialNumber(mVoiceDialerActivity);
+                if (number != null) {
+                    addCallIntent(intents, Uri.fromParts("tel", number, null), literal,
+                            Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                }
+            }
+
+            // "Intent ..."
+            else if ("Intent".equalsIgnoreCase(commands[0])) {
+                for (int i = 1; i < commands.length; i++) {
+                    try {
+                        Intent intent = Intent.getIntent(commands[i]);
+                        if (intent.getStringExtra(SENTENCE_EXTRA) == null) {
+                            intent.putExtra(SENTENCE_EXTRA, literal);
+                        }
+                        addIntent(intents, intent);
+                    } catch (URISyntaxException e) {
+                        if (Config.LOGD) Log.d(TAG,
+                                "onRecognitionSuccess: poorly formed URI in grammar\n" + e);
+                    }
+                }
+            }
+            
+            // "OPEN ..."
+            else if ("OPEN".equals(commands[0])) {
+                PackageManager pm = mVoiceDialerActivity.getPackageManager();
+                for (int i = 1; i < commands.length; i++) {
+                    String cn = commands[i];
+                    Intent intent = new Intent(Intent.ACTION_MAIN);
+                    intent.addCategory("android.intent.category.VOICE_LAUNCH");
+                    intent.setClassName(cn.substring(0, cn.lastIndexOf('.')), cn);
+                    List<ResolveInfo> riList = pm.queryIntentActivities(intent, 0);
+                    for (ResolveInfo ri : riList) {
+                        String label = ri.loadLabel(pm).toString();
+                        intent = new Intent(Intent.ACTION_MAIN);
+                        intent.addCategory("android.intent.category.VOICE_LAUNCH");
+                        intent.setClassName(cn.substring(0, cn.lastIndexOf('.')), cn);
+                        intent.putExtra(SENTENCE_EXTRA, literal.split(" ")[0] + " " + label);
+                        addIntent(intents, intent);
+                    }
+                }
+            }
+
+            // can't parse result
+            else {
+                if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess: parse error");
+            }
+
+        }
+
+        // log if requested
+        if (mLogger != null) mLogger.logIntents(intents);
+
+        // bail out if cancelled
+        if (Thread.interrupted()) throw new InterruptedException();
+
+        if (intents.size() == 0) {
+            // TODO: strip HOME|MOBILE|WORK and try default here?
+            mVoiceDialerActivity.onRecognitionFailure("No Intents generated");
+        }
+        else {
+            mVoiceDialerActivity.onRecognitionSuccess(
+                    intents.toArray(new Intent[intents.size()]));
+        }
+    }
+        
+    // only add if different
+    private static void addCallIntent(ArrayList<Intent> intents, Uri uri, String literal,
+            int flags) {
+        Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED, uri).
+        setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | flags).
+        putExtra(SENTENCE_EXTRA, literal);
+        addIntent(intents, intent);
+    }
+
+    private static void addIntent(ArrayList<Intent> intents, Intent intent) {
+        for (Intent in : intents) {
+            if (in.getAction() != null &&
+                    in.getAction().equals(intent.getAction()) &&
+                    in.getData() != null &&
+                    in.getData().equals(intent.getData())) {
+                return;
+            }
+        }
+        intents.add(intent);
+    }
+
+}
