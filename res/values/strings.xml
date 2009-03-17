@@ -15,6 +15,9 @@
 -->
 
 <resources>
+    <!-- The name of the Voice Dialer application. -->
+    <string name="voiceDialer">Voice Dialer</string>
+
     <!-- title to the Tool Tip window.  open when VoiceDialer not launched
         by green Call button -->
     <string name="tool_tip_title">Did you know\u2026</string>
@@ -60,17 +63,32 @@
         You can also try restarting your phone.
     </string>
 
-    <!-- appended to recognition result on results list to indicate a
-            'home/mobile/work/other' number.
-            ie. 'Call John Smith' becomes 'Call John Smith at home'  -->
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'home' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
     <string name="at_home">" at home"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'mobile' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
     <string name="on_mobile">" on mobile"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'work' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
     <string name="at_work">" at work"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'other' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
     <string name="at_other">" at other"</string>
 
-    <!-- messages in popup which indicates that VoiceDialer logging
-            has been enabled/disabled -->
+    <!-- message in popup which indicates that VoiceDialer logging
+            has been enabled -->
     <string name="logging_enabled">Voice Dialer logging is enabled.</string>
+    
+    <!-- message in popup which indicates that VoiceDialer logging
+            has been disabled -->
     <string name="logging_disabled">Voice Dialer logging is disabled.</string>
 
 </resources>

@@ -17,19 +17,19 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- no translation found for voiceDialer (5948204210436590941) -->
     <skip />
-    <string name="tool_tip_title">"Víte, že..."</string>
-    <string name="tool_tip_message">"Stisknutím a přidržením zeleného tlačítka Volat spustíte hlasové vytáčení."</string>
+    <string name="tool_tip_title">"알고 계십니까..."</string>
+    <string name="tool_tip_message">"녹색의 전화걸기 버튼을 길게 누르면 음성인식 전화가 열립니다."</string>
     <!-- no translation found for examples (2100807337052050741) -->
     <skip />
-    <string name="title">"Hlasové vytáčení"</string>
-    <string name="initializing">"Spouštění."</string>
-    <string name="listening">"Poslouchám..."</string>
-    <string name="please_try_again">"Prosím zkuste to znovu později."</string>
-    <string name="recognition_error">"Můžete také zkusit restartovat svůj telefon."</string>
-    <string name="at_home">" domů"</string>
-    <string name="on_mobile">" mobil"</string>
-    <string name="at_work">" práce"</string>
-    <string name="at_other">" jiné"</string>
-    <string name="logging_enabled">"Protokol hlasového vytáčení je zapnut."</string>
-    <string name="logging_disabled">"Protokol hlasového vytáčení je vypnut."</string>
+    <string name="title">"음성인식 전화"</string>
+    <string name="initializing">"시작 중"</string>
+    <string name="listening">"청취 중..."</string>
+    <string name="please_try_again">"다시 시도하세요."</string>
+    <string name="recognition_error">"전화기를 다시 시작해 볼 수도 있습니다."</string>
+    <string name="at_home">" 집"</string>
+    <string name="on_mobile">" 휴대전화"</string>
+    <string name="at_work">" 회사"</string>
+    <string name="at_other">" 다른 연락처"</string>
+    <string name="logging_enabled">"음성인식 전화 로깅을 사용합니다."</string>
+    <string name="logging_disabled">"음성인식 전화 로깅을 사용하지 않습니다."</string>
 </resources>

@@ -145,8 +145,10 @@ public class VoiceDialerActivity extends Activity {
     private BluetoothHeadset.ServiceListener mBluetoothHeadsetServiceListener =
             new BluetoothHeadset.ServiceListener() {
         public void onServiceConnected() {
-            mBluetoothHeadset.startVoiceRecognition();
-            startWork();
+            if (mBluetoothHeadset != null) {
+                mBluetoothHeadset.startVoiceRecognition();
+                startWork();
+            }
         }
         public void onServiceDisconnected() {}
     };

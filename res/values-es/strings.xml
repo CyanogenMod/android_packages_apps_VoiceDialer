@@ -15,18 +15,21 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for voiceDialer (5948204210436590941) -->
+    <skip />
     <string name="tool_tip_title">"¿Sabías que...?"</string>
     <string name="tool_tip_message">"Para abrir la ventana de marcación por voz, mantén pulsado el botón verde de llamada."</string>
-    <string name="examples">"Ejemplos: "<b>" "\n"\"Llamar a Juan Díaz\" "\n"\"Llamar a Juan Díaz a casa, …\" "\n"\"Llamar al buzón de voz\" "\n"\"Marcar (866) 555 0123\" "\n"\"Marcar 911, 811, …\" "\n"\"Marcar +44 7333 444 555\" "\n"\"Volver a marcar\" "\n"\"Abrir Calendar\" "</b></string>
+    <!-- no translation found for examples (2100807337052050741) -->
+    <skip />
     <string name="title">"Marcación por voz"</string>
     <string name="initializing">"Iniciando..."</string>
     <string name="listening">"Escuchando..."</string>
     <string name="please_try_again">"Inténtalo de nuevo."</string>
     <string name="recognition_error">"También puedes probar a reiniciar el teléfono."</string>
-    <string name="at_home">"a casa"</string>
-    <string name="on_mobile">"en móvil"</string>
-    <string name="at_work">"al trabajo"</string>
-    <string name="at_other">"a otro número"</string>
+    <string name="at_home">" a casa"</string>
+    <string name="on_mobile">" en móvil"</string>
+    <string name="at_work">" al trabajo"</string>
+    <string name="at_other">" a otro número"</string>
     <string name="logging_enabled">"Se ha habilitado el registro de la marcación por voz."</string>
     <string name="logging_disabled">"Se ha inhabilitado el registro de la marcación por voz."</string>
 </resources>

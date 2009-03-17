@@ -35,8 +35,11 @@ import com.android.voicedialer.VoiceDialerActivity;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,6 +83,8 @@ public class RecognizerEngine {
     
     private final String SREC_DIR = Recognizer.getConfigDir(null);
     
+    private static final String OPEN_ENTRIES = "openentries.txt";
+    
     private static final int RESULT_LIMIT = 5;
 
     private static final int SAMPLE_RATE = 11025;
@@ -88,7 +93,6 @@ public class RecognizerEngine {
     
     private Recognizer mSrec;
     private Recognizer.Grammar mSrecGrammar;
-    private int mSrecGrammarHash;
     
     private RecognizerLogger mLogger;
 
@@ -108,7 +112,7 @@ public class RecognizerEngine {
      * <li>Else create and load the Grammar from the file.
      * <li>Start the Recognizer.
      * <li>Feed the Recognizer audio until it provides a result.
-     * <li>Build a list of Intents corrsponding to the results.
+     * <li>Build a list of Intents corresponding to the results.
      * <li>Stop the microphone.
      * <li>Stop the Recognizer.
      * </ul>
@@ -156,61 +160,53 @@ public class RecognizerEngine {
             List<VoiceContact> contacts = contactsFile != null ?
                     VoiceContact.getVoiceContactsFromFile(contactsFile) :
                     VoiceContact.getVoiceContacts(mVoiceDialerActivity);
-            int contactsHash = contacts.hashCode();
-            
+                    
             // log contacts if requested
             if (mLogger != null) mLogger.logContacts(contacts);
-           
-            // no current Grammar, or out-of-date
-            if (mSrecGrammar == null || contactsHash != mSrecGrammarHash) {
-                // delete the old Grammar, if it exists
-                mSrecGrammarHash = contactsHash + 1;
+            
+            // generate g2g grammar file name
+            File g2g = mVoiceDialerActivity.getFileStreamPath("voicedialer." +
+                    Integer.toHexString(contacts.hashCode()) + ".g2g");
+            
+            // rebuild g2g file if current one is out of date
+            if (!g2g.exists()) {
+                // clean up existing Grammar and old file
+                deleteAllG2GFiles(mVoiceDialerActivity);
                 if (mSrecGrammar != null) {
                     mSrecGrammar.destroy();
                     mSrecGrammar = null;
-                    mSrecGrammarHash = 0;
                 }
                 
-                // generate g2g grammar file name
-                File g2g = mVoiceDialerActivity.getFileStreamPath("voicedialer." +
-                        Integer.toHexString(contactsHash) + ".g2g");
+                // load the empty Grammar
+                if (Config.LOGD) Log.d(TAG, "start new Grammar");
+                mSrecGrammar = mSrec.new Grammar(SREC_DIR + "/grammars/VoiceDialer.g2g");
+                mSrecGrammar.setupRecognizer();
 
-                // check for compiled g2g file
-                if (g2g.exists()) {
-                    if (Config.LOGD) Log.d(TAG, "start new Grammar loading " + g2g);
-                    mSrecGrammar = mSrec.new Grammar(g2g.getPath());
-                    mSrecGrammarHash = contactsHash;
-                    mSrecGrammar.setupRecognizer();
-                }
+                // reset slots
+                if (Config.LOGD) Log.d(TAG, "start grammar.resetAllSlots");
+                mSrecGrammar.resetAllSlots();
 
-                // rebuild the Grammar
-                else {
-                    // load the VoiceDialer grammar
-                    if (Config.LOGD) Log.d(TAG, "start new Grammar");
-                    mSrecGrammar = mSrec.new Grammar(SREC_DIR + "/grammars/VoiceDialer.g2g");
-                    mSrecGrammar.setupRecognizer();
+                // add names to the grammar
+                addNameEntriesToGrammar(contacts);
+                
+                // add 'open' entries to the grammar
+                addOpenEntriesToGrammar();
 
-                    // reset slots
-                    if (Config.LOGD) Log.d(TAG, "start grammar.resetAllSlots");
-                    mSrecGrammar.resetAllSlots();
+                // compile the grammar
+                if (Config.LOGD) Log.d(TAG, "start grammar.compile");
+                mSrecGrammar.compile();
 
-                    // add names to the grammar
-                    addNameEntriesToGrammar(contacts);
-                    
-                    // add 'open' entries to the grammar
-                    addOpenEntriesToGrammar();
-
-                    // compile the grammar
-                    if (Config.LOGD) Log.d(TAG, "start grammar.compile");
-                    mSrecGrammar.compile();
-                    mSrecGrammarHash = contactsHash;
-
-                    // update g2g file
-                    deleteAllG2GFiles(mVoiceDialerActivity);
-                    if (Config.LOGD) Log.d(TAG, "start grammar.save " + g2g.getPath());
-                    g2g.getParentFile().mkdirs();
-                    mSrecGrammar.save(g2g.getPath());
-                }
+                // update g2g file
+                if (Config.LOGD) Log.d(TAG, "start grammar.save " + g2g.getPath());
+                g2g.getParentFile().mkdirs();
+                mSrecGrammar.save(g2g.getPath());
+            }
+           
+            // g2g file exists, but is not loaded
+            else if (mSrecGrammar == null) {
+                if (Config.LOGD) Log.d(TAG, "start new Grammar loading " + g2g);
+                mSrecGrammar = mSrec.new Grammar(g2g.getPath());
+                mSrecGrammar.setupRecognizer();
             }
             
             // start the recognition process
@@ -308,50 +304,93 @@ public class RecognizerEngine {
     /**
      * add a list of application labels to the 'open x' grammar
      */
-    private void addOpenEntriesToGrammar() throws InterruptedException {
+    private void addOpenEntriesToGrammar() throws InterruptedException, IOException {
         if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar");
+
+        // fill this
+        HashMap<String, String> openEntries;
+        File oe = mVoiceDialerActivity.getFileStreamPath(OPEN_ENTRIES);
         
-        // build a list of 'open' entries
-        HashMap<String, String> openEntries = new HashMap<String, String>();
-        PackageManager pm = mVoiceDialerActivity.getPackageManager();
-        List<ResolveInfo> riList = pm.queryIntentActivities(
-                        new Intent(Intent.ACTION_MAIN).
-                        addCategory("android.intent.category.VOICE_LAUNCH"),
-                        PackageManager.GET_ACTIVITIES);
-        if (Thread.interrupted()) throw new InterruptedException();
-        riList.addAll(pm.queryIntentActivities(
-                        new Intent(Intent.ACTION_MAIN).
-                        addCategory("android.intent.category.LAUNCHER"),
-                        PackageManager.GET_ACTIVITIES));
-        String voiceDialerClassName = mVoiceDialerActivity.getComponentName().getClassName();
-        
-        // scan list, adding complete phrases, as well as individual words
-        for (ResolveInfo ri : riList) {
+        // build and write list of entries
+        if (!oe.exists()) {
+            openEntries = new HashMap<String, String>();
+            
+            // build a list of 'open' entries
+            PackageManager pm = mVoiceDialerActivity.getPackageManager();
+            List<ResolveInfo> riList = pm.queryIntentActivities(
+                            new Intent(Intent.ACTION_MAIN).
+                            addCategory("android.intent.category.VOICE_LAUNCH"),
+                            PackageManager.GET_ACTIVITIES);
             if (Thread.interrupted()) throw new InterruptedException();
-            
-            // skip self
-            if (voiceDialerClassName.equals(ri.activityInfo.name)) continue;
-            
-            // fetch a scrubbed window label
-            String label = scrubName(ri.loadLabel(pm).toString());
-            
-            // insert it into the result list
-            addClassName(openEntries, label, ri.activityInfo.name);
-            
-            // split it into individual words, and insert them
-            String[] words = label.split(" ");
-            if (words.length > 1) {
-                for (String word : words) {
-                    word = word.trim();
-                    // words must be three characters long, or two if capitalized
-                    int len = word.length();
-                    if (len <= 1) continue;
-                    if (len == 2 && !(Character.isUpperCase(word.charAt(0)) &&
-                            Character.isUpperCase(word.charAt(1)))) continue;
-                    if ("and".equalsIgnoreCase(word) || "the".equalsIgnoreCase(word)) continue;
-                    // add the word
-                    addClassName(openEntries, word, ri.activityInfo.name);
+            riList.addAll(pm.queryIntentActivities(
+                            new Intent(Intent.ACTION_MAIN).
+                            addCategory("android.intent.category.LAUNCHER"),
+                            PackageManager.GET_ACTIVITIES));
+            String voiceDialerClassName = mVoiceDialerActivity.getComponentName().getClassName();
+
+            // scan list, adding complete phrases, as well as individual words
+            for (ResolveInfo ri : riList) {
+                if (Thread.interrupted()) throw new InterruptedException();
+
+                // skip self
+                if (voiceDialerClassName.equals(ri.activityInfo.name)) continue;
+
+                // fetch a scrubbed window label
+                String label = scrubName(ri.loadLabel(pm).toString());
+                if (label.length() == 0) continue;
+
+                // insert it into the result list
+                addClassName(openEntries, label, ri.activityInfo.name);
+
+                // split it into individual words, and insert them
+                String[] words = label.split(" ");
+                if (words.length > 1) {
+                    for (String word : words) {
+                        word = word.trim();
+                        // words must be three characters long, or two if capitalized
+                        int len = word.length();
+                        if (len <= 1) continue;
+                        if (len == 2 && !(Character.isUpperCase(word.charAt(0)) &&
+                                        Character.isUpperCase(word.charAt(1)))) continue;
+                        if ("and".equalsIgnoreCase(word) || "the".equalsIgnoreCase(word)) continue;
+                        // add the word
+                        addClassName(openEntries, word, ri.activityInfo.name);
+                    }
                 }
+            }
+
+            // write list
+            if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar writing " + oe);
+            try {
+                FileOutputStream fos = new FileOutputStream(oe);
+                try {
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
+                    oos.writeObject(openEntries);
+                    oos.close();
+                } finally {
+                    fos.close();
+                }
+            } catch (IOException ioe) {
+                deleteCachedGrammarFiles(mVoiceDialerActivity);
+                throw ioe;
+            }
+        }
+        
+        // read the list
+        else {
+            if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar reading " + oe);
+            try {
+                FileInputStream fis = new FileInputStream(oe);
+                try {
+                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    openEntries = (HashMap<String, String>)ois.readObject();
+                    ois.close();
+                } finally {
+                    fis.close();
+                }
+            } catch (Exception e) {
+                deleteCachedGrammarFiles(mVoiceDialerActivity);
+                throw new IOException(e.toString());
             }
         }
 
@@ -452,6 +491,15 @@ public class RecognizerEngine {
         
         // trim
         name = name.trim();
+
+        // ensure at least one alphanumeric character, or the pron engine will fail
+        for (int i = name.length() - 1; true; i--) {
+            if (i < 0) return "";
+            char ch = name.charAt(i);
+            if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ('0' <= ch && ch <= '9')) {
+                break;
+            }
+        }
         
         return name;
     }
@@ -464,7 +512,7 @@ public class RecognizerEngine {
      * them all.
      * @param context fetch directory for the stuffed and compiled g2g file.
      */
-    public static void deleteAllG2GFiles(Context context) {
+    private static void deleteAllG2GFiles(Context context) {
         FileFilter ff = new FileFilter() {
             public boolean accept(File f) {
                 String name = f.getName();
@@ -474,10 +522,22 @@ public class RecognizerEngine {
         File[] files = context.getFilesDir().listFiles(ff);
         if (files != null) {
             for (File file : files) {
-                if (Config.LOGD) Log.d(TAG, "deleteSavedG2GFiles " + file);
+                if (Config.LOGD) Log.d(TAG, "deleteAllG2GFiles " + file);
                 file.delete();            
             }
         }
+    }
+    
+    /**
+     * Delete G2G and OpenEntries files, to force regeneration of the g2g file
+     * from scratch.
+     * @param context fetch directory for file.
+     */
+    public static void deleteCachedGrammarFiles(Context context) {
+        deleteAllG2GFiles(context);
+        File oe = context.getFileStreamPath(OPEN_ENTRIES);
+        if (Config.LOGD) Log.d(TAG, "deleteCachedGrammarFiles " + oe);
+        if (oe.exists()) oe.delete();
     }
     
     // NANP number formats

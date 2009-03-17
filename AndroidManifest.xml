@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
   
     <application android:theme="@android:style/Theme.Dialog"
-        android:label="Voice Dialer"
+        android:label="@string/voiceDialer"
         android:icon="@drawable/app_voicedialer">
         <!--  Initial Page -->
         <activity android:name="VoiceDialerActivity">

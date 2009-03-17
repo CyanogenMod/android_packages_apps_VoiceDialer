@@ -15,18 +15,21 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for voiceDialer (5948204210436590941) -->
+    <skip />
     <string name="tool_tip_title">"Wist u..."</string>
-    <string name="tool_tip_message">"Als u de groene belknop ingedrukt houdt, wordt de spraakkiezer geopend."</string>
-    <string name="examples">"Voorbeelden: "<b>" "\n"\'Bel Jan de Vries\' "\n"\'Bel Jan de Vries thuis, …\' "\n"\'Bel voicemail\' "\n"\'Kies (866) 555 0123\' "\n"\'Kies 911, 811, …\' "\n"\'Kies +44 7333 444 555\' "\n"\'Opnieuw kiezen\' "\n"\'Agenda openen\' "</b></string>
-    <string name="title">"Spraakkiezer"</string>
+    <string name="tool_tip_message">"Als u de groene belknop ingedrukt houdt, wordt de Voice Dialer geopend."</string>
+    <!-- no translation found for examples (2100807337052050741) -->
+    <skip />
+    <string name="title">"Voice Dialer"</string>
     <string name="initializing">"Opstarten."</string>
     <string name="listening">"Luisteren..."</string>
     <string name="please_try_again">"Probeer het opnieuw."</string>
     <string name="recognition_error">"U kunt ook proberen uw telefoon opnieuw op te starten."</string>
-    <string name="at_home">"thuis"</string>
-    <string name="on_mobile">"mobiel"</string>
-    <string name="at_work">"werk"</string>
-    <string name="at_other">"anders"</string>
-    <string name="logging_enabled">"Aanmelden via spraakkiezer is ingeschakeld."</string>
-    <string name="logging_disabled">"Aanmelden via spraakkiezer is uitgeschakeld."</string>
+    <string name="at_home">" thuis"</string>
+    <string name="on_mobile">" mobiel"</string>
+    <string name="at_work">" werk"</string>
+    <string name="at_other">" anders"</string>
+    <string name="logging_enabled">"Aanmelden via Voice Dialer is ingeschakeld."</string>
+    <string name="logging_disabled">"Aanmelden via Voice Dialer is uitgeschakeld."</string>
 </resources>
