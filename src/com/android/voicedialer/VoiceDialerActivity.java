@@ -70,7 +70,7 @@ public class VoiceDialerActivity extends Activity {
     private static final String CONTACTS_EXTRA = "contacts";
     private static final String CODEC_EXTRA = "codec";
     private static final String TONE_EXTRA = "tone";
-    
+
     private static final int FAIL_PAUSE_MSEC = 5000;
 
     private final static RecognizerEngine mEngine = new RecognizerEngine();
@@ -87,14 +87,14 @@ public class VoiceDialerActivity extends Activity {
         super.onCreate(icicle);
 
         if (Config.LOGD) Log.d(TAG, "onCreate");
-        
+
         mHandler = new Handler();
-        
+
         // get AudioManager, save current music volume, set music volume to zero
         mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
         mSavedVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
-        
+
         // set up ToneGenerator
         // currently disabled because it crashes audio input
         mToneGenerator = !"0".equals(getArg(TONE_EXTRA)) ?
@@ -111,7 +111,7 @@ public class VoiceDialerActivity extends Activity {
         if (RecognizerLogger.isEnabled(this)) {
             ((TextView)findViewById(R.id.substate)).setText(R.string.logging_enabled);
         }
-        
+
         // throw up tooltip
         if (false && !Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction())) {
             View v = getLayoutInflater().inflate(R.layout.tool_tip, null);
@@ -132,10 +132,8 @@ public class VoiceDialerActivity extends Activity {
         }
 
         // Get handle to BluetoothHeadset object if required
-        if (Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction()) &&
+        if (Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction())) {
             // start work in the BluetoothHeadsetClient onServiceConnected() callback
-            getIntent().getIntExtra(Intent.EXTRA_AUDIO_ROUTE, -1) ==
-            AudioManager.ROUTE_BLUETOOTH_SCO) {
             mBluetoothHeadset = new BluetoothHeadset(this, mBluetoothHeadsetServiceListener);
         } else {
             startWork();
@@ -145,10 +143,11 @@ public class VoiceDialerActivity extends Activity {
     private BluetoothHeadset.ServiceListener mBluetoothHeadsetServiceListener =
             new BluetoothHeadset.ServiceListener() {
         public void onServiceConnected() {
-            if (mBluetoothHeadset != null) {
+            if (mBluetoothHeadset != null &&
+                    mBluetoothHeadset.getState() == BluetoothHeadset.STATE_CONNECTED) {
                 mBluetoothHeadset.startVoiceRecognition();
-                startWork();
             }
+            startWork();
         }
         public void onServiceDisconnected() {}
     };
@@ -156,7 +155,7 @@ public class VoiceDialerActivity extends Activity {
     private void startWork() {
         // prompt the user with a beep
         final int msec = playSound(ToneGenerator.TONE_PROP_PROMPT);
-        
+
         // start the engine after the beep
         mRecognizerThread = new Thread() {
             public void run() {
@@ -175,7 +174,7 @@ public class VoiceDialerActivity extends Activity {
         };
         mRecognizerThread.start();
     }
-    
+
     /**
      * Returns a Bundle with the result for a test run
      * @return Bundle or null if the test is in progress
@@ -183,7 +182,7 @@ public class VoiceDialerActivity extends Activity {
     public Bundle getRecognitionResult() {
         return null;
     }
-    
+
     private String getArg(String name) {
         if (name == null) return null;
         String arg = getIntent().getStringExtra(name);
@@ -191,11 +190,11 @@ public class VoiceDialerActivity extends Activity {
         arg = SystemProperties.get("app.voicedialer." + name);
         return arg != null && arg.length() > 0 ? arg : null;
     }
-    
+
     private static File newFile(String name) {
         return name != null ? new File(name) : null;
     }
-    
+
     private void startNextTest() {
         mHandler.postDelayed(new Runnable() {
             public void run() {
@@ -217,10 +216,10 @@ public class VoiceDialerActivity extends Activity {
             }
         }, 2000);
     }
-    
+
     private int playSound(int toneType) {
         int msecDelay = 1;
-        
+
         // use the MediaPlayer to prompt the user
         if (mToneGenerator != null) {
             mToneGenerator.startTone(toneType);
@@ -236,10 +235,10 @@ public class VoiceDialerActivity extends Activity {
             msecDelay = StrictMath.max(msecDelay,
                     VIBRATOR_TIME + VIBRATOR_GUARD_TIME);
         }
-        
+
         return msecDelay;
     }
-    
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -252,16 +251,16 @@ public class VoiceDialerActivity extends Activity {
             mBluetoothHeadset.close();
             mBluetoothHeadset = null;
         }
-        
+
         // restore volume, if changed
         if (mSavedVolume > 0) {
             mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mSavedVolume, 0);
             mSavedVolume = 0;
         }
-        
+
         // no more tester
         mVoiceDialerTester = null;
-        
+
         // shut down recognizer and wait for the thread to complete
         if (mRecognizerThread !=  null) {
             mRecognizerThread.interrupt();
@@ -272,21 +271,21 @@ public class VoiceDialerActivity extends Activity {
             }
             mRecognizerThread = null;
         }
-        
+
         // clean up UI
         mHandler.removeCallbacks(mMicFlasher);
         mHandler.removeMessages(0);
-        
+
         // clean up ToneGenerator
         if (mToneGenerator != null) {
             mToneGenerator.release();
             mToneGenerator = null;
         }
-        
+
         // bye
         finish();
     }
-    
+
     private void notifyText(final CharSequence msg) {
         Toast.makeText(VoiceDialerActivity.this, msg, Toast.LENGTH_SHORT).show();
     }
@@ -307,9 +306,9 @@ public class VoiceDialerActivity extends Activity {
      */
     public void onMicrophoneStart() {
         if (Config.LOGD) Log.d(TAG, "onMicrophoneStart");
-        
+
         if (mVoiceDialerTester != null) return;
-        
+
         mHandler.post(new Runnable() {
             public void run() {
                 findViewById(R.id.microphone_loading_view).setVisibility(View.INVISIBLE);
@@ -357,7 +356,7 @@ public class VoiceDialerActivity extends Activity {
      */
     public void onRecognitionError(final String msg) {
         if (Config.LOGD) Log.d(TAG, "onRecognitionError " + msg);
-        
+
         // get work off UAPI thread
         mHandler.post(new Runnable() {
             public void run() {
@@ -385,7 +384,7 @@ public class VoiceDialerActivity extends Activity {
             }
         });
     }
-    
+
     /**
      * Called by the {@link RecognizerEngine} when is succeeds.  If there is
      * only one item, then the Intent is dispatched immediately.
@@ -395,15 +394,15 @@ public class VoiceDialerActivity extends Activity {
      */
     public void onRecognitionSuccess(final Intent[] intents) {
         if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess " + intents.length);
-        
+
         mHandler.post(new Runnable() {
-            
+
             public void run() {
                 // success, so beep about it
                 playSound(ToneGenerator.TONE_PROP_ACK);
-                
+
                 mHandler.removeCallbacks(mMicFlasher);
-                
+
                 // only one item, so just launch
                 /*
                 if (intents.length == 1 && mVoiceDialerTester == null) {
@@ -416,30 +415,30 @@ public class VoiceDialerActivity extends Activity {
 
                 DialogInterface.OnClickListener clickListener =
                     new DialogInterface.OnClickListener() {
-                    
+
                     public void onClick(DialogInterface dialog, int which) {
                         if (Config.LOGD) Log.d(TAG, "clickListener.onClick " + which);
                         startActivityHelp(intents[which]);
                         dialog.dismiss();
                         finish();
                     }
-                    
+
                 };
-                
+
                 DialogInterface.OnCancelListener cancelListener =
                     new DialogInterface.OnCancelListener() {
-                    
+
                     public void onCancel(DialogInterface dialog) {
                         if (Config.LOGD) Log.d(TAG, "cancelListener.onCancel");
                         dialog.dismiss();
                         finish();
                     }
-                    
+
                 };
 
                 DialogInterface.OnClickListener positiveListener =
                     new DialogInterface.OnClickListener() {
-                    
+
                     public void onClick(DialogInterface dialog, int which) {
                         if (Config.LOGD) Log.d(TAG, "positiveListener.onClick " + which);
                         if (intents.length == 1 && which == -1) which = 0;
@@ -447,20 +446,20 @@ public class VoiceDialerActivity extends Activity {
                         dialog.dismiss();
                         finish();
                     }
-                    
+
                 };
 
                 DialogInterface.OnClickListener negativeListener =
                     new DialogInterface.OnClickListener() {
-                    
+
                     public void onClick(DialogInterface dialog, int which) {
                         if (Config.LOGD) Log.d(TAG, "negativeListener.onClick " + which);
                         dialog.dismiss();
                         finish();
                     }
-                    
+
                 };
-                
+
                 String[] sentences = new String[intents.length];
                 for (int i = 0; i < intents.length; i++) {
                     sentences[i] = intents[i].getStringExtra(
@@ -482,7 +481,7 @@ public class VoiceDialerActivity extends Activity {
                         .setPositiveButton(android.R.string.ok, positiveListener)
                         .setNegativeButton(android.R.string.cancel, negativeListener)
                         .show();
-                
+
                 // start the next test
                 if (mVoiceDialerTester != null) {
                     mVoiceDialerTester.onRecognitionSuccess(intents);
@@ -494,7 +493,7 @@ public class VoiceDialerActivity extends Activity {
                     }, 2000);
                 }
             }
-            
+
             // post a Toast if not real contacts or microphone
             private void startActivityHelp(Intent intent) {
                 if (getArg(MICROPHONE_EXTRA) == null &&
@@ -505,13 +504,13 @@ public class VoiceDialerActivity extends Activity {
                             getStringExtra(RecognizerEngine.SENTENCE_EXTRA) +
                             "\n" + intent.toString());
                 }
-                
+
             }
-            
+
         });
-        
+
     }
-    
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -520,24 +519,24 @@ public class VoiceDialerActivity extends Activity {
     private static class VoiceDialerTester {
         public VoiceDialerTester(File f) {
         }
-        
+
         public boolean stepToNextTest() {
             return false;
         }
-        
+
         public void report() {
         }
-        
+
         public File getWavFile() {
             return null;
         }
-        
+
         public void onRecognitionFailure(String msg) {
         }
-        
+
         public void onRecognitionError(String err) {
         }
-        
+
         public void onRecognitionSuccess(Intent[] intents) {
         }
     }
