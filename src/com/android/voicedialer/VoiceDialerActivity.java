@@ -78,7 +78,6 @@ public class VoiceDialerActivity extends Activity {
     private Handler mHandler;
     private Thread mRecognizerThread = null;
     private AudioManager mAudioManager;
-    private int mSavedVolume;
     private ToneGenerator mToneGenerator;
     private BluetoothHeadset mBluetoothHeadset;
 
@@ -89,11 +88,12 @@ public class VoiceDialerActivity extends Activity {
         if (Config.LOGD) Log.d(TAG, "onCreate");
 
         mHandler = new Handler();
-
-        // get AudioManager, save current music volume, set music volume to zero
         mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
-        mSavedVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+
+        // tell music player to shut up so we can hear
+        Intent i = new Intent("com.android.music.musicservicecommand");
+        i.putExtra("command", "pause");
+        sendBroadcast(i);
 
         // set up ToneGenerator
         // currently disabled because it crashes audio input
@@ -227,7 +227,7 @@ public class VoiceDialerActivity extends Activity {
         }
 
         // use the Vibrator to prompt the user
-        if (mAudioManager.shouldVibrate(AudioManager.VIBRATE_TYPE_RINGER)) {
+        if ((mAudioManager != null) && (mAudioManager.shouldVibrate(AudioManager.VIBRATE_TYPE_RINGER))) {
             final int VIBRATOR_TIME = 150;
             final int VIBRATOR_GUARD_TIME = 150;
             Vibrator vibrator = new Vibrator();
@@ -250,12 +250,6 @@ public class VoiceDialerActivity extends Activity {
             mBluetoothHeadset.stopVoiceRecognition();
             mBluetoothHeadset.close();
             mBluetoothHeadset = null;
-        }
-
-        // restore volume, if changed
-        if (mSavedVolume > 0) {
-            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mSavedVolume, 0);
-            mSavedVolume = 0;
         }
 
         // no more tester
