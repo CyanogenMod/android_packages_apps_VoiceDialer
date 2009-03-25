@@ -132,7 +132,8 @@ public class VoiceDialerActivity extends Activity {
         }
 
         // Get handle to BluetoothHeadset object if required
-        if (Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction())) {
+        if (!BluetoothHeadset.DISABLE_BT_VOICE_DIALING &&
+                Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction())) {
             // start work in the BluetoothHeadsetClient onServiceConnected() callback
             mBluetoothHeadset = new BluetoothHeadset(this, mBluetoothHeadsetServiceListener);
         } else {
