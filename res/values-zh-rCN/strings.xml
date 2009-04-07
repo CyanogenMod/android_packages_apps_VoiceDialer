@@ -15,12 +15,10 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- no translation found for voiceDialer (5948204210436590941) -->
-    <skip />
+    <string name="voiceDialer">"语音拨号程序"</string>
     <string name="tool_tip_title">"您知道吗..."</string>
     <string name="tool_tip_message">"按住绿色呼叫按钮可打开语音拨号程序。"</string>
-    <!-- no translation found for examples (2100807337052050741) -->
-    <skip />
+    <string name="examples">" 示例："<b>\n"“打电话给张山”"\n"“拨打张山的住宅电话”"\n"“呼叫语音邮件”"\n"“拨打 (866) 555 0123”"\n"“拨打 911、811 …”"\n"“拨打 +44 7333 444 555”"\n"“重拨”"\n"“打开日历”"</b></string>
     <string name="title">"语音拨号程序"</string>
     <string name="initializing">"正在启动。"</string>
     <string name="listening">"正在收听..."</string>
