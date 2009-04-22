@@ -28,6 +28,6 @@
     <string name="on_mobile">" w telefonie komórkowym"</string>
     <string name="at_work">" w pracy"</string>
     <string name="at_other">" w innym miejscu"</string>
-    <string name="logging_enabled">"Logowanie w aplikacji Wybieranie głosowe jest włączone."</string>
-    <string name="logging_disabled">"Logowanie w aplikacji Wybieranie głosowe wyłączone."</string>
+    <string name="logging_enabled">"Rejestrowanie w aplikacji Wybieranie głosowe jest włączone."</string>
+    <string name="logging_disabled">"Rejestrowanie w aplikacji Wybieranie głosowe jest wyłączone."</string>
 </resources>
