@@ -28,6 +28,6 @@
     <string name="on_mobile">" 行動電話"</string>
     <string name="at_work">" 工作電話"</string>
     <string name="at_other">" 其他電話"</string>
-    <string name="logging_enabled">"語音撥號紀錄已啟用。"</string>
-    <string name="logging_disabled">"語音撥號紀錄已停用。"</string>
+    <string name="logging_enabled">"語音撥號記錄已啟用。"</string>
+    <string name="logging_disabled">"語音撥號記錄已停用。"</string>
 </resources>
