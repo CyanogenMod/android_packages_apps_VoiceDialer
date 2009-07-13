@@ -17,9 +17,9 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="voiceDialer">"Wybieranie głosowe"</string>
     <string name="tool_tip_title">"Czy wiesz, że..."</string>
-    <string name="tool_tip_message">"Naciśnięcie i przytrzymanie zielonego przycisku otwiera usługę Voice Dialer."</string>
+    <string name="tool_tip_message">"Naciśnięcie i przytrzymanie zielonego przycisku otwiera aplikację Wybieranie głosowe."</string>
     <string name="examples">" Przykłady: "<b>" "\n"„Połącz z Janem Kowalskim” "\n"„Połącz z Janem Kowalskim w domu, …” "\n"„Połącz z pocztą głosową” "\n"„Wybierz (866) 555 0123” "\n"„Wybierz 911, 811, …” "\n"„Wybierz +44 7333 444 555” "\n"„Wybierz ponownie” "\n"„Otwórz Kalendarz” "</b></string>
-    <string name="title">"Voice Dialer"</string>
+    <string name="title">"Wybieranie głosowe"</string>
     <string name="initializing">"Rozpoczynanie."</string>
     <string name="listening">"Słuchanie..."</string>
     <string name="please_try_again">"Spróbuj ponownie."</string>
@@ -28,6 +28,6 @@
     <string name="on_mobile">" w telefonie komórkowym"</string>
     <string name="at_work">" w pracy"</string>
     <string name="at_other">" w innym miejscu"</string>
-    <string name="logging_enabled">"Logowanie w usłudze Voice Dialer jest włączone."</string>
-    <string name="logging_disabled">"Logowanie w usłudze Voice Dialer wyłączone."</string>
+    <string name="logging_enabled">"Rejestrowanie w aplikacji Wybieranie głosowe jest włączone."</string>
+    <string name="logging_disabled">"Rejestrowanie w aplikacji Wybieranie głosowe jest wyłączone."</string>
 </resources>
