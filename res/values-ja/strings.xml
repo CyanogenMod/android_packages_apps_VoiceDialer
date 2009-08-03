@@ -15,19 +15,19 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="voiceDialer">"ボイスダイヤル"</string>
-    <string name="tool_tip_title">"ヒント:"</string>
-    <string name="tool_tip_message">"緑色の発信ボタンを押したまま&amp;キーを押すとボイスダイヤルが開きます。"</string>
-    <string name="examples">" 例:"<b>\n"「Call John Doe」"\n"「Call John Doe at home, …」"\n"「Call voicemail」"\n"「Dial (866) 555 0123」"\n"「Dial 911, 811, …」"\n"「Dial +44 7333 444 555」"\n"「Redial」"\n"「Open Calendar」"</b></string>
-    <string name="title">"ボイスダイヤル"</string>
-    <string name="initializing">"起動しています"</string>
-    <string name="listening">"聞き取り中..."</string>
-    <string name="please_try_again">"もう一度試してください。"</string>
-    <string name="recognition_error">"端末の電源を入れ直すとエラーが解決することがあります。"</string>
-    <string name="at_home">" at home"</string>
-    <string name="on_mobile">" on mobile"</string>
-    <string name="at_work">" at work"</string>
-    <string name="at_other">" at other"</string>
-    <string name="logging_enabled">"ボイスダイヤルの記録をONにしました。"</string>
-    <string name="logging_disabled">"ボイスダイヤルの記録をOFFにしました。"</string>
+    <string name="voiceDialer" msgid="5948204210436590941">"ボイスダイヤル"</string>
+    <string name="tool_tip_title" msgid="9092247761265706709">"ヒント:"</string>
+    <string name="tool_tip_message" msgid="8624998371709530611">"緑色の発信ボタンを押したまま&amp;キーを押すとボイスダイヤルが開きます。"</string>
+    <string name="examples" msgid="2100807337052050741">" 例:"<b>\n"「Call John Doe」"\n"「Call John Doe at home, …」"\n"「Call voicemail」"\n"「Dial (866) 555 0123」"\n"「Dial 911, 811, …」"\n"「Dial +44 7333 444 555」"\n"「Redial」"\n"「Open Calendar」"</b></string>
+    <string name="title" msgid="60788431860720964">"ボイスダイヤル"</string>
+    <string name="initializing" msgid="3146934028021025628">"起動しています"</string>
+    <string name="listening" msgid="6886486282595802147">"聞き取り中..."</string>
+    <string name="please_try_again" msgid="1427744152996396950">"もう一度試してください。"</string>
+    <string name="recognition_error" msgid="1807947152844267364">"端末の電源を入れ直すとエラーが解決することがあります。"</string>
+    <string name="at_home" msgid="8478880812967663328">" at home"</string>
+    <string name="on_mobile" msgid="5739841127369724804">" on mobile"</string>
+    <string name="at_work" msgid="2946111016850670818">" at work"</string>
+    <string name="at_other" msgid="1863773841760953063">" at other"</string>
+    <string name="logging_enabled" msgid="8702018587287436548">"ボイスダイヤルの記録をONにしました。"</string>
+    <string name="logging_disabled" msgid="5992352601321824322">"ボイスダイヤルの記録をOFFにしました。"</string>
 </resources>
