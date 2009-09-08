@@ -15,19 +15,19 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="voiceDialer">"Dialer vocale"</string>
-    <string name="tool_tip_title">"Informazioni utili"</string>
-    <string name="tool_tip_message">"Premi e tieni premuto il tasto verde Chiama per aprire il compositore vocale."</string>
-    <string name="examples">" Esempi: "<b>" "\n"\"Chiama Mario Rossi\" "\n"\"Chiama Mario Rossi a casa, …\" "\n"\"Messaggio in segreteria\" "\n"\"Componi (866) 555 0123\" "\n"\"Componi 911, 811, …\" "\n"\"Componi +44 7333 444 555\" "\n"\"Ricomponi\" "\n"\"Apri Calendario\" "</b></string>
-    <string name="title">"Compositore vocale"</string>
-    <string name="initializing">"Avvio in corso."</string>
-    <string name="listening">"In ascolto..."</string>
-    <string name="please_try_again">"Riprova."</string>
-    <string name="recognition_error">"Puoi anche provare a riavviare il sistema."</string>
-    <string name="at_home">" a casa"</string>
-    <string name="on_mobile">" al cellulare"</string>
-    <string name="at_work">" al lavoro"</string>
-    <string name="at_other">" ad altro numero"</string>
-    <string name="logging_enabled">"Accesso a compositore vocale attivo."</string>
-    <string name="logging_disabled">"Accesso a compositore vocale non attivo."</string>
+    <string name="voiceDialer" msgid="5948204210436590941">"Dialer vocale"</string>
+    <string name="tool_tip_title" msgid="9092247761265706709">"Informazioni utili"</string>
+    <string name="tool_tip_message" msgid="8624998371709530611">"Premi e tieni premuto il tasto verde Chiama per aprire il compositore vocale."</string>
+    <string name="examples" msgid="2100807337052050741">" Esempi: "<b>" "\n"\"Chiama Mario Rossi\" "\n"\"Chiama Mario Rossi a casa, …\" "\n"\"Messaggio in segreteria\" "\n"\"Componi (866) 555 0123\" "\n"\"Componi 911, 811, …\" "\n"\"Componi +44 7333 444 555\" "\n"\"Ricomponi\" "\n"\"Apri Calendario\" "</b></string>
+    <string name="title" msgid="60788431860720964">"Compositore vocale"</string>
+    <string name="initializing" msgid="3146934028021025628">"Avvio in corso."</string>
+    <string name="listening" msgid="6886486282595802147">"In ascolto..."</string>
+    <string name="please_try_again" msgid="1427744152996396950">"Riprova."</string>
+    <string name="recognition_error" msgid="1807947152844267364">"Puoi anche provare a riavviare il sistema."</string>
+    <string name="at_home" msgid="8478880812967663328">" a casa"</string>
+    <string name="on_mobile" msgid="5739841127369724804">" al cellulare"</string>
+    <string name="at_work" msgid="2946111016850670818">" al lavoro"</string>
+    <string name="at_other" msgid="1863773841760953063">" ad altro numero"</string>
+    <string name="logging_enabled" msgid="8702018587287436548">"Accesso a compositore vocale attivo."</string>
+    <string name="logging_disabled" msgid="5992352601321824322">"Accesso a compositore vocale non attivo."</string>
 </resources>
