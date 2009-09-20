@@ -18,7 +18,8 @@ package com.android.voicedialer;
 
 import android.app.Activity;
 import android.database.Cursor;
-import android.provider.Contacts;
+import android.database.DatabaseUtils;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.CallLog;
 import android.util.Config;
 import android.util.Log;
@@ -36,14 +37,14 @@ import java.util.List;
  */
 public class VoiceContact {
     private static final String TAG = "VoiceContact";
-    
+
     /**
      * Corresponding row doesn't exist.
      */
     public static final long ID_UNDEFINED = -1;
 
     public final String mName;
-    public final long mPersonId;
+    public final long mContactId;
     public final long mPrimaryId;
     public final long mHomeId;
     public final long mMobileId;
@@ -52,31 +53,31 @@ public class VoiceContact {
 
     /**
      * Constructor.
-     * 
+     *
      * @param name person's name.
-     * @param personId ID in person table.
+     * @param contactId ID in person table.
      * @param primaryId primary ID in phone table.
      * @param homeId home ID in phone table.
      * @param mobileId mobile ID in phone table.
      * @param workId work ID in phone table.
      * @param otherId other ID in phone table.
      */
-    private VoiceContact(String name, long personId, long primaryId,
+    private VoiceContact(String name, long contactId, long primaryId,
             long homeId, long mobileId, long workId,long otherId) {
         mName = name;
-        mPersonId = personId;
+        mContactId = contactId;
         mPrimaryId = primaryId;
         mHomeId = homeId;
         mMobileId = mobileId;
         mWorkId = workId;
         mOtherId = otherId;
     }
-    
+
     @Override
     public int hashCode() {
         final int LARGE_PRIME = 1610612741;
         int hash = 0;
-        hash = LARGE_PRIME * (hash + (int)mPersonId);
+        hash = LARGE_PRIME * (hash + (int)mContactId);
         hash = LARGE_PRIME * (hash + (int)mPrimaryId);
         hash = LARGE_PRIME * (hash + (int)mHomeId);
         hash = LARGE_PRIME * (hash + (int)mMobileId);
@@ -84,18 +85,18 @@ public class VoiceContact {
         hash = LARGE_PRIME * (hash + (int)mOtherId);
         return mName.hashCode() + hash;
     }
-    
+
     @Override
     public String toString() {
         return "mName=" + mName
-                + " mPersonId=" + mPersonId
+                + " mPersonId=" + mContactId
                 + " mPrimaryId=" + mPrimaryId
                 + " mHomeId=" + mHomeId
                 + " mMobileId=" + mMobileId
                 + " mWorkId=" + mWorkId
                 + " mOtherId=" + mOtherId;
     }
-    
+
     /**
      * @param activity The VoiceDialerActivity instance.
      * @return List of {@link VoiceContact} from
@@ -103,33 +104,35 @@ public class VoiceContact {
      */
     public static List<VoiceContact> getVoiceContacts(Activity activity) {
         if (Config.LOGD) Log.d(TAG, "VoiceContact.getVoiceContacts");
-        
+
         List<VoiceContact> contacts = new ArrayList<VoiceContact>();
 
         String[] phonesProjection = new String[] {
-            Contacts.Phones._ID,
-            Contacts.Phones.TYPE,
-            Contacts.Phones.ISPRIMARY,
+            Phone._ID,
+            Phone.TYPE,
+            Phone.IS_PRIMARY,
             // TODO: handle type != 0,1,2, and use LABEL
-            Contacts.Phones.LABEL,
-            Contacts.Phones.NAME,
+            Phone.LABEL,
+            Phone.DISPLAY_NAME,
             //Contacts.Phones.NUMBER,
-            Contacts.Phones.PERSON_ID,
+            Phone.CONTACT_ID,
         };
-        
-        // table is sorted by name
-        Cursor cursor = activity.getContentResolver().query(
-                Contacts.Phones.CONTENT_URI, phonesProjection,
-                "", null, Contacts.Phones.DEFAULT_SORT_ORDER);
 
-        final int phoneIdColumn = cursor.getColumnIndexOrThrow(Contacts.Phones._ID);
-        final int typeColumn = cursor.getColumnIndexOrThrow(Contacts.Phones.TYPE);
-        final int isPrimaryColumn = cursor.getColumnIndexOrThrow(Contacts.Phones.ISPRIMARY);
-        int labelColumn = cursor.getColumnIndexOrThrow(Contacts.Phones.LABEL);
-        final int nameColumn = cursor.getColumnIndexOrThrow(Contacts.Phones.NAME);
+        // Table is sorted by number of times contacted and name. If we cannot fit all contacts
+        // in the recognizer, we will at least have the commonly used ones.
+        Cursor cursor = activity.getContentResolver().query(
+                Phone.CONTENT_URI, phonesProjection,
+                Phone.NUMBER + " NOT NULL", null,
+                Phone.LAST_TIME_CONTACTED + " DESC");
+
+        final int phoneIdColumn = cursor.getColumnIndexOrThrow(Phone._ID);
+        final int typeColumn = cursor.getColumnIndexOrThrow(Phone.TYPE);
+        final int isPrimaryColumn = cursor.getColumnIndexOrThrow(Phone.IS_PRIMARY);
+        int labelColumn = cursor.getColumnIndexOrThrow(Phone.LABEL);
+        final int nameColumn = cursor.getColumnIndexOrThrow(Phone.DISPLAY_NAME);
         //final int numberColumn = cursor.getColumnIndexOrThrow(Contacts.Phones.NUMBER);
-        final int personIdColumn = cursor.getColumnIndexOrThrow(Contacts.Phones.PERSON_ID);
-        
+        final int personIdColumn = cursor.getColumnIndexOrThrow(Phone.CONTACT_ID);
+
         // pieces of next VoiceContact
         String name = null;
         long personId = ID_UNDEFINED;
@@ -162,14 +165,14 @@ public class VoiceContact {
                         );
             }
             */
-            
+
             // encountered a new name, so generate current VoiceContact
             if (name != null && !name.equals(nameAtCursor)) {
                 contacts.add(new VoiceContact(name, personId, primaryId,
                         homeId, mobileId, workId, otherId));
                 name = null;
             }
-            
+
             // start accumulating pieces for a new VoiceContact
             if (name == null) {
                 name = nameAtCursor;
@@ -180,46 +183,46 @@ public class VoiceContact {
                 workId = ID_UNDEFINED;
                 otherId = ID_UNDEFINED;
             }
-            
+
             // if labeled, then patch to HOME/MOBILE/WORK/OTHER
-            if (typeAtCursor == Contacts.Phones.TYPE_CUSTOM &&
+            if (typeAtCursor == Phone.TYPE_CUSTOM &&
                     labelAtCursor != null) {
                 String label = labelAtCursor.toLowerCase();
                 if (label.contains("home") || label.contains("house")) {
-                    typeAtCursor = Contacts.Phones.TYPE_HOME;
+                    typeAtCursor = Phone.TYPE_HOME;
                 }
                 else if (label.contains("mobile") || label.contains("cell")) {
-                    typeAtCursor = Contacts.Phones.TYPE_MOBILE;
+                    typeAtCursor = Phone.TYPE_MOBILE;
                 }
                 else if (label.contains("work") || label.contains("office")) {
-                    typeAtCursor = Contacts.Phones.TYPE_WORK;
+                    typeAtCursor = Phone.TYPE_WORK;
                 }
                 else if (label.contains("other")) {
-                    typeAtCursor = Contacts.Phones.TYPE_OTHER;
+                    typeAtCursor = Phone.TYPE_OTHER;
                 }
             }
-            
+
             // save the home, mobile, or work phone id
             switch (typeAtCursor) {
-                case Contacts.Phones.TYPE_HOME:
+                case Phone.TYPE_HOME:
                     homeId = phoneIdAtCursor;
                     if (isPrimaryAtCursor != 0) {
                         primaryId = phoneIdAtCursor;
                     }
                     break;
-                case Contacts.Phones.TYPE_MOBILE:
+                case Phone.TYPE_MOBILE:
                     mobileId = phoneIdAtCursor;
                     if (isPrimaryAtCursor != 0) {
                         primaryId = phoneIdAtCursor;
                     }
                     break;
-                case Contacts.Phones.TYPE_WORK:
+                case Phone.TYPE_WORK:
                     workId = phoneIdAtCursor;
                     if (isPrimaryAtCursor != 0) {
                         primaryId = phoneIdAtCursor;
                     }
                     break;
-                case Contacts.Phones.TYPE_OTHER:
+                case Phone.TYPE_OTHER:
                     otherId = phoneIdAtCursor;
                     if (isPrimaryAtCursor != 0) {
                         primaryId = phoneIdAtCursor;
@@ -227,21 +230,21 @@ public class VoiceContact {
                     break;
             }
         }
-        
+
         // generate the last VoiceContact
         if (name != null) {
             contacts.add(new VoiceContact(name, personId, primaryId,
                             homeId, mobileId, workId, otherId));
         }
-        
+
         // clean up cursor
         cursor.close();
 
         if (Config.LOGD) Log.d(TAG, "VoiceContact.getVoiceContacts " + contacts.size());
-        
+
         return contacts;
     }
-    
+
     /**
      * @param contactsFile File containing a list of names,
      * one per line.
@@ -277,7 +280,7 @@ public class VoiceContact {
 
         return contacts;
     }
-    
+
     /**
      * @param activity The VoiceDialerActivity instance.
      * @return String of last number dialed.
@@ -296,9 +299,9 @@ public class VoiceContact {
             number = cursor.getString(column);
         }
         cursor.close();
-        
+
         if (Config.LOGD) Log.d(TAG, "redialNumber " + number);
-        
+
         return number;
     }
 
