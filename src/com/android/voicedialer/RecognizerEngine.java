@@ -1231,7 +1231,7 @@ public class RecognizerEngine {
     private static void addCallIntent(ArrayList<Intent> intents, Uri uri, String literal,
             int flags) {
         Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED, uri).
-        setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | flags).
+        setFlags(flags).
         putExtra(SENTENCE_EXTRA, literal);
         addIntent(intents, intent);
     }
@@ -1245,6 +1245,7 @@ public class RecognizerEngine {
                 return;
             }
         }
+        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK);
         intents.add(intent);
     }
 
