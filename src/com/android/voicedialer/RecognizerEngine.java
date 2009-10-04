@@ -545,7 +545,7 @@ public class RecognizerEngine {
     public static void deleteCachedGrammarFiles(Context context) {
         deleteAllG2GFiles(context);
         File oe = context.getFileStreamPath(OPEN_ENTRIES);
-        if (Config.LOGD) Log.d(TAG, "deleteCachedGrammarFiles " + oe);
+        if (false) Log.v(TAG, "deleteCachedGrammarFiles " + oe);
         if (oe.exists()) oe.delete();
     }
 
