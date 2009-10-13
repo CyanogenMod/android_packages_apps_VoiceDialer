@@ -15,19 +15,19 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="voiceDialer">"Spraakkiezer"</string>
-    <string name="tool_tip_title">"Wist u..."</string>
-    <string name="tool_tip_message">"Als u de groene belknop ingedrukt houdt, wordt de Voice Dialer geopend."</string>
-    <string name="examples">" Voorbeelden: "<b>" "\n"\'Bel Jan de Vries\' "\n"\'Bel Jan de Vries thuis, …\' "\n"\'Bel voicemail\' "\n"\'Kies (866) 555 0123\' "\n"\'Kies 911, 811, …\' "\n"\'Kies +44 7333 444 555\' "\n"\'Opnieuw kiezen\' "\n"\'Agenda openen\' "</b></string>
-    <string name="title">"Voice Dialer"</string>
-    <string name="initializing">"Opstarten."</string>
-    <string name="listening">"Luisteren..."</string>
-    <string name="please_try_again">"Probeer het opnieuw."</string>
-    <string name="recognition_error">"U kunt ook proberen uw telefoon opnieuw op te starten."</string>
-    <string name="at_home">" thuis"</string>
-    <string name="on_mobile">" mobiel"</string>
-    <string name="at_work">" werk"</string>
-    <string name="at_other">" anders"</string>
-    <string name="logging_enabled">"Aanmelden via Voice Dialer is ingeschakeld."</string>
-    <string name="logging_disabled">"Aanmelden via Voice Dialer is uitgeschakeld."</string>
+    <string name="voiceDialer" msgid="5948204210436590941">"Spraakkiezer"</string>
+    <string name="tool_tip_title" msgid="9092247761265706709">"Wist u..."</string>
+    <string name="tool_tip_message" msgid="8624998371709530611">"Als u de groene belknop ingedrukt houdt, wordt de Voice Dialer geopend."</string>
+    <string name="examples" msgid="2100807337052050741">" Voorbeelden: "<b>" "\n"\'Bel Jan de Vries\' "\n"\'Bel Jan de Vries thuis, …\' "\n"\'Bel voicemail\' "\n"\'Kies (866) 555 0123\' "\n"\'Kies 911, 811, …\' "\n"\'Kies +44 7333 444 555\' "\n"\'Opnieuw kiezen\' "\n"\'Agenda openen\' "</b></string>
+    <string name="title" msgid="60788431860720964">"Voice Dialer"</string>
+    <string name="initializing" msgid="3146934028021025628">"Opstarten."</string>
+    <string name="listening" msgid="6886486282595802147">"Luisteren..."</string>
+    <string name="please_try_again" msgid="1427744152996396950">"Probeer het opnieuw."</string>
+    <string name="recognition_error" msgid="1807947152844267364">"U kunt ook proberen uw telefoon opnieuw op te starten."</string>
+    <string name="at_home" msgid="8478880812967663328">" thuis"</string>
+    <string name="on_mobile" msgid="5739841127369724804">" mobiel"</string>
+    <string name="at_work" msgid="2946111016850670818">" werk"</string>
+    <string name="at_other" msgid="1863773841760953063">" anders"</string>
+    <string name="logging_enabled" msgid="8702018587287436548">"Aanmelden via Voice Dialer is ingeschakeld."</string>
+    <string name="logging_disabled" msgid="5992352601321824322">"Aanmelden via Voice Dialer is uitgeschakeld."</string>
 </resources>
