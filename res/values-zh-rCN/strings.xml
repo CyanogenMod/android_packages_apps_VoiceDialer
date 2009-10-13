@@ -18,7 +18,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"语音拨号器"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"您是否知道..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"长按绿色的呼叫按钮可打开语音拨号器。"</string>
-    <string name="examples" msgid="2100807337052050741">" 示例："<b>\n"“打电话给张山”"\n"“拨打张山的住宅电话”"\n"“呼叫语音邮件”"\n"“拨打 (866) 555 0123”"\n"“拨打 110、120 …”"\n"“拨打 +44 7333 444 555”"\n"“重拨”"\n"“打开日历”"</b></string>
+    <string name="examples" msgid="2100807337052050741">" 示例："<b>\n"“呼叫张山”"\n"“拨打张山的住宅电话”"\n"“呼叫语音信箱”"\n"“拨打 (866) 555 0123”"\n"“拨打 110、120 …”"\n"“拨打 +44 7333 444 555”"\n"“重拨”"\n"“打开日历”"</b></string>
     <string name="title" msgid="60788431860720964">"语音拨号器"</string>
     <string name="initializing" msgid="3146934028021025628">"正在启动。"</string>
     <string name="listening" msgid="6886486282595802147">"正在接听..."</string>
