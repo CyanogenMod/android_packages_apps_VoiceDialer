@@ -27,7 +27,7 @@
     <string name="at_home" msgid="8478880812967663328">" hjemme"</string>
     <string name="on_mobile" msgid="5739841127369724804">" på mobilen"</string>
     <string name="at_work" msgid="2946111016850670818">" på arbejde"</string>
-    <string name="at_other" msgid="1863773841760953063">" hos andre"</string>
+    <string name="at_other" msgid="1863773841760953063">" på andet"</string>
     <string name="logging_enabled" msgid="8702018587287436548">"Stemmeopkaldsregistrering er aktiveret."</string>
     <string name="logging_disabled" msgid="5992352601321824322">"Stemmeopkaldsregistrering er deaktiveret."</string>
 </resources>
