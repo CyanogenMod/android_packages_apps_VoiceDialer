@@ -15,19 +15,19 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="voiceDialer">"语音拨号器"</string>
-    <string name="tool_tip_title">"您是否知道..."</string>
-    <string name="tool_tip_message">"长按绿色的呼叫按钮可打开语音拨号器。"</string>
-    <string name="examples">" 示例："<b>\n"“打电话给张山”"\n"“拨打张山的住宅电话”"\n"“呼叫语音邮件”"\n"“拨打 (866) 555 0123”"\n"“拨打 110、120 …”"\n"“拨打 +44 7333 444 555”"\n"“重拨”"\n"“打开日历”"</b></string>
-    <string name="title">"语音拨号器"</string>
-    <string name="initializing">"正在启动。"</string>
-    <string name="listening">"正在接听..."</string>
-    <string name="please_try_again">"请重试。"</string>
-    <string name="recognition_error">"您也可以尝试重新开机。"</string>
-    <string name="at_home">" 住宅电话"</string>
-    <string name="on_mobile">" 手机号码"</string>
-    <string name="at_work">" 单位电话"</string>
-    <string name="at_other">" 其他电话"</string>
-    <string name="logging_enabled">"已启用语音拨号器记录。"</string>
-    <string name="logging_disabled">"已停用语音拨号器记录。"</string>
+    <string name="voiceDialer" msgid="5948204210436590941">"语音拨号器"</string>
+    <string name="tool_tip_title" msgid="9092247761265706709">"您是否知道..."</string>
+    <string name="tool_tip_message" msgid="8624998371709530611">"长按绿色的呼叫按钮可打开语音拨号器。"</string>
+    <string name="examples" msgid="2100807337052050741">" 示例："<b>\n"“呼叫张山”"\n"“拨打张山的住宅电话”"\n"“呼叫语音信箱”"\n"“拨打 (866) 555 0123”"\n"“拨打 110、120 …”"\n"“拨打 +44 7333 444 555”"\n"“重拨”"\n"“打开日历”"</b></string>
+    <string name="title" msgid="60788431860720964">"语音拨号器"</string>
+    <string name="initializing" msgid="3146934028021025628">"正在启动。"</string>
+    <string name="listening" msgid="6886486282595802147">"正在接听..."</string>
+    <string name="please_try_again" msgid="1427744152996396950">"请重试。"</string>
+    <string name="recognition_error" msgid="1807947152844267364">"您也可以尝试重新开机。"</string>
+    <string name="at_home" msgid="8478880812967663328">" 住宅电话"</string>
+    <string name="on_mobile" msgid="5739841127369724804">" 手机号码"</string>
+    <string name="at_work" msgid="2946111016850670818">" 单位电话"</string>
+    <string name="at_other" msgid="1863773841760953063">" 其他电话"</string>
+    <string name="logging_enabled" msgid="8702018587287436548">"已启用语音拨号器记录。"</string>
+    <string name="logging_disabled" msgid="5992352601321824322">"已停用语音拨号器记录。"</string>
 </resources>
