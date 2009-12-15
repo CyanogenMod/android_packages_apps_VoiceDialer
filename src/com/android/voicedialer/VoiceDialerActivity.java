@@ -154,19 +154,10 @@ public class VoiceDialerActivity extends Activity {
     };
 
     private void startWork() {
-        // prompt the user with a beep
-        final int msec = playSound(ToneGenerator.TONE_PROP_PROMPT);
-
-        // start the engine after the beep
+        // start the engine
         mRecognizerThread = new Thread() {
             public void run() {
                 if (Config.LOGD) Log.d(TAG, "onCreate.Runnable.run");
-                try {
-                    Thread.sleep(msec);
-                } catch (InterruptedException e) {
-                    return;
-                }
-                if (mToneGenerator != null) mToneGenerator.stopTone();
                 mEngine.recognize(VoiceDialerActivity.this,
                         newFile(getArg(MICROPHONE_EXTRA)),
                         newFile(getArg(CONTACTS_EXTRA)),
