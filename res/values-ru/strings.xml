@@ -24,7 +24,7 @@
     <string name="listening" msgid="6886486282595802147">"Слушаю..."</string>
     <string name="please_try_again" msgid="1427744152996396950">"Попробуйте еще раз."</string>
     <string name="recognition_error" msgid="1807947152844267364">"Можно также перезапустить телефон."</string>
-    <string name="at_home" msgid="8478880812967663328">" , дом"</string>
+    <string name="at_home" msgid="8478880812967663328">" , домашний"</string>
     <string name="on_mobile" msgid="5739841127369724804">" , мобильный"</string>
     <string name="at_work" msgid="2946111016850670818">" , работа"</string>
     <string name="at_other" msgid="1863773841760953063">" , другой номер"</string>
