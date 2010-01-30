@@ -44,7 +44,9 @@ public class VoiceDialerReceiver extends BroadcastReceiver {
         // force recompilation if apps change, for 'OPEN' command
         else if (Intent.ACTION_PACKAGE_ADDED.equals(action) ||
                 Intent.ACTION_PACKAGE_CHANGED.equals(action) ||
-                Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
+                Intent.ACTION_PACKAGE_REMOVED.equals(action) ||
+                Intent.ACTION_EXTERNAL_APPLICATIONS_AVAILABLE.equals(action) ||
+                Intent.ACTION_EXTERNAL_APPLICATIONS_UNAVAILABLE.equals(action)) {
             CommandRecognizerEngine.deleteCachedGrammarFiles(context);
         }
 
