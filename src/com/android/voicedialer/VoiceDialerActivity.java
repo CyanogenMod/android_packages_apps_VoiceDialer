@@ -68,12 +68,13 @@ public class VoiceDialerActivity extends Activity {
 
     private static final String MICROPHONE_EXTRA = "microphone";
     private static final String CONTACTS_EXTRA = "contacts";
-    private static final String CODEC_EXTRA = "codec";
     private static final String TONE_EXTRA = "tone";
 
     private static final int FAIL_PAUSE_MSEC = 5000;
+    private static final int SAMPLE_RATE = 11025;
 
-    private final static RecognizerEngine mEngine = new RecognizerEngine();
+    private final static CommandRecognizerEngine mCommandEngine = new CommandRecognizerEngine();
+    private CommandRecognizerClient mCommandClient;
     private VoiceDialerTester mVoiceDialerTester;
     private Handler mHandler;
     private Thread mRecognizerThread = null;
@@ -86,7 +87,6 @@ public class VoiceDialerActivity extends Activity {
         super.onCreate(icicle);
 
         if (Config.LOGD) Log.d(TAG, "onCreate");
-
         mHandler = new Handler();
         mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
 
@@ -100,6 +100,9 @@ public class VoiceDialerActivity extends Activity {
         mToneGenerator = !"0".equals(getArg(TONE_EXTRA)) ?
                 new ToneGenerator(AudioManager.STREAM_RING, ToneGenerator.MAX_VOLUME) :
                 null;
+
+        mCommandEngine.setContactsFile(newFile(getArg(CONTACTS_EXTRA)));
+        mCommandClient = new CommandRecognizerClient();
 
         // open main window
         setTheme(android.R.style.Theme_Dialog);
@@ -158,10 +161,9 @@ public class VoiceDialerActivity extends Activity {
         mRecognizerThread = new Thread() {
             public void run() {
                 if (Config.LOGD) Log.d(TAG, "onCreate.Runnable.run");
-                mEngine.recognize(VoiceDialerActivity.this,
+                mCommandEngine.recognize(mCommandClient, VoiceDialerActivity.this,
                         newFile(getArg(MICROPHONE_EXTRA)),
-                        newFile(getArg(CONTACTS_EXTRA)),
-                        getArg(CODEC_EXTRA));
+                        SAMPLE_RATE);
             }
         };
         mRecognizerThread.start();
@@ -201,10 +203,9 @@ public class VoiceDialerActivity extends Activity {
                 }
                 File microphone = mVoiceDialerTester.getWavFile();
                 File contacts = newFile(getArg(CONTACTS_EXTRA));
-                String codec = getArg(CODEC_EXTRA);
                 notifyText("Testing\n" + microphone + "\n" + contacts);
-                mEngine.recognize(VoiceDialerActivity.this,
-                        microphone, contacts, codec);
+                mCommandEngine.recognize(mCommandClient, VoiceDialerActivity.this,
+                        microphone, SAMPLE_RATE);
             }
         }, 2000);
     }
@@ -287,214 +288,215 @@ public class VoiceDialerActivity extends Activity {
         }
     };
 
-    /**
-     * Called by the {@link RecognizerEngine} when the microphone is started.
-     */
-    public void onMicrophoneStart() {
-        if (Config.LOGD) Log.d(TAG, "onMicrophoneStart");
+    private class CommandRecognizerClient implements RecognizerClient {
+        /**
+         * Called by the {@link RecognizerEngine} when the microphone is started.
+         */
+        public void onMicrophoneStart() {
+            if (Config.LOGD) Log.d(TAG, "onMicrophoneStart");
 
-        if (mVoiceDialerTester != null) return;
+            if (mVoiceDialerTester != null) return;
 
-        mHandler.post(new Runnable() {
-            public void run() {
-                findViewById(R.id.microphone_loading_view).setVisibility(View.INVISIBLE);
-                ((TextView)findViewById(R.id.state)).setText(R.string.listening);
-                mHandler.post(mMicFlasher);
-            }
-        });
-    }
-
-    /**
-     * Called by the {@link RecognizerEngine} if the recognizer fails.
-     */
-    public void onRecognitionFailure(final String msg) {
-        if (Config.LOGD) Log.d(TAG, "onRecognitionFailure " + msg);
-
-        // get work off UAPI thread
-        mHandler.post(new Runnable() {
-            public void run() {
-                // failure, so beep about it
-                playSound(ToneGenerator.TONE_PROP_NACK);
-
-                mHandler.removeCallbacks(mMicFlasher);
-                ((TextView)findViewById(R.id.state)).setText(R.string.please_try_again);
-                findViewById(R.id.state).setVisibility(View.VISIBLE);
-                findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
-                findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
-
-                if (mVoiceDialerTester != null) {
-                    mVoiceDialerTester.onRecognitionFailure(msg);
-                    startNextTest();
-                    return;
+            mHandler.post(new Runnable() {
+                public void run() {
+                    findViewById(R.id.microphone_loading_view).setVisibility(View.INVISIBLE);
+                    ((TextView)findViewById(R.id.state)).setText(R.string.listening);
+                    mHandler.post(mMicFlasher);
                 }
+            });
+        }
 
-                mHandler.postDelayed(new Runnable() {
-                    public void run() {
-                        finish();
-                    }
-                }, FAIL_PAUSE_MSEC);
-            }
-        });
-    }
+        /**
+         * Called by the {@link RecognizerEngine} if the recognizer fails.
+         */
+        public void onRecognitionFailure(final String msg) {
+            if (Config.LOGD) Log.d(TAG, "onRecognitionFailure " + msg);
 
-    /**
-     * Called by the {@link RecognizerEngine} on an internal error.
-     */
-    public void onRecognitionError(final String msg) {
-        if (Config.LOGD) Log.d(TAG, "onRecognitionError " + msg);
+            // get work off UAPI thread
+            mHandler.post(new Runnable() {
+                public void run() {
+                    // failure, so beep about it
+                    playSound(ToneGenerator.TONE_PROP_NACK);
 
-        // get work off UAPI thread
-        mHandler.post(new Runnable() {
-            public void run() {
-                // error, so beep about it
-                playSound(ToneGenerator.TONE_PROP_NACK);
+                    mHandler.removeCallbacks(mMicFlasher);
+                    ((TextView)findViewById(R.id.state)).setText(R.string.please_try_again);
+                    findViewById(R.id.state).setVisibility(View.VISIBLE);
+                    findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
 
-                mHandler.removeCallbacks(mMicFlasher);
-                ((TextView)findViewById(R.id.state)).setText(R.string.please_try_again);
-                ((TextView)findViewById(R.id.substate)).setText(R.string.recognition_error);
-                findViewById(R.id.state).setVisibility(View.VISIBLE);
-                findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
-                findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
-
-                if (mVoiceDialerTester != null) {
-                    mVoiceDialerTester.onRecognitionError(msg);
-                    startNextTest();
-                    return;
-                }
-
-                mHandler.postDelayed(new Runnable() {
-                    public void run() {
-                        finish();
-                    }
-                }, FAIL_PAUSE_MSEC);
-            }
-        });
-    }
-
-    /**
-     * Called by the {@link RecognizerEngine} when is succeeds.  If there is
-     * only one item, then the Intent is dispatched immediately.
-     * If there are more, then an AlertDialog is displayed and the user is
-     * prompted to select.
-     * @param intents a list of Intents corresponding to the sentences.
-     */
-    public void onRecognitionSuccess(final Intent[] intents) {
-        if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess " + intents.length);
-
-        mHandler.post(new Runnable() {
-
-            public void run() {
-                // success, so beep about it
-                playSound(ToneGenerator.TONE_PROP_ACK);
-
-                mHandler.removeCallbacks(mMicFlasher);
-
-                // only one item, so just launch
-                /*
-                if (intents.length == 1 && mVoiceDialerTester == null) {
-                    // start the Intent
-                    startActivityHelp(intents[0]);
-                    finish();
-                    return;
-                }
-                */
-
-                DialogInterface.OnClickListener clickListener =
-                    new DialogInterface.OnClickListener() {
-
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (Config.LOGD) Log.d(TAG, "clickListener.onClick " + which);
-                        startActivityHelp(intents[which]);
-                        dialog.dismiss();
-                        finish();
+                    if (mVoiceDialerTester != null) {
+                        mVoiceDialerTester.onRecognitionFailure(msg);
+                        startNextTest();
+                        return;
                     }
 
-                };
-
-                DialogInterface.OnCancelListener cancelListener =
-                    new DialogInterface.OnCancelListener() {
-
-                    public void onCancel(DialogInterface dialog) {
-                        if (Config.LOGD) Log.d(TAG, "cancelListener.onCancel");
-                        dialog.dismiss();
-                        finish();
-                    }
-
-                };
-
-                DialogInterface.OnClickListener positiveListener =
-                    new DialogInterface.OnClickListener() {
-
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (Config.LOGD) Log.d(TAG, "positiveListener.onClick " + which);
-                        if (intents.length == 1 && which == -1) which = 0;
-                        startActivityHelp(intents[which]);
-                        dialog.dismiss();
-                        finish();
-                    }
-
-                };
-
-                DialogInterface.OnClickListener negativeListener =
-                    new DialogInterface.OnClickListener() {
-
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (Config.LOGD) Log.d(TAG, "negativeListener.onClick " + which);
-                        dialog.dismiss();
-                        finish();
-                    }
-
-                };
-
-                String[] sentences = new String[intents.length];
-                for (int i = 0; i < intents.length; i++) {
-                    sentences[i] = intents[i].getStringExtra(
-                            RecognizerEngine.SENTENCE_EXTRA);
-                }
-
-                final AlertDialog alertDialog = intents.length > 1 ?
-                        new AlertDialog.Builder(VoiceDialerActivity.this)
-                        .setTitle(R.string.title)
-                        .setItems(sentences, clickListener)
-                        .setOnCancelListener(cancelListener)
-                        .setNegativeButton(android.R.string.cancel, negativeListener)
-                        .show()
-                        :
-                        new AlertDialog.Builder(VoiceDialerActivity.this)
-                        .setTitle(R.string.title)
-                        .setItems(sentences, clickListener)
-                        .setOnCancelListener(cancelListener)
-                        .setPositiveButton(android.R.string.ok, positiveListener)
-                        .setNegativeButton(android.R.string.cancel, negativeListener)
-                        .show();
-
-                // start the next test
-                if (mVoiceDialerTester != null) {
-                    mVoiceDialerTester.onRecognitionSuccess(intents);
-                    startNextTest();
                     mHandler.postDelayed(new Runnable() {
                         public void run() {
-                            alertDialog.dismiss();
+                            finish();
                         }
-                    }, 2000);
+                    }, FAIL_PAUSE_MSEC);
                 }
-            }
+            });
+        }
 
-            // post a Toast if not real contacts or microphone
-            private void startActivityHelp(Intent intent) {
-                if (getArg(MICROPHONE_EXTRA) == null &&
-                        getArg(CONTACTS_EXTRA) == null) {
-                    startActivity(intent);
-                } else {
-                    notifyText(intent.
-                            getStringExtra(RecognizerEngine.SENTENCE_EXTRA) +
-                            "\n" + intent.toString());
+        /**
+         * Called by the {@link RecognizerEngine} on an internal error.
+         */
+        public void onRecognitionError(final String msg) {
+            if (Config.LOGD) Log.d(TAG, "onRecognitionError " + msg);
+
+            // get work off UAPI thread
+            mHandler.post(new Runnable() {
+                public void run() {
+                    // error, so beep about it
+                    playSound(ToneGenerator.TONE_PROP_NACK);
+
+                    mHandler.removeCallbacks(mMicFlasher);
+                    ((TextView)findViewById(R.id.state)).setText(R.string.please_try_again);
+                    ((TextView)findViewById(R.id.substate)).setText(R.string.recognition_error);
+                    findViewById(R.id.state).setVisibility(View.VISIBLE);
+                    findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
+
+                    if (mVoiceDialerTester != null) {
+                        mVoiceDialerTester.onRecognitionError(msg);
+                        startNextTest();
+                        return;
+                    }
+
+                    mHandler.postDelayed(new Runnable() {
+                        public void run() {
+                            finish();
+                        }
+                    }, FAIL_PAUSE_MSEC);
+                }
+            });
+        }
+
+        /**
+         * Called by the {@link RecognizerEngine} when is succeeds.  If there is
+         * only one item, then the Intent is dispatched immediately.
+         * If there are more, then an AlertDialog is displayed and the user is
+         * prompted to select.
+         * @param intents a list of Intents corresponding to the sentences.
+         */
+        public void onRecognitionSuccess(final Intent[] intents) {
+            if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess " + intents.length);
+
+            mHandler.post(new Runnable() {
+
+                public void run() {
+                    // success, so beep about it
+                    playSound(ToneGenerator.TONE_PROP_ACK);
+
+                    mHandler.removeCallbacks(mMicFlasher);
+
+                    // only one item, so just launch
+                    /*
+                    if (intents.length == 1 && mVoiceDialerTester == null) {
+                        // start the Intent
+                        startActivityHelp(intents[0]);
+                        finish();
+                        return;
+                    }
+                    */
+
+                    DialogInterface.OnClickListener clickListener =
+                        new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (Config.LOGD) Log.d(TAG, "clickListener.onClick " + which);
+                            startActivityHelp(intents[which]);
+                            dialog.dismiss();
+                            finish();
+                        }
+
+                    };
+
+                    DialogInterface.OnCancelListener cancelListener =
+                        new DialogInterface.OnCancelListener() {
+
+                        public void onCancel(DialogInterface dialog) {
+                            if (Config.LOGD) Log.d(TAG, "cancelListener.onCancel");
+                            dialog.dismiss();
+                            finish();
+                        }
+
+                    };
+
+                    DialogInterface.OnClickListener positiveListener =
+                        new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (Config.LOGD) Log.d(TAG, "positiveListener.onClick " + which);
+                            if (intents.length == 1 && which == -1) which = 0;
+                            startActivityHelp(intents[which]);
+                            dialog.dismiss();
+                            finish();
+                        }
+
+                    };
+
+                    DialogInterface.OnClickListener negativeListener =
+                        new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (Config.LOGD) Log.d(TAG, "negativeListener.onClick " + which);
+                            dialog.dismiss();
+                            finish();
+                        }
+
+                    };
+
+                    String[] sentences = new String[intents.length];
+                    for (int i = 0; i < intents.length; i++) {
+                        sentences[i] = intents[i].getStringExtra(
+                                RecognizerEngine.SENTENCE_EXTRA);
+                    }
+
+                    final AlertDialog alertDialog = intents.length > 1 ?
+                            new AlertDialog.Builder(VoiceDialerActivity.this)
+                            .setTitle(R.string.title)
+                            .setItems(sentences, clickListener)
+                            .setOnCancelListener(cancelListener)
+                            .setNegativeButton(android.R.string.cancel, negativeListener)
+                            .show()
+                            :
+                            new AlertDialog.Builder(VoiceDialerActivity.this)
+                            .setTitle(R.string.title)
+                            .setItems(sentences, clickListener)
+                            .setOnCancelListener(cancelListener)
+                            .setPositiveButton(android.R.string.ok, positiveListener)
+                            .setNegativeButton(android.R.string.cancel, negativeListener)
+                            .show();
+
+                    // start the next test
+                    if (mVoiceDialerTester != null) {
+                        mVoiceDialerTester.onRecognitionSuccess(intents);
+                        startNextTest();
+                        mHandler.postDelayed(new Runnable() {
+                            public void run() {
+                                alertDialog.dismiss();
+                            }
+                        }, 2000);
+                    }
                 }
 
-            }
+                // post a Toast if not real contacts or microphone
+                private void startActivityHelp(Intent intent) {
+                    if (getArg(MICROPHONE_EXTRA) == null &&
+                            getArg(CONTACTS_EXTRA) == null) {
+                        startActivity(intent);
+                    } else {
+                        notifyText(intent.
+                                getStringExtra(RecognizerEngine.SENTENCE_EXTRA) +
+                                "\n" + intent.toString());
+                    }
 
-        });
+                }
 
+            });
+        }
     }
 
     @Override

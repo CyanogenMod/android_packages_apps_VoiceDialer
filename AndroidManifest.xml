@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
   
     <application android:theme="@android:style/Theme.Dialog"
         android:label="@string/voiceDialer"
@@ -22,12 +23,18 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+
+        <activity android:name="BluetoothVoiceDialerActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VOICE_COMMAND"/>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-        </activity>   
-       
+        </activity>
+
     <receiver android:name="VoiceDialerReceiver">
     
       <!-- Voice Dialer clears compiled grammar file on boot -->
