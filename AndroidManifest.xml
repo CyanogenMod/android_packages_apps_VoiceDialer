@@ -2,6 +2,9 @@
 
 <manifest package="com.android.voicedialer"
         xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <original-package android:name="com.android.voicedialer" />
+
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
