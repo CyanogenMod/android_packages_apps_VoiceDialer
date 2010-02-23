@@ -41,6 +41,9 @@ import java.io.File;
 
 
 /**
+ * TODO: get rid of the anonymous classes
+ * TODO: merge with BluetootchVoicedialerActivity
+ *
  * This class is the user interface of the VoiceDialer application.
  * Its life cycle is as follows:
  * <ul>

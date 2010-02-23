@@ -18,6 +18,13 @@ package com.android.voicedialer;
 
 import android.content.Intent;
 
+/**
+ * This is an interface for clients of the RecognizerEngine.
+ * A user should implement this interface, and then pass that implementation
+ * into a RecognizerEngine.  The RecognizerEngine will call the
+ * appropriate function when the recognition completes.
+ */
+
 interface RecognizerClient {
 
     public void onRecognitionSuccess(final Intent[] intents);

@@ -102,10 +102,6 @@
     -->
     <string name="no_results_tts">No results.  Try again?</string>
 
-    <!-- message that is spoken when the recognizer encounters an error.
-    -->
-    <string name="error_tts">Try again?</string>
-
     <!-- message that is spoken prior to listing the possible options.
     -->
     <string name="choose_person_tts">Choose person.</string>

@@ -25,7 +25,6 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
-import android.speech.srec.MicrophoneInputStream;
 import android.speech.srec.Recognizer;
 import android.util.Config;
 import android.util.Log;
@@ -41,12 +40,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-
 /**
  * This is a RecognizerEngine that processes commands to make phone calls and
  * open applications.
  * <ul>
- * <li>setupGrammar 
+ * <li>setupGrammar
  * <li>Scans contacts and determine if the Grammar g2g file is stale.
  * <li>If so, create and rebuild the Grammar,
  * <li>Else create and load the Grammar from the file.
@@ -75,14 +73,16 @@ import java.util.List;
 public class CommandRecognizerEngine extends RecognizerEngine {
 
     private static final String OPEN_ENTRIES = "openentries.txt";
-
+    public static final String PHONE_TYPE_EXTRA = "phone_type";
+    private static final int MINIMUM_CONFIDENCE = 100;
     private File mContactsFile;
-
+    private boolean mMinimizeResults;
     /**
      * Constructor.
      */
     public CommandRecognizerEngine() {
-
+        mContactsFile = null;
+        mMinimizeResults = false;
     }
 
     public void setContactsFile(File contactsFile) {
@@ -92,6 +92,10 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             mSrecGrammar.destroy();
             mSrecGrammar = null;
         }
+    }
+
+    public void setMinimizeResults(boolean minimizeResults) {
+        mMinimizeResults = minimizeResults;
     }
 
     protected void setupGrammar() throws IOException, InterruptedException {
@@ -421,7 +425,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
     public static void deleteCachedGrammarFiles(Context context) {
         deleteAllG2GFiles(context);
         File oe = context.getFileStreamPath(OPEN_ENTRIES);
-        if (false) Log.v(TAG, "deleteCachedGrammarFiles " + oe);
+        if (Config.LOGD) Log.v(TAG, "deleteCachedGrammarFiles " + oe);
         if (oe.exists()) oe.delete();
     }
 
@@ -895,35 +899,44 @@ public class CommandRecognizerEngine extends RecognizerEngine {
         if (mLogger != null) mLogger.logNbestHeader();
 
         ArrayList<Intent> intents = new ArrayList<Intent>();
-        int highestConf = 0;
 
-        // loop over results
+        int highestConfidence = 0;
+        int examineLimit = RESULT_LIMIT;
+        if (mMinimizeResults) {
+            examineLimit = 1;
+        }
         for (int result = 0; result < mSrec.getResultCount() &&
-                intents.size() < RESULT_LIMIT; result++) {
+                intents.size() < examineLimit; result++) {
 
             // parse the semanticMeaning string and build an Intent
             String conf = mSrec.getResult(result, Recognizer.KEY_CONFIDENCE);
             String literal = mSrec.getResult(result, Recognizer.KEY_LITERAL);
             String semantic = mSrec.getResult(result, Recognizer.KEY_MEANING);
             String msg = "conf=" + conf + " lit=" + literal + " sem=" + semantic;
-            Log.d(TAG, msg);
+            if (Config.LOGD) Log.d(TAG, msg);
+            int confInt = Integer.parseInt(conf);
+            if (highestConfidence < confInt) highestConfidence = confInt;
+            if (confInt < MINIMUM_CONFIDENCE || confInt * 2 < highestConfidence) {
+                if (Config.LOGD) Log.d(TAG, "confidence too low, dropping");
+                break;
+            }
             if (mLogger != null) mLogger.logLine(msg);
             String[] commands = semantic.trim().split(" ");
 
             // DIAL 650 867 5309
             // DIAL 867 5309
             // DIAL 911
-            if ("DIAL".equals(commands[0])) {
+            if ("DIAL".equalsIgnoreCase(commands[0])) {
                 Uri uri = Uri.fromParts("tel", commands[1], null);
                 String num =  formatNumber(commands[1]);
                 if (num != null) {
                     addCallIntent(intents, uri,
-                            literal.split(" ")[0].trim() + " " + num, 0);
+                            literal.split(" ")[0].trim() + " " + num, "", 0);
                 }
             }
 
             // CALL JACK JONES
-            else if ("CALL".equals(commands[0]) && commands.length >= 7) {
+            else if ("CALL".equalsIgnoreCase(commands[0]) && commands.length >= 7) {
                 // parse the ids
                 long contactId = Long.parseLong(commands[1]); // people table
                 long phoneId   = Long.parseLong(commands[2]); // phones table
@@ -950,76 +963,89 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                     if (spokenPhoneId != VoiceContact.ID_UNDEFINED) {
                         addCallIntent(intents, ContentUris.withAppendedId(
                                 Phone.CONTENT_URI, spokenPhoneId),
-                                literal, 0);
+                                literal, commands[7], 0);
                         count++;
                     }
                 }
 
                 // 'CALL JACK JONES', with valid default phoneId
                 else if (commands.length == 7) {
-                    CharSequence phoneIdMsg =
-                            phoneId == VoiceContact.ID_UNDEFINED ? null :
-                            phoneId == homeId ? res.getText(R.string.at_home) :
-                            phoneId == mobileId ? res.getText(R.string.on_mobile) :
-                            phoneId == workId ? res.getText(R.string.at_work) :
-                            phoneId == otherId ? res.getText(R.string.at_other) :
-                            null;
+                    String phoneType = null;
+                    CharSequence phoneIdMsg = null;
+                    if (phoneId == VoiceContact.ID_UNDEFINED) {
+                        phoneType = null;
+                        phoneIdMsg = null;
+                    } else if (phoneId == homeId) {
+                        phoneType = "H";
+                        phoneIdMsg = res.getText(R.string.at_home);
+                    } else if (phoneId == mobileId) {
+                        phoneType = "M";
+                        phoneIdMsg = res.getText(R.string.on_mobile);
+                    } else if (phoneId == workId) {
+                        phoneType = "W";
+                        phoneIdMsg = res.getText(R.string.at_work);
+                    } else if (phoneId == otherId) {
+                        phoneType = "O";
+                        phoneIdMsg = res.getText(R.string.at_other);
+                    }
                     if (phoneIdMsg != null) {
                         addCallIntent(intents, ContentUris.withAppendedId(
                                 Phone.CONTENT_URI, phoneId),
-                                literal + phoneIdMsg, 0);
+                                literal + phoneIdMsg, phoneType, 0);
                         count++;
                     }
                 }
 
-                //
-                // generate all other entries for this person
-                //
+                if (count == 0 || !mMinimizeResults) {
+                    //
+                    // generate all other entries for this person
+                    //
 
-                // trim last two words, ie 'at home', etc
-                String lit = literal;
-                if (commands.length == 8) {
-                    String[] words = literal.trim().split(" ");
-                    StringBuffer sb = new StringBuffer();
-                    for (int i = 0; i < words.length - 2; i++) {
-                        if (i != 0) {
-                            sb.append(' ');
+                    // trim last two words, ie 'at home', etc
+                    String lit = literal;
+                    if (commands.length == 8) {
+                        String[] words = literal.trim().split(" ");
+                        StringBuffer sb = new StringBuffer();
+                        for (int i = 0; i < words.length - 2; i++) {
+                            if (i != 0) {
+                                sb.append(' ');
+                            }
+                            sb.append(words[i]);
                         }
-                        sb.append(words[i]);
+                        lit = sb.toString();
                     }
-                    lit = sb.toString();
-                }
 
-                //  add 'CALL JACK JONES at home' using phoneId
-                if (homeId != VoiceContact.ID_UNDEFINED) {
-                    addCallIntent(intents, ContentUris.withAppendedId(
-                            Phone.CONTENT_URI, homeId),
-                            lit + res.getText(R.string.at_home), 0);
-                    count++;
-                }
+                    //  add 'CALL JACK JONES at home' using phoneId
+                    if (homeId != VoiceContact.ID_UNDEFINED) {
+                        addCallIntent(intents, ContentUris.withAppendedId(
+                                Phone.CONTENT_URI, homeId),
+                                lit + res.getText(R.string.at_home), "H",  0);
+                        count++;
+                    }
 
-                //  add 'CALL JACK JONES on mobile' using mobileId
-                if (mobileId != VoiceContact.ID_UNDEFINED) {
-                    addCallIntent(intents, ContentUris.withAppendedId(
-                            Phone.CONTENT_URI, mobileId),
-                            lit + res.getText(R.string.on_mobile), 0);
-                    count++;
-                }
+                    //  add 'CALL JACK JONES on mobile' using mobileId
+                    if (mobileId != VoiceContact.ID_UNDEFINED) {
+                        addCallIntent(intents, ContentUris.withAppendedId(
+                                Phone.CONTENT_URI, mobileId),
+                                lit + res.getText(R.string.on_mobile), "M", 0);
+                        count++;
+                    }
 
-                //  add 'CALL JACK JONES at work' using workId
-                if (workId != VoiceContact.ID_UNDEFINED) {
-                    addCallIntent(intents, ContentUris.withAppendedId(
-                            Phone.CONTENT_URI, workId),
-                            lit + res.getText(R.string.at_work), 0);
-                    count++;
-                }
+                    //  add 'CALL JACK JONES at work' using workId
+                    if (workId != VoiceContact.ID_UNDEFINED) {
+                        addCallIntent(intents, ContentUris.withAppendedId(
+                                Phone.CONTENT_URI, workId),
+                                lit + res.getText(R.string.at_work), "W", 0);
+                        count++;
+                    }
 
-                //  add 'CALL JACK JONES at other' using otherId
-                if (otherId != VoiceContact.ID_UNDEFINED) {
-                    addCallIntent(intents, ContentUris.withAppendedId(
-                            Phone.CONTENT_URI, otherId),
-                            lit + res.getText(R.string.at_other), 0);
-                    count++;
+                    //  add 'CALL JACK JONES at other' using otherId
+                    if (otherId != VoiceContact.ID_UNDEFINED) {
+                        addCallIntent(intents, ContentUris.withAppendedId(
+                                Phone.CONTENT_URI, otherId),
+                                lit + res.getText(R.string.at_other), "O", 0);
+                        count++;
+                    }
                 }
 
                 //
@@ -1029,21 +1055,21 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                 // add 'CALL JACK JONES', with valid personId
                 if (count == 0 && contactId != VoiceContact.ID_UNDEFINED) {
                     addCallIntent(intents, ContentUris.withAppendedId(
-                            Contacts.CONTENT_URI, contactId), literal, 0);
+                            Contacts.CONTENT_URI, contactId), literal, "", 0);
                 }
             }
             // "CALL VoiceMail"
-            else if ("voicemail".equals(commands[0]) && commands.length == 1) {
+            else if ("voicemail".equalsIgnoreCase(commands[0]) && commands.length == 1) {
                 addCallIntent(intents, Uri.fromParts("voicemail", "x", null),
-                        literal, Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                        literal, "", Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             }
 
             // "REDIAL"
-            else if ("redial".equals(commands[0]) && commands.length == 1) {
+            else if ("redial".equalsIgnoreCase(commands[0]) && commands.length == 1) {
                 String number = VoiceContact.redialNumber(mActivity);
                 if (number != null) {
-                    addCallIntent(intents, Uri.fromParts("tel", number, null), literal,
-                            Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                    addCallIntent(intents, Uri.fromParts("tel", number, null),
+                            literal, "", Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
                 }
             }
 
@@ -1058,14 +1084,15 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                         addIntent(intents, intent);
                     } catch (URISyntaxException e) {
                         if (Config.LOGD) {
-                            Log.d(TAG, "onRecognitionSuccess: poorly formed URI in grammar" + e);
+                            Log.d(TAG, "onRecognitionSuccess: poorly " +
+                                    "formed URI in grammar" + e);
                         }
                     }
                 }
             }
 
             // "OPEN ..."
-            else if ("OPEN".equals(commands[0])) {
+            else if ("OPEN".equalsIgnoreCase(commands[0])) {
                 PackageManager pm = mActivity.getPackageManager();
                 for (int i = 1; i < commands.length; i++) {
                     String cn = commands[i];
@@ -1108,10 +1135,11 @@ public class CommandRecognizerEngine extends RecognizerEngine {
 
     // only add if different
     private static void addCallIntent(ArrayList<Intent> intents, Uri uri, String literal,
-            int flags) {
+            String phoneType, int flags) {
         Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED, uri).
         setFlags(flags).
-        putExtra(SENTENCE_EXTRA, literal);
+        putExtra(SENTENCE_EXTRA, literal).
+        putExtra(PHONE_TYPE_EXTRA, phoneType);
         addIntent(intents, intent);
     }
 }
