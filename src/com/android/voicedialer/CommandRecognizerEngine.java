@@ -130,6 +130,9 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             // add names to the grammar
             addNameEntriesToGrammar(contacts);
 
+            // add open entries to the grammar
+            addOpenEntriesToGrammar();
+
             // compile the grammar
             if (Config.LOGD) Log.d(TAG, "start grammar.compile");
             mSrecGrammar.compile();
