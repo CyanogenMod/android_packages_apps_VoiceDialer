@@ -20,6 +20,8 @@
     <string name="tool_tip_message" msgid="8624998371709530611">"緑色の発信ボタンを押したまま&amp;キーを押すとボイスダイヤルが開きます。"</string>
     <string name="examples" msgid="2100807337052050741">" 例:"<b>\n"「Call John Doe」"\n"「Call John Doe at home, …」"\n"「Call voicemail」"\n"「Dial (866) 555 0123」"\n"「Dial 911, 811, …」"\n"「Dial +44 7333 444 555」"\n"「Redial」"\n"「Open Calendar」"</b></string>
     <string name="title" msgid="60788431860720964">"ボイスダイヤル"</string>
+    <!-- no translation found for bluetooth_title (1018603170854746529) -->
+    <skip />
     <string name="initializing" msgid="3146934028021025628">"起動しています"</string>
     <string name="listening" msgid="6886486282595802147">"聞き取り中..."</string>
     <string name="please_try_again" msgid="1427744152996396950">"もう一度試してください。"</string>
@@ -30,4 +32,14 @@
     <string name="at_other" msgid="1863773841760953063">" at other"</string>
     <string name="logging_enabled" msgid="8702018587287436548">"ボイスダイヤルの記録をONにしました。"</string>
     <string name="logging_disabled" msgid="5992352601321824322">"ボイスダイヤルの記録をOFFにしました。"</string>
+    <!-- no translation found for speak_now_tts (1343363077871348876) -->
+    <skip />
+    <!-- no translation found for no_results_tts (132000325719990500) -->
+    <skip />
+    <!-- no translation found for choose_person_tts (5148417776989466871) -->
+    <skip />
+    <!-- no translation found for invalid_choice_tts (1871918597940504468) -->
+    <skip />
+    <!-- no translation found for goodbye_tts (2034746843726531134) -->
+    <skip />
 </resources>
