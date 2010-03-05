@@ -33,7 +33,6 @@
         </activity>
 
     <receiver android:name="VoiceDialerReceiver">
-    
       <!-- Voice Dialer clears compiled grammar file on boot -->
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />

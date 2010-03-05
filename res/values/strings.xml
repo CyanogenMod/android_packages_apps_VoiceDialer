@@ -104,17 +104,13 @@
             has been disabled -->
     <string name="logging_disabled">Voice Dialer logging is disabled.</string>
 
-    <!-- message that is spoken to indicate that the user can being speaking.
+    <!-- message that is spoken to indicate that the user can begin speaking.
     -->
     <string name="speak_now_tts">Speak now.</string>
 
     <!-- message that is spoken when we get no results
     -->
     <string name="no_results_tts">No results, try again.</string>
-
-    <!-- message that is spoken prior to listing the possible options.
-    -->
-    <string name="choose_person_tts">Choose person.</string>
 
     <!-- message that is spoken when the user asks for a choice that
             is not available -->

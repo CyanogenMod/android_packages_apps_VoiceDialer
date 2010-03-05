@@ -77,12 +77,15 @@ public class CommandRecognizerEngine extends RecognizerEngine {
     private static final int MINIMUM_CONFIDENCE = 100;
     private File mContactsFile;
     private boolean mMinimizeResults;
+    private boolean mAllowOpenEntries;
+
     /**
      * Constructor.
      */
     public CommandRecognizerEngine() {
         mContactsFile = null;
         mMinimizeResults = false;
+        mAllowOpenEntries = true;
     }
 
     public void setContactsFile(File contactsFile) {
@@ -96,6 +99,17 @@ public class CommandRecognizerEngine extends RecognizerEngine {
 
     public void setMinimizeResults(boolean minimizeResults) {
         mMinimizeResults = minimizeResults;
+    }
+
+    public void setAllowOpenEntries(boolean allowOpenEntries) {
+        if (mAllowOpenEntries != allowOpenEntries) {
+            // if we change this setting, then we need to recreate the grammar.
+            if (mSrecGrammar != null) {
+                mSrecGrammar.destroy();
+                mSrecGrammar = null;
+            }
+        }
+        mAllowOpenEntries = allowOpenEntries;
     }
 
     protected void setupGrammar() throws IOException, InterruptedException {
@@ -134,8 +148,10 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             // add names to the grammar
             addNameEntriesToGrammar(contacts);
 
-            // add open entries to the grammar
-            addOpenEntriesToGrammar();
+            if (mAllowOpenEntries) {
+                // add open entries to the grammar
+                addOpenEntriesToGrammar();
+            }
 
             // compile the grammar
             if (Config.LOGD) Log.d(TAG, "start grammar.compile");
@@ -1092,7 +1108,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             }
 
             // "OPEN ..."
-            else if ("OPEN".equalsIgnoreCase(commands[0])) {
+            else if ("OPEN".equalsIgnoreCase(commands[0]) && mAllowOpenEntries) {
                 PackageManager pm = mActivity.getPackageManager();
                 for (int i = 1; i < commands.length; i++) {
                     String cn = commands[i];

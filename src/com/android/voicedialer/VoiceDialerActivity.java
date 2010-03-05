@@ -16,10 +16,8 @@
 
 package com.android.voicedialer;
 
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothHeadset;
 import android.content.Intent;
 import android.content.DialogInterface;
 import android.media.ToneGenerator;
@@ -28,21 +26,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemProperties;
 import android.os.Vibrator;
-import android.telephony.PhoneNumberUtils;
 import android.util.Config;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.android.voicedialer.RecognizerEngine;
-//import com.android.voicedialer.VoiceDialerTester;
 import java.io.File;
-
 
 /**
  * TODO: get rid of the anonymous classes
- * TODO: merge with BluetootchVoicedialerActivity
+ * TODO: merge with BluetoothVoiceDialerActivity
  *
  * This class is the user interface of the VoiceDialer application.
  * Its life cycle is as follows:
@@ -71,19 +64,19 @@ public class VoiceDialerActivity extends Activity {
 
     private static final String MICROPHONE_EXTRA = "microphone";
     private static final String CONTACTS_EXTRA = "contacts";
-    private static final String TONE_EXTRA = "tone";
+    private static final String SAMPLE_RATE_EXTRA = "samplerate";
 
     private static final int FAIL_PAUSE_MSEC = 5000;
     private static final int SAMPLE_RATE = 11025;
 
-    private final static CommandRecognizerEngine mCommandEngine = new CommandRecognizerEngine();
+    private final static CommandRecognizerEngine mCommandEngine =
+            new CommandRecognizerEngine();
     private CommandRecognizerClient mCommandClient;
     private VoiceDialerTester mVoiceDialerTester;
     private Handler mHandler;
     private Thread mRecognizerThread = null;
     private AudioManager mAudioManager;
     private ToneGenerator mToneGenerator;
-    private BluetoothHeadset mBluetoothHeadset;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -100,12 +93,13 @@ public class VoiceDialerActivity extends Activity {
 
         // set up ToneGenerator
         // currently disabled because it crashes audio input
-        mToneGenerator = !"0".equals(getArg(TONE_EXTRA)) ?
-                new ToneGenerator(AudioManager.STREAM_RING, ToneGenerator.MAX_VOLUME) :
-                null;
+        mToneGenerator = new ToneGenerator(AudioManager.STREAM_RING,
+                ToneGenerator.MAX_VOLUME);
 
         mCommandEngine.setContactsFile(newFile(getArg(CONTACTS_EXTRA)));
         mCommandClient = new CommandRecognizerClient();
+        mCommandEngine.setMinimizeResults(false);
+        mCommandEngine.setAllowOpenEntries(true);
 
         // open main window
         setTheme(android.R.style.Theme_Dialog);
@@ -118,16 +112,6 @@ public class VoiceDialerActivity extends Activity {
             ((TextView)findViewById(R.id.substate)).setText(R.string.logging_enabled);
         }
 
-        // throw up tooltip
-        if (false && !Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction())) {
-            View v = getLayoutInflater().inflate(R.layout.tool_tip, null);
-            Toast toast = new Toast(this);
-            toast.setView(v);
-            toast.setDuration(Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.BOTTOM, 0, 0);
-            toast.show();
-        }
-
         // start the tester, if present
         mVoiceDialerTester = null;
         File micDir = newFile(getArg(MICROPHONE_EXTRA));
@@ -137,36 +121,22 @@ public class VoiceDialerActivity extends Activity {
             return;
         }
 
-        // Get handle to BluetoothHeadset object if required
-        if (!BluetoothHeadset.DISABLE_BT_VOICE_DIALING &&
-                Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction())) {
-            // start work in the BluetoothHeadsetClient onServiceConnected() callback
-            mBluetoothHeadset = new BluetoothHeadset(this, mBluetoothHeadsetServiceListener);
-        } else {
-            startWork();
-        }
+        startWork();
     }
-
-    private BluetoothHeadset.ServiceListener mBluetoothHeadsetServiceListener =
-            new BluetoothHeadset.ServiceListener() {
-        public void onServiceConnected() {
-            if (mBluetoothHeadset != null &&
-                    mBluetoothHeadset.getState() == BluetoothHeadset.STATE_CONNECTED) {
-                mBluetoothHeadset.startVoiceRecognition();
-            }
-            startWork();
-        }
-        public void onServiceDisconnected() {}
-    };
 
     private void startWork() {
         // start the engine
         mRecognizerThread = new Thread() {
             public void run() {
                 if (Config.LOGD) Log.d(TAG, "onCreate.Runnable.run");
+                String sampleRateStr = getArg(SAMPLE_RATE_EXTRA);
+                int sampleRate = SAMPLE_RATE;
+                if (sampleRateStr != null) {
+                    sampleRate = Integer.parseInt(sampleRateStr);
+                }
                 mCommandEngine.recognize(mCommandClient, VoiceDialerActivity.this,
                         newFile(getArg(MICROPHONE_EXTRA)),
-                        SAMPLE_RATE);
+                        sampleRate);
             }
         };
         mRecognizerThread.start();
@@ -206,6 +176,7 @@ public class VoiceDialerActivity extends Activity {
                 }
                 File microphone = mVoiceDialerTester.getWavFile();
                 File contacts = newFile(getArg(CONTACTS_EXTRA));
+
                 notifyText("Testing\n" + microphone + "\n" + contacts);
                 mCommandEngine.recognize(mCommandClient, VoiceDialerActivity.this,
                         microphone, SAMPLE_RATE);
@@ -236,17 +207,8 @@ public class VoiceDialerActivity extends Activity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-
-        if (Config.LOGD) Log.d(TAG, "onPause");
-
-        // shut down bluetooth, if it exists
-        if (mBluetoothHeadset != null) {
-            mBluetoothHeadset.stopVoiceRecognition();
-            mBluetoothHeadset.close();
-            mBluetoothHeadset = null;
-        }
+    protected void onStop() {
+        if (Config.LOGD) Log.d(TAG, "onStop");
 
         // no more tester
         mVoiceDialerTester = null;
@@ -272,8 +234,7 @@ public class VoiceDialerActivity extends Activity {
             mToneGenerator = null;
         }
 
-        // bye
-        finish();
+        super.onStop();
     }
 
     private void notifyText(final CharSequence msg) {
@@ -506,30 +467,4 @@ public class VoiceDialerActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
     }
-
-    private static class VoiceDialerTester {
-        public VoiceDialerTester(File f) {
-        }
-
-        public boolean stepToNextTest() {
-            return false;
-        }
-
-        public void report() {
-        }
-
-        public File getWavFile() {
-            return null;
-        }
-
-        public void onRecognitionFailure(String msg) {
-        }
-
-        public void onRecognitionError(String err) {
-        }
-
-        public void onRecognitionSuccess(Intent[] intents) {
-        }
-    }
-
 }
