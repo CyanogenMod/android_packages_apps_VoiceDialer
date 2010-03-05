@@ -60,10 +60,20 @@
     <!-- displayed on the VoiceDialer main screen upon failure -->
     <string name="please_try_again">Please try again.</string>
 
+
+    <!--displayed when there is a fatal error on initialization or
+        recognition-->
+    <string name="failure">Failure</string>
+
     <!-- displayed on the VoiceDialer main screen after unrecoverable error.
             when present, this message follows the one above -->
     <string name="recognition_error">
         You can also try restarting your phone.
+    </string>
+
+    <!-- displayed when the connection tot he bluetooth headset is lost -->
+    <string name="headset_connection_lost">
+      Connection to headset lost.
     </string>
 
     <!-- appended to recognition result from VoiceDialer.grxml to
@@ -100,7 +110,7 @@
 
     <!-- message that is spoken when we get no results
     -->
-    <string name="no_results_tts">No results.  Try again?</string>
+    <string name="no_results_tts">No results, try again.</string>
 
     <!-- message that is spoken prior to listing the possible options.
     -->
