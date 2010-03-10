@@ -17,7 +17,6 @@
 package com.android.voicedialer;
 
 
-import com.android.voicedialer.RecognizerEngine;
 import android.content.Context;
 import android.content.Intent;
 import android.content.BroadcastReceiver;
@@ -61,5 +60,4 @@ public class VoiceDialerReceiver extends BroadcastReceiver {
             Toast.makeText(context, R.string.logging_disabled, Toast.LENGTH_LONG).show();
         }
     }
-
 }

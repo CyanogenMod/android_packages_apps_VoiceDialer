@@ -173,7 +173,8 @@ abstract public class RecognizerEngine {
                 if (event != Recognizer.EVENT_INCOMPLETE &&
                         event != Recognizer.EVENT_NEED_MORE_AUDIO) {
                     Log.d(TAG, "start advance()=" +
-                            Recognizer.eventToString(event));
+                            Recognizer.eventToString(event) +
+                            " avail " + mic.available());
                 }
                 switch (event) {
                 case Recognizer.EVENT_INCOMPLETE:
