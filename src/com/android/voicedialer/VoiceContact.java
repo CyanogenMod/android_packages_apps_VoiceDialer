@@ -143,8 +143,7 @@ public class VoiceContact {
         long otherId = ID_UNDEFINED;
 
         // loop over phone table
-        cursor.moveToFirst();
-        while (cursor.moveToNext()) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             long phoneIdAtCursor = cursor.getLong(phoneIdColumn);
             int typeAtCursor = cursor.getInt(typeColumn);
             long isPrimaryAtCursor = cursor.getLong(isPrimaryColumn);

@@ -1,5 +1,4 @@
 /*
- *
  * Copyright (C) 2010 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,7 +42,6 @@ import java.util.HashMap;
 
 /**
  * TODO: get rid of the anonymous classes
- * TODO: wait for the TTS utterance to complete before making the call
  *
  * This class is the user interface of the BluetoothVoiceDialer application.
  * It begins in the INITIALIZING state.
@@ -57,13 +55,13 @@ import java.util.HashMap;
  * WAITING_FOR_COMMAND :
  *   on RecogitionFailure or RecognitionError:
  *     * prompt the user "try again.",
- *     * begin listening for the command response using the {@link YesNoRecognizerEngine}
+ *     * begin listening for the command response using the {@link CommandRecognizerEngine}
  *     * remain in state WAITING_FOR_COMMAND
  *   on RecognitionSuccess:
  *     single result:
  *       * begin speaking the sentence describing the intent
  *       * dispatch the intent
- *       * transition to the ABOUT_TO_EXIT state
+ *       * transition to the EXITING state
  *     multiple results:
  *       * begin speaking each of the choices in order,
  *       * begin listening for the user's choice using the
@@ -73,21 +71,22 @@ import java.util.HashMap;
  * WAITING_FOR_CHOICE:
  *   on RecognitionFailure or RecognitionError:
  *     * begin speaking the "invalid choice" message, along with the list
- *     of choices, begine listening for the user's choice, and transitition
- *     to the SPEAKING_CHOICES state.
+ *     of choices, begine listening for the user's choice using the {@link
+ *     PhoneTypeChoiceRecognizerEngine} and remain in the
+ *     to the WAITING_FOR_CHOICE state.
  *   on RecognitionSuccess:
  *     if the result is "try again", prompt the user to say a command, begin
  *       listening for the command, and transitition back to the WAITING_FOR_COMMAND
  *       state.
  *     if the result is "exit", then being speaking the "goodbye" message and
- *       transition to the ABOUT_TO_EXIT state.
+ *       transition to the SPEAKING_GOODBYE state.
  *     if the result is a valid choice, begin speaking the action chosens,initiate
  *       the command the user has choose and exit.
  *     if not a valid choice, speak the "invalid choice" message, begin
  *       speaking the choices in order again, listen for the user's choice,
- *       and transition to the SPEAKING_CHOICES state.
+ *       and remain in the WAITING_FOR_CHOICE state.
  *
- * ABOUT_TO_EXIT:
+ * SPEAKING_GOODBYE:
  *   after a time out, finish the activity.
  *
  */
@@ -99,25 +98,25 @@ public class BluetoothVoiceDialerActivity extends Activity {
     private static final String MICROPHONE_EXTRA = "microphone";
     private static final String CONTACTS_EXTRA = "contacts";
 
-    private static final int CALL_PAUSE_MSEC = 2000;
-    private static final int EXIT_PAUSE_MSEC = 2000;
+    private static final String CHOSEN_ACTION_UTTERANCE = "chose_action";
+    private static final String GOODBYE_UTTERANCE = "goodbye";
+
+    private static final int MAX_TTS_DELAY = 6000;
+
     private static final int SAMPLE_RATE = 8000;
 
     private static final int INITIALIZING = 0;
     private static final int WAITING_FOR_COMMAND = 1;
     private static final int WAITING_FOR_CHOICE = 2;
-    private static final int WAITING_FOR_RETRY = 3;
-    private static final int ABOUT_TO_EXIT = 4;
+    private static final int SPEAKING_CHOSEN_ACTION = 3;
+    private static final int SPEAKING_GOODBYE = 4;
     private static final int EXITING = 5;
 
     private static final CommandRecognizerEngine mCommandEngine =
             new CommandRecognizerEngine();
-    private static final YesNoRecognizerEngine mYesNoEngine =
-            new YesNoRecognizerEngine();
     private static final PhoneTypeChoiceRecognizerEngine mPhoneTypeChoiceEngine =
             new PhoneTypeChoiceRecognizerEngine();
     private CommandRecognizerClient mCommandClient;
-    private RetryRecognizerClient mRetryClient;
     private ChoiceRecognizerClient mChoiceClient;
     private ToneGenerator mToneGenerator;
     private Handler mHandler;
@@ -182,7 +181,6 @@ public class BluetoothVoiceDialerActivity extends Activity {
         mCommandEngine.setMinimizeResults(true);
         mCommandEngine.setAllowOpenEntries(false);
         mCommandClient = new CommandRecognizerClient();
-        mRetryClient = new RetryRecognizerClient();
         mChoiceClient = new ChoiceRecognizerClient();
 
         mBluetoothAudioState = BluetoothHeadset.STATE_ERROR;
@@ -257,6 +255,8 @@ public class BluetoothVoiceDialerActivity extends Activity {
 
             // The TTS engine has been successfully initialized.
             mWaitingForTts = false;
+
+            mTts.setOnUtteranceCompletedListener(new OnUtteranceCompletedListener());
             // TTS over bluetooth is really loud,
             // store the current volume away, and then turn it down.
             // we will restore it in onStop.
@@ -271,6 +271,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
                 // we now have SCO connection and TTS, so we can start.
                 mHandler.post(new Runnable() {
                     public void run() {
+                        mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
                         mTts.speak(getString(R.string.speak_now_tts),
                             TextToSpeech.QUEUE_FLUSH,
                             mTtsParams);
@@ -279,6 +280,24 @@ public class BluetoothVoiceDialerActivity extends Activity {
                     }
                 });
             }
+        }
+    }
+
+    class OnUtteranceCompletedListener implements TextToSpeech.OnUtteranceCompletedListener {
+        public void onUtteranceCompleted(String utteranceId) {
+            Log.d(TAG, "onUtteranceCompleted " + utteranceId);
+            mHandler.post(new Runnable() {
+                public void run() {
+                    if (mState == SPEAKING_GOODBYE) {
+                        mState = EXITING;
+                        finish();
+                    } else if (mState == SPEAKING_CHOSEN_ACTION) {
+                        mState = EXITING;
+                        startActivityHelp(mChosenAction);
+                        finish();
+                    }
+                }
+            });
         }
     }
 
@@ -317,6 +336,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
                         mHandler.post(new Runnable() {
                             public void run() {
                                 if (mTts != null) {
+                                    mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
                                     mTts.speak(getString(R.string.speak_now_tts),
                                         TextToSpeech.QUEUE_FLUSH,
                                         mTtsParams);
@@ -386,6 +406,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
                         mAlertDialog.dismiss();
                     }
 
+                    mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
                     mTts.speak(getString(R.string.no_results_tts),
                         TextToSpeech.QUEUE_FLUSH,
                         mTtsParams);
@@ -435,6 +456,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
                         if (Config.LOGD) Log.d(TAG, "value " + value);
                         if ("X".equals(value)) {
                             exitActivity();
+                            return;
                         }
                     }
 
@@ -447,22 +469,31 @@ public class BluetoothVoiceDialerActivity extends Activity {
                         // dispatch it.  If it's not a "call" intent, then
                         // we don't have a good way to let the user choose
                         // which match without touching the screen.  In this
-                        // case, we simply take the highest confidence match
-                        // and dispatch it.
+                        // case, we simply take the highest confidence match.
+
+                        // Speak the sentence for the action we are about
+                        // to dispatch so that the user knows what is happening.
+                        mState = SPEAKING_CHOSEN_ACTION;
+                        mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                                CHOSEN_ACTION_UTTERANCE);
                         mTts.speak(sentences[0],
                             TextToSpeech.QUEUE_FLUSH,
                             mTtsParams);
                         mChosenAction = intents[0];
-                        // TODO: wait for utterance to finish
-                        // example:
-                        // mTtsParams.put(TextToSpeech.Engine.KEY_UTTERANCE_ID,
-                        // "finshed string");
+
+                        // Normally, the intent will be dispatched after the
+                        // utterance completes.  As a fallback in case the utterance
+                        // does not complete, post a delayed runnable to fire
+                        // the intent.
                         mHandler.postDelayed(new Runnable() {
                             public void run() {
-                                startActivityHelp(mChosenAction);
-                                finish();
+                                if (mState == SPEAKING_CHOSEN_ACTION) {
+                                    mState = EXITING;
+                                    startActivityHelp(mChosenAction);
+                                    finish();
+                                }
                             }
-                        }, CALL_PAUSE_MSEC);
+                        }, MAX_TTS_DELAY);
 
                         return;
                     } else {
@@ -529,45 +560,8 @@ public class BluetoothVoiceDialerActivity extends Activity {
                                 .show();
                     }
                 }
+
             });
-        }
-    }
-
-    private class RetryRecognizerClient implements RecognizerClient {
-        public void onRecognitionSuccess(final Intent[] intents) {
-            if (Config.LOGD) Log.d(TAG, "RetryRecognizerClient onRecognitionSuccess");
-            // disregard all but the first intent.
-            if (intents.length > 0) {
-                String sentence = intents[0].getStringExtra(
-                    RecognizerEngine.SEMANTIC_EXTRA);
-                if ("1".equalsIgnoreCase(sentence)) {
-                    // user wants to retry.
-                    mHandler.post(new Runnable() {
-                        public void run() {
-                            listenForCommand();
-                        }
-                    });
-                } else {
-                    if (Config.LOGD) Log.d(TAG,
-                            "RetryRecognizerClient onRecognitionFailure");
-                    exitActivity();
-                }
-            }
-        }
-
-        public void onRecognitionFailure(String msg) {
-            if (Config.LOGD) Log.d(TAG, "RetryRecognizerClient onRecognitionFailure");
-            exitActivity();
-        }
-
-        public void onRecognitionError(String err) {
-            if (Config.LOGD) Log.d(TAG, "RetryRecognizerClient onRecognitionError");
-            mHandler.post(new ErrorRunnable(R.string.recognition_error));
-            exitActivity();
-        }
-
-        public void onMicrophoneStart() {
-            if (Config.LOGD) Log.d(TAG, "YesNoRecognizerClient onMicrophoneStart");
         }
     }
 
@@ -605,21 +599,32 @@ public class BluetoothVoiceDialerActivity extends Activity {
                     }
 
                     if (mChosenAction != null) {
+                        mState = SPEAKING_CHOSEN_ACTION;
+                        mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                                CHOSEN_ACTION_UTTERANCE);
                         mTts.speak(mChosenAction.getStringExtra(
                                 RecognizerEngine.SENTENCE_EXTRA),
                             TextToSpeech.QUEUE_FLUSH,
                             mTtsParams);
 
+                        // Normally, the intent will be dispatched after the
+                        // utterance completes.  As a fallback in case the utterance
+                        // does not complete, post a delayed runnable to fire
+                        // the intent.
                         mHandler.postDelayed(new Runnable() {
                             public void run() {
-                                startActivityHelp(mChosenAction);
-                                finish();
+                                if (mState == SPEAKING_CHOSEN_ACTION) {
+                                    mState = EXITING;
+                                    startActivityHelp(mChosenAction);
+                                    finish();
+                                }
                             }
-                        }, CALL_PAUSE_MSEC);
+                        }, MAX_TTS_DELAY);
                     } else {
                         // invalid choice
                         if (Config.LOGD) Log.d(TAG, "invalid choice" + value);
 
+                        mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
                         mTts.speak(getString(R.string.invalid_choice_tts),
                             TextToSpeech.QUEUE_FLUSH,
                             mTtsParams);
@@ -678,6 +683,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
             String[] words = sentence.trim().split(" ");
             builder.append(words[words.length-1]);
         }
+        mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
         mTts.speak(builder.toString(),
             TextToSpeech.QUEUE_ADD,
             mTtsParams);
@@ -704,21 +710,6 @@ public class BluetoothVoiceDialerActivity extends Activity {
         mRecognizerThread.start();
     }
 
-    private void listenForRetry() {
-        if (Config.LOGD) Log.d(TAG, "listenForRetry(): MICROPHONE_EXTRA: " +
-                getArg(MICROPHONE_EXTRA));
-
-        mState = WAITING_FOR_RETRY;
-        mRecognizerThread = new Thread() {
-            public void run() {
-                mYesNoEngine.recognize(mRetryClient,
-                        BluetoothVoiceDialerActivity.this,
-                        newFile(getArg(MICROPHONE_EXTRA)), SAMPLE_RATE);
-            }
-        };
-        mRecognizerThread.start();
-    }
-
     private void listenForChoice() {
         if (Config.LOGD) Log.d(TAG, "listenForChoice(): MICROPHONE_EXTRA: " +
                 getArg(MICROPHONE_EXTRA));
@@ -738,15 +729,25 @@ public class BluetoothVoiceDialerActivity extends Activity {
         synchronized(this) {
             if (mState != EXITING) {
                 if (Config.LOGD) Log.d(TAG, "exitActivity");
+                mState = SPEAKING_GOODBYE;
+                mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                        GOODBYE_UTTERANCE);
                 mTts.speak(getString(R.string.goodbye_tts),
                     TextToSpeech.QUEUE_FLUSH,
                     mTtsParams);
-                mState = ABOUT_TO_EXIT;
+
+                // Normally, the activity will finish() after the
+                // utterance completes.  As a fallback in case the utterance
+                // does not complete, post a delayed runnable finish the
+                // activity.
                 mHandler.postDelayed(new Runnable() {
                     public void run() {
-                        finish();
+                        if (mState == SPEAKING_GOODBYE) {
+                            mState = EXITING;
+                            finish();
+                        }
                     }
-                }, EXIT_PAUSE_MSEC);
+                }, MAX_TTS_DELAY);
             }
         }
     }

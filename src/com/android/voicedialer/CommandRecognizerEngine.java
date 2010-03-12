@@ -1074,6 +1074,14 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                             Contacts.CONTENT_URI, contactId), literal, "", 0);
                 }
             }
+
+            else if ("X".equalsIgnoreCase(commands[0])) {
+                Intent intent = new Intent(RecognizerEngine.ACTION_RECOGNIZER_RESULT, null);
+                intent.putExtra(RecognizerEngine.SENTENCE_EXTRA, literal);
+                intent.putExtra(RecognizerEngine.SEMANTIC_EXTRA, semantic);
+                addIntent(intents, intent);
+            }
+
             // "CALL VoiceMail"
             else if ("voicemail".equalsIgnoreCase(commands[0]) && commands.length == 1) {
                 addCallIntent(intents, Uri.fromParts("voicemail", "x", null),
