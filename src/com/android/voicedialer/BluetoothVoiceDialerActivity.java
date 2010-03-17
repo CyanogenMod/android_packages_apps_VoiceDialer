@@ -185,7 +185,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
 
         mBluetoothAudioState = BluetoothHeadset.STATE_ERROR;
 
-        if (!BluetoothHeadset.DISABLE_BT_VOICE_DIALING) {
+        if (BluetoothHeadset.isBluetoothVoiceDialingEnabled(this)) {
             // we can't start recognizing until we get connected to the BluetoothHeadset
             // and have an connected audio state.  We will listen for these
             // states to change.
