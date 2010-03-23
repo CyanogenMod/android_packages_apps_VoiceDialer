@@ -246,7 +246,8 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                 if (label.length() == 0) continue;
 
                 // insert it into the result list
-                addClassName(openEntries, label, ri.activityInfo.name);
+                addClassName(openEntries, label,
+                        ri.activityInfo.packageName, ri.activityInfo.name);
 
                 // split it into individual words, and insert them
                 String[] words = label.split(" ");
@@ -261,7 +262,8 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                         if ("and".equalsIgnoreCase(word) ||
                                 "the".equalsIgnoreCase(word)) continue;
                         // add the word
-                        addClassName(openEntries, word, ri.activityInfo.name);
+                        addClassName(openEntries, word,
+                                ri.activityInfo.packageName, ri.activityInfo.name);
                     }
                 }
             }
@@ -321,23 +323,24 @@ public class CommandRecognizerEngine extends RecognizerEngine {
      * @param className class name to add
      */
     private static void addClassName(HashMap<String,String> openEntries,
-            String label, String className) {
+            String label, String packageName, String className) {
+        String completeName = packageName + "/" + className;
         String labelLowerCase = label.toLowerCase();
         String classList = openEntries.get(labelLowerCase);
 
         // first item in the list
         if (classList == null) {
-            openEntries.put(labelLowerCase, className);
+            openEntries.put(labelLowerCase, completeName);
             return;
         }
         // already in list
-        int index = classList.indexOf(className);
-        int after = index + className.length();
+        int index = classList.indexOf(completeName);
+        int after = index + completeName.length();
         if (index != -1 && (index == 0 || classList.charAt(index - 1) == ' ') &&
                 (after == classList.length() || classList.charAt(after) == ' ')) return;
 
         // add it to the end
-        openEntries.put(labelLowerCase, classList + ' ' + className);
+        openEntries.put(labelLowerCase, classList + ' ' + completeName);
     }
 
     // map letters in Latin1 Supplement to basic ascii
@@ -1122,13 +1125,15 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                     String cn = commands[i];
                     Intent intent = new Intent(Intent.ACTION_MAIN);
                     intent.addCategory("android.intent.category.VOICE_LAUNCH");
-                    intent.setClassName(cn.substring(0, cn.lastIndexOf('.')), cn);
+                    String packageName = cn.substring(0, cn.lastIndexOf('/'));
+                    String className = cn.substring(cn.lastIndexOf('/')+1, cn.length());
+                    intent.setClassName(packageName, className);
                     List<ResolveInfo> riList = pm.queryIntentActivities(intent, 0);
                     for (ResolveInfo ri : riList) {
                         String label = ri.loadLabel(pm).toString();
                         intent = new Intent(Intent.ACTION_MAIN);
                         intent.addCategory("android.intent.category.VOICE_LAUNCH");
-                        intent.setClassName(cn.substring(0, cn.lastIndexOf('.')), cn);
+                        intent.setClassName(packageName, className);
                         intent.putExtra(SENTENCE_EXTRA, literal.split(" ")[0] + " " + label);
                         addIntent(intents, intent);
                     }
