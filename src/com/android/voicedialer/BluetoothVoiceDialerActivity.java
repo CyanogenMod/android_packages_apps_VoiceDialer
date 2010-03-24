@@ -431,7 +431,8 @@ public class BluetoothVoiceDialerActivity extends Activity {
          */
         public void onRecognitionSuccess(final Intent[] intents) {
             if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess " + intents.length);
-            // store the intents in a member variable so that
+            // store the intents in a member variable so that we can access it
+            // later when the user choses which action to perform.
             mAvailableChoices = intents;
 
             mHandler.post(new Runnable() {

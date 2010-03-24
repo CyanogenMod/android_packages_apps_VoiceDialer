@@ -78,6 +78,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
     private File mContactsFile;
     private boolean mMinimizeResults;
     private boolean mAllowOpenEntries;
+    private HashMap<String,String> mOpenEntries;
 
     /**
      * Constructor.
@@ -89,11 +90,14 @@ public class CommandRecognizerEngine extends RecognizerEngine {
     }
 
     public void setContactsFile(File contactsFile) {
-        mContactsFile = contactsFile;
-        // if we change the contacts file, then we need to recreate the grammar.
-        if (mSrecGrammar != null) {
-            mSrecGrammar.destroy();
-            mSrecGrammar = null;
+        if (contactsFile != mContactsFile) {
+            mContactsFile = contactsFile;
+            // if we change the contacts file, then we need to recreate the grammar.
+            if (mSrecGrammar != null) {
+                mSrecGrammar.destroy();
+                mSrecGrammar = null;
+                mOpenEntries = null;
+            }
         }
     }
 
@@ -107,6 +111,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             if (mSrecGrammar != null) {
                 mSrecGrammar.destroy();
                 mSrecGrammar = null;
+                mOpenEntries = null;
             }
         }
         mAllowOpenEntries = allowOpenEntries;
@@ -169,6 +174,11 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             mSrecGrammar = mSrec.new Grammar(g2g.getPath());
             mSrecGrammar.setupRecognizer();
         }
+        if (mOpenEntries == null && mAllowOpenEntries) {
+            // make sure to load the openEntries mapping table.
+            loadOpenEntriesTable();
+        }
+
     }
 
     /**
@@ -210,16 +220,15 @@ public class CommandRecognizerEngine extends RecognizerEngine {
     /**
      * add a list of application labels to the 'open x' grammar
      */
-    private void addOpenEntriesToGrammar() throws InterruptedException, IOException {
+    private void loadOpenEntriesTable() throws InterruptedException, IOException {
         if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar");
 
         // fill this
-        HashMap<String, String> openEntries;
         File oe = mActivity.getFileStreamPath(OPEN_ENTRIES);
 
         // build and write list of entries
         if (!oe.exists()) {
-            openEntries = new HashMap<String, String>();
+            mOpenEntries = new HashMap<String, String>();
 
             // build a list of 'open' entries
             PackageManager pm = mActivity.getPackageManager();
@@ -246,7 +255,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                 if (label.length() == 0) continue;
 
                 // insert it into the result list
-                addClassName(openEntries, label,
+                addClassName(mOpenEntries, label,
                         ri.activityInfo.packageName, ri.activityInfo.name);
 
                 // split it into individual words, and insert them
@@ -262,7 +271,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                         if ("and".equalsIgnoreCase(word) ||
                                 "the".equalsIgnoreCase(word)) continue;
                         // add the word
-                        addClassName(openEntries, word,
+                        addClassName(mOpenEntries, word,
                                 ri.activityInfo.packageName, ri.activityInfo.name);
                     }
                 }
@@ -274,7 +283,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                  FileOutputStream fos = new FileOutputStream(oe);
                  try {
                     ObjectOutputStream oos = new ObjectOutputStream(fos);
-                    oos.writeObject(openEntries);
+                    oos.writeObject(mOpenEntries);
                     oos.close();
                 } finally {
                     fos.close();
@@ -292,7 +301,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                 FileInputStream fis = new FileInputStream(oe);
                 try {
                     ObjectInputStream ois = new ObjectInputStream(fis);
-                    openEntries = (HashMap<String, String>)ois.readObject();
+                    mOpenEntries = (HashMap<String, String>)ois.readObject();
                     ois.close();
                 } finally {
                     fis.close();
@@ -302,17 +311,29 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                 throw new IOException(e.toString());
             }
         }
+    }
+
+    private void addOpenEntriesToGrammar() throws InterruptedException, IOException {
+        // load up our open entries table
+        loadOpenEntriesTable();
 
         // add list of 'open' entries to the grammar
-        for (String label : openEntries.keySet()) {
+        for (String label : mOpenEntries.keySet()) {
             if (Thread.interrupted()) throw new InterruptedException();
-            String entry = openEntries.get(label);
+            String entry = mOpenEntries.get(label);
             // don't add if too many results
             int count = 0;
             for (int i = 0; 0 != (i = entry.indexOf(' ', i) + 1); count++) ;
             if (count > RESULT_LIMIT) continue;
             // add the word to the grammar
-            mSrecGrammar.addWordToSlot("@Opens", label, null, 1, "V='" + entry + "'");
+            // See Bug: 2457238.
+            // We used to store the entire list of components into the grammar.
+            // Unfortuantely, the recognizer has a fixed limit on the length of
+            // the "semantic" string, which is easy to overflow.  So now,
+            // the we store our own mapping table between words and component
+            // names, and the entries in the grammar have the same value
+            // for literal and semantic.
+            mSrecGrammar.addWordToSlot("@Opens", label, null, 1, "V='" + label + "'");
         }
     }
 
@@ -324,23 +345,23 @@ public class CommandRecognizerEngine extends RecognizerEngine {
      */
     private static void addClassName(HashMap<String,String> openEntries,
             String label, String packageName, String className) {
-        String completeName = packageName + "/" + className;
+        String component = packageName + "/" + className;
         String labelLowerCase = label.toLowerCase();
         String classList = openEntries.get(labelLowerCase);
 
         // first item in the list
         if (classList == null) {
-            openEntries.put(labelLowerCase, completeName);
+            openEntries.put(labelLowerCase, component);
             return;
         }
         // already in list
-        int index = classList.indexOf(completeName);
-        int after = index + completeName.length();
+        int index = classList.indexOf(component);
+        int after = index + component.length();
         if (index != -1 && (index == 0 || classList.charAt(index - 1) == ' ') &&
                 (after == classList.length() || classList.charAt(after) == ' ')) return;
 
         // add it to the end
-        openEntries.put(labelLowerCase, classList + ' ' + completeName);
+        openEntries.put(labelLowerCase, classList + ' ' + component);
     }
 
     // map letters in Latin1 Supplement to basic ascii
@@ -1121,21 +1142,33 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             // "OPEN ..."
             else if ("OPEN".equalsIgnoreCase(commands[0]) && mAllowOpenEntries) {
                 PackageManager pm = mActivity.getPackageManager();
-                for (int i = 1; i < commands.length; i++) {
-                    String cn = commands[i];
-                    Intent intent = new Intent(Intent.ACTION_MAIN);
-                    intent.addCategory("android.intent.category.VOICE_LAUNCH");
-                    String packageName = cn.substring(0, cn.lastIndexOf('/'));
-                    String className = cn.substring(cn.lastIndexOf('/')+1, cn.length());
-                    intent.setClassName(packageName, className);
-                    List<ResolveInfo> riList = pm.queryIntentActivities(intent, 0);
-                    for (ResolveInfo ri : riList) {
-                        String label = ri.loadLabel(pm).toString();
-                        intent = new Intent(Intent.ACTION_MAIN);
+                if (commands.length > 1 & mOpenEntries != null) {
+                    // the sematic value is equal to the literal in this case.
+                    // We have to do the mapping from this text to the
+                    // componentname ourselves.  See Bug: 2457238.
+                    // The problem is that the list of all componentnames
+                    // can be pretty large and overflow the limit that
+                    // the recognizer has.
+                    String meaning = mOpenEntries.get(commands[1]);
+                    String[] components = meaning.trim().split(" ");
+                    for (int i=0; i < components.length; i++) {
+                        String component = components[i];
+                        Intent intent = new Intent(Intent.ACTION_MAIN);
                         intent.addCategory("android.intent.category.VOICE_LAUNCH");
+                        String packageName = component.substring(
+                                0, component.lastIndexOf('/'));
+                        String className = component.substring(
+                                component.lastIndexOf('/')+1, component.length());
                         intent.setClassName(packageName, className);
-                        intent.putExtra(SENTENCE_EXTRA, literal.split(" ")[0] + " " + label);
-                        addIntent(intents, intent);
+                        List<ResolveInfo> riList = pm.queryIntentActivities(intent, 0);
+                        for (ResolveInfo ri : riList) {
+                            String label = ri.loadLabel(pm).toString();
+                            intent = new Intent(Intent.ACTION_MAIN);
+                            intent.addCategory("android.intent.category.VOICE_LAUNCH");
+                            intent.setClassName(packageName, className);
+                            intent.putExtra(SENTENCE_EXTRA, literal.split(" ")[0] + " " + label);
+                            addIntent(intents, intent);
+                        }
                     }
                 }
             }

@@ -25,7 +25,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="BluetoothVoiceDialerActivity">
+        <activity android:name="BluetoothVoiceDialerActivity"
+                  android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VOICE_COMMAND"/>
                 <category android:name="android.intent.category.DEFAULT" />
