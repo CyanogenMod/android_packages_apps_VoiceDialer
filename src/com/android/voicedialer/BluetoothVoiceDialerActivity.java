@@ -21,9 +21,9 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothHeadset;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
@@ -37,7 +37,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 import java.io.File;
-import java.util.Locale;
 import java.util.HashMap;
 
 /**
@@ -76,7 +75,7 @@ import java.util.HashMap;
  *     to the WAITING_FOR_CHOICE state.
  *   on RecognitionSuccess:
  *     if the result is "try again", prompt the user to say a command, begin
- *       listening for the command, and transitition back to the WAITING_FOR_COMMAND
+ *       listening for the command, and transition back to the WAITING_FOR_COMMAND
  *       state.
  *     if the result is "exit", then being speaking the "goodbye" message and
  *       transition to the SPEAKING_GOODBYE state.
@@ -98,19 +97,24 @@ public class BluetoothVoiceDialerActivity extends Activity {
     private static final String MICROPHONE_EXTRA = "microphone";
     private static final String CONTACTS_EXTRA = "contacts";
 
+    private static final String SPEAK_NOW_UTTERANCE = "speak_now";
+    private static final String TRY_AGAIN_UTTERANCE = "try_again";
     private static final String CHOSEN_ACTION_UTTERANCE = "chose_action";
     private static final String GOODBYE_UTTERANCE = "goodbye";
 
+    private static final int FIRST_UTTERANCE_DELAY = 300;
     private static final int MAX_TTS_DELAY = 6000;
 
     private static final int SAMPLE_RATE = 8000;
 
     private static final int INITIALIZING = 0;
-    private static final int WAITING_FOR_COMMAND = 1;
-    private static final int WAITING_FOR_CHOICE = 2;
-    private static final int SPEAKING_CHOSEN_ACTION = 3;
-    private static final int SPEAKING_GOODBYE = 4;
-    private static final int EXITING = 5;
+    private static final int SPEAKING_GREETING = 1;
+    private static final int WAITING_FOR_COMMAND = 2;
+    private static final int SPEAKING_TRY_AGAIN = 3;
+    private static final int WAITING_FOR_CHOICE = 4;
+    private static final int SPEAKING_CHOSEN_ACTION = 5;
+    private static final int SPEAKING_GOODBYE = 6;
+    private static final int EXITING = 7;
 
     private static final CommandRecognizerEngine mCommandEngine =
             new CommandRecognizerEngine();
@@ -243,16 +247,6 @@ public class BluetoothVoiceDialerActivity extends Activity {
                 return;
             }
 
-            int result = mTts.setLanguage(Locale.US);
-            if (result == TextToSpeech.LANG_MISSING_DATA ||
-                result == TextToSpeech.LANG_NOT_SUPPORTED) {
-               // Lanuage data is missing or the language is not supported.
-                Log.e(TAG, "Language is not available.");
-                mHandler.post(new ErrorRunnable(R.string.recognition_error));
-                exitActivity();
-                return;
-            }
-
             // The TTS engine has been successfully initialized.
             mWaitingForTts = false;
 
@@ -269,26 +263,31 @@ public class BluetoothVoiceDialerActivity extends Activity {
                 // the bluetooth connection is not up yet, still waiting.
             } else {
                 // we now have SCO connection and TTS, so we can start.
-                mHandler.post(new Runnable() {
+                mHandler.postDelayed(new Runnable() {
                     public void run() {
-                        mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
+                        mState = SPEAKING_GREETING;
+                        mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                                SPEAK_NOW_UTTERANCE);
                         mTts.speak(getString(R.string.speak_now_tts),
                             TextToSpeech.QUEUE_FLUSH,
                             mTtsParams);
-
-                        listenForCommand();
+                        // don't listen for the command yet, wait for the
+                        // utterance to finish.
                     }
-                });
+                }, FIRST_UTTERANCE_DELAY);
             }
         }
     }
 
-    class OnUtteranceCompletedListener implements TextToSpeech.OnUtteranceCompletedListener {
+    class OnUtteranceCompletedListener
+            implements TextToSpeech.OnUtteranceCompletedListener {
         public void onUtteranceCompleted(String utteranceId) {
             Log.d(TAG, "onUtteranceCompleted " + utteranceId);
             mHandler.post(new Runnable() {
                 public void run() {
-                    if (mState == SPEAKING_GOODBYE) {
+                    if (mState == SPEAKING_GREETING || mState == SPEAKING_TRY_AGAIN) {
+                        listenForCommand();
+                    } else if (mState == SPEAKING_GOODBYE) {
                         mState = EXITING;
                         finish();
                     } else if (mState == SPEAKING_CHOSEN_ACTION) {
@@ -333,18 +332,20 @@ public class BluetoothVoiceDialerActivity extends Activity {
                         // still waiting for the TTS to be set up.
                     } else {
                         // we now have SCO connection and TTS, so we can start.
-                        mHandler.post(new Runnable() {
+                        mHandler.postDelayed(new Runnable() {
                             public void run() {
                                 if (mTts != null) {
-                                    mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
+                                    mState = SPEAKING_GREETING;
+                                    mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                                            SPEAK_NOW_UTTERANCE);
                                     mTts.speak(getString(R.string.speak_now_tts),
                                         TextToSpeech.QUEUE_FLUSH,
                                         mTtsParams);
                                 }
-
-                                listenForCommand();
+                                // don't listen for the command yet, wait for the
+                                // utterance to finish.
                             }
-                        });
+                        }, FIRST_UTTERANCE_DELAY);
                     }
                 } else {
                     if (!mWaitingForScoConnection) {
@@ -406,7 +407,9 @@ public class BluetoothVoiceDialerActivity extends Activity {
                         mAlertDialog.dismiss();
                     }
 
-                    mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
+                    mState = SPEAKING_TRY_AGAIN;
+                    mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                            TRY_AGAIN_UTTERANCE);
                     mTts.speak(getString(R.string.no_results_tts),
                         TextToSpeech.QUEUE_FLUSH,
                         mTtsParams);
@@ -417,7 +420,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
                     findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
                     findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
 
-                    listenForCommand();
+                    // don't listen for command yet, wait for the utterance to complete.
                 }
             });
         }
@@ -431,6 +434,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
          */
         public void onRecognitionSuccess(final Intent[] intents) {
             if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess " + intents.length);
+
             // store the intents in a member variable so that we can access it
             // later when the user choses which action to perform.
             mAvailableChoices = intents;
@@ -474,10 +478,14 @@ public class BluetoothVoiceDialerActivity extends Activity {
 
                         // Speak the sentence for the action we are about
                         // to dispatch so that the user knows what is happening.
+                        String sentenceSpoken = spaceOutDigits(
+                                mAvailableChoices[0].getStringExtra(
+                                    RecognizerEngine.SENTENCE_EXTRA));
+
                         mState = SPEAKING_CHOSEN_ACTION;
                         mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
                                 CHOSEN_ACTION_UTTERANCE);
-                        mTts.speak(sentences[0],
+                        mTts.speak(sentenceSpoken,
                             TextToSpeech.QUEUE_FLUSH,
                             mTtsParams);
                         mChosenAction = intents[0];
@@ -663,14 +671,17 @@ public class BluetoothVoiceDialerActivity extends Activity {
     private void speakChoices() {
         if (Config.LOGD) Log.d(TAG, "speakChoices");
 
+        String sentenceSpoken = spaceOutDigits(
+                mAvailableChoices[0].getStringExtra(
+                    RecognizerEngine.SENTENCE_EXTRA));
+
         // When we have multiple choices, they will be of the form
         // "call jack jones at home", "call jack jones on mobile".
         // Speak the entire first sentence, then the last word from each
-        // of the remainig sentences.
+        // of the remaining sentences.  This will come out to something
+        // like "call jack jones at home mobile or work".
         StringBuilder builder = new StringBuilder();
-        String sentence = mAvailableChoices[0].getStringExtra(
-                RecognizerEngine.SENTENCE_EXTRA);
-        builder.append(sentence);
+        builder.append(sentenceSpoken);
 
         int count = mAvailableChoices.length;
         for (int i=1; i < count; i++) {
@@ -679,15 +690,50 @@ public class BluetoothVoiceDialerActivity extends Activity {
             } else {
                 builder.append(" ");
             }
-            sentence = mAvailableChoices[i].getStringExtra(
+            String tmpSentence = mAvailableChoices[i].getStringExtra(
                     RecognizerEngine.SENTENCE_EXTRA);
-            String[] words = sentence.trim().split(" ");
+            String[] words = tmpSentence.trim().split(" ");
             builder.append(words[words.length-1]);
         }
         mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
         mTts.speak(builder.toString(),
             TextToSpeech.QUEUE_ADD,
             mTtsParams);
+    }
+
+
+    private static String spaceOutDigits(String sentenceDisplay) {
+        // if we have a sentence of the form "dial 123 456 7890",
+        // we need to insert a space between each digit, otherwise
+        // the TTS engine will say "dial one hundred twenty three...."
+        // When there already is a space, we also insert a comma,
+        // so that it pauses between sections.  For the displayable
+        // sentence "dial 123 456 7890" it will speak
+        // "dial 1 2 3, 4 5 6, 7 8 9 0"
+        char buffer[] = sentenceDisplay.toCharArray();
+        StringBuilder builder = new StringBuilder();
+        boolean buildingNumber = false;
+        int l = sentenceDisplay.length();
+        for (int index = 0; index < l; index++) {
+            char c = buffer[index];
+            if (Character.isDigit(c)) {
+                if (buildingNumber) {
+                    builder.append(" ");
+                }
+                buildingNumber = true;
+                builder.append(c);
+            } else if (c == ' ') {
+                if (buildingNumber) {
+                    builder.append(",");
+                } else {
+                    builder.append(" ");
+                }
+            } else {
+                buildingNumber = false;
+                builder.append(c);
+            }
+        }
+        return builder.toString();
     }
 
     private void startActivityHelp(Intent intent) {
