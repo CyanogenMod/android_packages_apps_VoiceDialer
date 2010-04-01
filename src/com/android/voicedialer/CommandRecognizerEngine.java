@@ -1143,7 +1143,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             else if ("OPEN".equalsIgnoreCase(commands[0]) && mAllowOpenEntries) {
                 PackageManager pm = mActivity.getPackageManager();
                 if (commands.length > 1 & mOpenEntries != null) {
-                    // the sematic value is equal to the literal in this case.
+                    // the semantic value is equal to the literal in this case.
                     // We have to do the mapping from this text to the
                     // componentname ourselves.  See Bug: 2457238.
                     // The problem is that the list of all componentnames
