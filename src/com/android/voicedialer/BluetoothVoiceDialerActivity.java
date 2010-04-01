@@ -135,7 +135,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
     private boolean mWaitingForScoConnection;
     private Intent[] mAvailableChoices;
     private Intent mChosenAction;
-    private int mOriginalVoiceVolume;
+    private int mBluetoothVoiceVolume;
     private int mState;
     private AlertDialog mAlertDialog;
 
@@ -201,7 +201,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
             mTts = new TextToSpeech(this, new TtsInitListener());
             mTtsParams = new HashMap<String, String>();
             mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-                    String.valueOf(AudioManager.STREAM_VOICE_CALL));
+                    String.valueOf(AudioManager.STREAM_BLUETOOTH_SCO));
         } else {
             // bluetooth voice dialing is disabled, just exit
             finish();
@@ -254,10 +254,16 @@ public class BluetoothVoiceDialerActivity extends Activity {
             // TTS over bluetooth is really loud,
             // store the current volume away, and then turn it down.
             // we will restore it in onStop.
-            mOriginalVoiceVolume = mAudioManager.getStreamVolume(
-                    AudioManager.STREAM_VOICE_CALL);
-            mAudioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,
-                    mOriginalVoiceVolume/2, 0);
+            // Limit volume to -18dB. Stream volume range represents approximately 50dB
+            // (See AudioSystem.cpp linearToLog()) so the number of steps corresponding
+            // to 18dB is 18 / (50 / maxSteps).
+            mBluetoothVoiceVolume = mAudioManager.getStreamVolume(
+                    AudioManager.STREAM_BLUETOOTH_SCO);
+            int maxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_BLUETOOTH_SCO);
+            int volume = maxVolume - ((18 / (50/maxVolume)) + 1);
+            if (mBluetoothVoiceVolume > volume) {
+                mAudioManager.setStreamVolume(AudioManager.STREAM_BLUETOOTH_SCO, volume, 0);
+            }
 
             if (mWaitingForScoConnection) {
                 // the bluetooth connection is not up yet, still waiting.
@@ -845,8 +851,8 @@ public class BluetoothVoiceDialerActivity extends Activity {
         }
 
         // set the volume back to the level it was before we started.
-        mAudioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,
-                                      mOriginalVoiceVolume, 0);
+        mAudioManager.setStreamVolume(AudioManager.STREAM_BLUETOOTH_SCO,
+                                      mBluetoothVoiceVolume, 0);
 
         // shut down bluetooth, if it exists
         if (mBluetoothHeadset != null) {
