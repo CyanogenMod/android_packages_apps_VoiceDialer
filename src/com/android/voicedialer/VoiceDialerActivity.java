@@ -91,6 +91,9 @@ public class VoiceDialerActivity extends Activity {
         if (Config.LOGD) Log.d(TAG, "onCreate ");
         mHandler = new Handler();
         mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+        mAudioManager.requestAudioFocus(
+                null, AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
 
         // tell music player to shut up so we can hear
         Intent i = new Intent("com.android.music.musicservicecommand");
@@ -207,6 +210,8 @@ public class VoiceDialerActivity extends Activity {
     @Override
     protected void onStop() {
         if (Config.LOGD) Log.d(TAG, "onStop");
+
+        mAudioManager.abandonAudioFocus(null);
 
         // no more tester
         mVoiceDialerTester = null;

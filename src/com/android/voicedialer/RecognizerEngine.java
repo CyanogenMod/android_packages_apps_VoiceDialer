@@ -124,7 +124,7 @@ abstract public class RecognizerEngine {
 
             if (mSampleRate != sampleRate) {
                 // sample rate has changed since we last used this recognizerEngine.
-                // destroy the grammar and regererate.
+                // destroy the grammar and regenerate.
                 if (mSrecGrammar != null) {
                     mSrecGrammar.destroy();
                 }

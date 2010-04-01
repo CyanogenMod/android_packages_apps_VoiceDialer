@@ -176,6 +176,9 @@ public class BluetoothVoiceDialerActivity extends Activity {
         mChosenAction = null;
         mHandler = new Handler();
         mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+        mAudioManager.requestAudioFocus(
+                null, AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
 
         // tell music player to shut up so we can hear
         Intent i = new Intent("com.android.music.musicservicecommand");
@@ -872,6 +875,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
         // set the volume back to the level it was before we started.
         mAudioManager.setStreamVolume(AudioManager.STREAM_BLUETOOTH_SCO,
                                       mBluetoothVoiceVolume, 0);
+        mAudioManager.abandonAudioFocus(null);
 
         // shut down bluetooth, if it exists
         if (mBluetoothHeadset != null) {

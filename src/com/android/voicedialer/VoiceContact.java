@@ -114,7 +114,6 @@ public class VoiceContact {
             // TODO: handle type != 0,1,2, and use LABEL
             Phone.LABEL,
             Phone.DISPLAY_NAME,
-            //Contacts.Phones.NUMBER,
             Phone.CONTACT_ID,
         };
 
@@ -123,14 +122,13 @@ public class VoiceContact {
         Cursor cursor = activity.getContentResolver().query(
                 Phone.CONTENT_URI, phonesProjection,
                 Phone.NUMBER + " NOT NULL", null,
-                Phone.LAST_TIME_CONTACTED + " DESC");
+                Phone.LAST_TIME_CONTACTED + " DESC, " + Phone.DISPLAY_NAME + " ASC");
 
         final int phoneIdColumn = cursor.getColumnIndexOrThrow(Phone._ID);
         final int typeColumn = cursor.getColumnIndexOrThrow(Phone.TYPE);
         final int isPrimaryColumn = cursor.getColumnIndexOrThrow(Phone.IS_PRIMARY);
-        int labelColumn = cursor.getColumnIndexOrThrow(Phone.LABEL);
+        final int labelColumn = cursor.getColumnIndexOrThrow(Phone.LABEL);
         final int nameColumn = cursor.getColumnIndexOrThrow(Phone.DISPLAY_NAME);
-        //final int numberColumn = cursor.getColumnIndexOrThrow(Contacts.Phones.NUMBER);
         final int personIdColumn = cursor.getColumnIndexOrThrow(Phone.CONTACT_ID);
 
         // pieces of next VoiceContact
@@ -149,7 +147,6 @@ public class VoiceContact {
             long isPrimaryAtCursor = cursor.getLong(isPrimaryColumn);
             String labelAtCursor = cursor.getString(labelColumn);
             String nameAtCursor = cursor.getString(nameColumn);
-            //String numberAtCursor = cursor.getString(numberColumn);
             long personIdAtCursor = cursor.getLong(personIdColumn);
 
             /*
@@ -159,7 +156,6 @@ public class VoiceContact {
                         + " isPrimary=" + isPrimaryAtCursor
                         + " label=" + labelAtCursor
                         + " name=" + nameAtCursor
-                        //+ " number=" + numberAtCursor
                         + " personId=" + personIdAtCursor
                         );
             }
