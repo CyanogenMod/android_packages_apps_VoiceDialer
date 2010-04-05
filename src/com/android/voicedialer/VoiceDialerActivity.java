@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (C) 2010 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,72 +18,161 @@ package com.android.voicedialer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Intent;
+import android.bluetooth.BluetoothHeadset;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.media.ToneGenerator;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemProperties;
 import android.os.Vibrator;
+import android.speech.tts.TextToSpeech;
 import android.util.Config;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.io.IOException;
 
 /**
  * TODO: get rid of the anonymous classes
- * TODO: merge with BluetoothVoiceDialerActivity
  *
  * This class is the user interface of the VoiceDialer application.
- * Its life cycle is as follows:
- * <ul>
- * <li>The user presses the recognize key, and the VoiceDialerActivity starts.
- * <li>A {@link RecognizerEngine} instance is created.
- * <li>The RecognizerEngine signals the user to speak with the Vibrator.
- * <li>The RecognizerEngine captures, processes, and recognizes speech
- * against the names in the contact list.
- * <li>The RecognizerEngine calls onRecognizerSuccess with a list of
- * sentences and corresponding Intents.
- * <li>If the list is one element long, the corresponding Intent is dispatched.
- * <li>Else an {@link AlertDialog} containing the list of sentences is
- * displayed.
- * <li>The user selects the desired sentence from the list,
- * and the corresponding Intent is dispatched.
- * <ul>
- * Notes:
- * <ul>
- * <li>The RecognizerEngine is kept and reused for the next recognition cycle.
- * </ul>
+ * It begins in the INITIALIZING state.
+ *
+ * INITIALIZING :
+ *  This transitions out on events from TTS and the BluetoothHeadset
+ *   once TTS initialized and SCO channel set up:
+ *     * prompt the user "speak now"
+ *     * transition to the SPEAKING_GREETING state
+ *
+ * SPEAKING_GREETING:
+ *  This transitions out only on events from TTS or the fallback runnable
+ *   once the greeting utterance completes:
+ *     * begin listening for the command using the {@link CommandRecognizerEngine}
+ *     * transition to the WAITING_FOR_COMMAND state
+ *
+ * WAITING_FOR_COMMAND :
+ * This transitions out only on events from the recognizer
+ *   on RecognitionFailure or RecognitionError:
+ *     * begin speaking "try again."
+ *     * transition to state SPEAKING_TRY_AGAIN
+ *   on RecognitionSuccess:
+ *     single result:
+ *       * begin speaking the sentence describing the intent
+ *       * transition to the SPEAKING_CHOSEN_ACTION
+ *     multiple results:
+ *       * begin speaking each of the choices in order
+ *       * transition to the SPEAKING_CHOICES state
+ *
+ * SPEAKING_TRY_AGAIN:
+ * This transitions out only on events from TTS or the fallback runnable
+ *   once the try again utterance completes:
+ *     * begin listening for the command using the {@link CommandRecognizerEngine}
+ *     * transition to the LISTENING_FOR_COMMAND state
+ *
+ * SPEAKING_CHOSEN_ACTION:
+ *  This transitions out only on events from TTS or the fallback runnable
+ *   once the utterance completes:
+ *     * dispatch the intent that was chosen
+ *     * transition to the EXITING state
+ *     * finish the activity
+ *
+ * SPEAKING_CHOICES:
+ *  This transitions out only on events from TTS or the fallback runnable
+ *   once the utterance completes:
+ *     * begin listening for the user's choice using the
+ *         {@link PhoneTypeChoiceRecognizerEngine}
+ *     * transition to the WAITING_FOR_CHOICE state.
+ *
+ * WAITING_FOR_CHOICE:
+ *  This transitions out only on events from the recognizer
+ *   on RecognitionFailure or RecognitionError:
+ *     * begin speaking the "invalid choice" message, along with the list
+ *       of choices
+ *     * transition to the SPEAKING_CHOICES state
+ *   on RecognitionSuccess:
+ *     if the result is "try again", prompt the user to say a command, begin
+ *       listening for the command, and transition back to the WAITING_FOR_COMMAND
+ *       state.
+ *     if the result is "exit", then being speaking the "goodbye" message and
+ *       transition to the SPEAKING_GOODBYE state.
+ *     if the result is a valid choice, begin speaking the action chosen,initiate
+ *       the command the user has choose and exit.
+ *     if not a valid choice, speak the "invalid choice" message, begin
+ *       speaking the choices in order again, transition to the
+ *       SPEAKING_CHOICES
+ *
+ * SPEAKING_GOODBYE:
+ *  This transitions out only on events from TTS or the fallback runnable
+ *   after a time out, finish the activity.
+ *
  */
+
 public class VoiceDialerActivity extends Activity {
 
     private static final String TAG = "VoiceDialerActivity";
 
     private static final String MICROPHONE_EXTRA = "microphone";
     private static final String CONTACTS_EXTRA = "contacts";
-    private static final String SAMPLE_RATE_EXTRA = "samplerate";
-    private static final String INTENTS_KEY = "intents";
 
-    private static final int FAIL_PAUSE_MSEC = 5000;
-    private static final int SAMPLE_RATE = 11025;
+    private static final String SPEAK_NOW_UTTERANCE = "speak_now";
+    private static final String TRY_AGAIN_UTTERANCE = "try_again";
+    private static final String CHOSEN_ACTION_UTTERANCE = "chose_action";
+    private static final String GOODBYE_UTTERANCE = "goodbye";
+    private static final String CHOICES_UTTERANCE = "choices";
 
-    private static final int DIALOG_ID = 1;
+    private static final int FIRST_UTTERANCE_DELAY = 300;
+    private static final int MAX_TTS_DELAY = 6000;
+    private static final int EXIT_DELAY = 2000;
 
-    private final static CommandRecognizerEngine mCommandEngine =
+    private static final int BLUETOOTH_SAMPLE_RATE = 8000;
+    private static final int REGULAR_SAMPLE_RATE = 11025;
+
+    private static final int INITIALIZING = 0;
+    private static final int SPEAKING_GREETING = 1;
+    private static final int WAITING_FOR_COMMAND = 2;
+    private static final int SPEAKING_TRY_AGAIN = 3;
+    private static final int SPEAKING_CHOICES = 4;
+    private static final int WAITING_FOR_CHOICE = 5;
+    private static final int WAITING_FOR_DIALOG_CHOICE = 6;
+    private static final int SPEAKING_CHOSEN_ACTION = 7;
+    private static final int SPEAKING_GOODBYE = 8;
+    private static final int EXITING = 9;
+
+    private static final CommandRecognizerEngine mCommandEngine =
             new CommandRecognizerEngine();
+    private static final PhoneTypeChoiceRecognizerEngine mPhoneTypeChoiceEngine =
+            new PhoneTypeChoiceRecognizerEngine();
     private CommandRecognizerClient mCommandClient;
-    private VoiceDialerTester mVoiceDialerTester;
+    private ChoiceRecognizerClient mChoiceClient;
+    private ToneGenerator mToneGenerator;
     private Handler mHandler;
     private Thread mRecognizerThread = null;
     private AudioManager mAudioManager;
-    private ToneGenerator mToneGenerator;
+    private BluetoothHeadset mBluetoothHeadset;
+    private TextToSpeech mTts;
+    private HashMap<String, String> mTtsParams;
+    private VoiceDialerBroadcastReceiver mReceiver;
+    private int mBluetoothAudioState;
+    private boolean mWaitingForTts;
+    private boolean mWaitingForScoConnection;
+    private Intent[] mAvailableChoices;
+    private Intent mChosenAction;
+    private int mBluetoothVoiceVolume;
+    private int mState;
     private AlertDialog mAlertDialog;
+    private Runnable mFallbackRunnable;
+    private boolean mUsingBluetooth = false;
+    private int mSampleRate;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -96,16 +185,18 @@ public class VoiceDialerActivity extends Activity {
     }
 
     protected void onStart() {
-        if (Config.LOGD) Log.d(TAG, "onStart "  + getIntent());
+        if (Config.LOGD) Log.d(TAG, "onStart " + getIntent());
         super.onStart();
+
+        mState = INITIALIZING;
+        mChosenAction = null;
         mAudioManager.requestAudioFocus(
                 null, AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
 
-        mCommandEngine.setContactsFile(newFile(getArg(CONTACTS_EXTRA)));
-        mCommandClient = new CommandRecognizerClient();
-        mCommandEngine.setMinimizeResults(false);
-        mCommandEngine.setAllowOpenEntries(true);
+        // set this flag so this activity will stay in front of the keyguard
+        int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
+        getWindow().addFlags(flags);
 
         // open main window
         setTheme(android.R.style.Theme_Dialog);
@@ -115,259 +206,361 @@ public class VoiceDialerActivity extends Activity {
         findViewById(R.id.retry_view).setVisibility(View.INVISIBLE);
         findViewById(R.id.microphone_loading_view).setVisibility(View.VISIBLE);
         if (RecognizerLogger.isEnabled(this)) {
-            ((TextView)findViewById(R.id.substate)).setText(R.string.logging_enabled);
+            ((TextView) findViewById(R.id.substate)).setText(R.string.logging_enabled);
         }
 
-        // start the tester, if present
-        mVoiceDialerTester = null;
-        File micDir = newFile(getArg(MICROPHONE_EXTRA));
-        if (micDir != null && micDir.isDirectory()) {
-            mVoiceDialerTester = new VoiceDialerTester(micDir);
-            startNextTest();
-            return;
+        // Get handle to BluetoothHeadset object
+        IntentFilter audioStateFilter;
+        audioStateFilter = new IntentFilter();
+        audioStateFilter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
+        mReceiver = new VoiceDialerBroadcastReceiver();
+        registerReceiver(mReceiver, audioStateFilter);
+
+        mCommandEngine.setContactsFile(newFile(getArg(CONTACTS_EXTRA)));
+        mCommandEngine.setMinimizeResults(true);
+        mCommandEngine.setAllowOpenEntries(false);
+        mCommandClient = new CommandRecognizerClient();
+        mChoiceClient = new ChoiceRecognizerClient();
+
+        mBluetoothAudioState = BluetoothHeadset.STATE_ERROR;
+
+        if (BluetoothHeadset.isBluetoothVoiceDialingEnabled(this) &&
+                Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction())) {
+            mUsingBluetooth = true;
+        } else {
+            mUsingBluetooth = false;
         }
 
-        startWork();
-    }
+        if (mUsingBluetooth) {
+            if (Config.LOGD) Log.d(TAG, "using bluetooth");
+            mSampleRate = BLUETOOTH_SAMPLE_RATE;
+            mCommandEngine.setMinimizeResults(true);
+            mCommandEngine.setAllowOpenEntries(false);
 
-    private void startWork() {
-        // start the engine
-        mRecognizerThread = new Thread() {
-            public void run() {
-                if (Config.LOGD) Log.d(TAG, "onCreate.Runnable.run");
-                String sampleRateStr = getArg(SAMPLE_RATE_EXTRA);
-                int sampleRate = SAMPLE_RATE;
-                if (sampleRateStr != null) {
-                    sampleRate = Integer.parseInt(sampleRateStr);
-                }
-                mCommandEngine.recognize(mCommandClient, VoiceDialerActivity.this,
-                        newFile(getArg(MICROPHONE_EXTRA)),
-                        sampleRate);
-            }
-        };
-        mRecognizerThread.start();
-    }
+            // we can't start recognizing until we get connected to the BluetoothHeadset
+            // and have a connected audio state.  We will listen for these
+            // states to change.
+            mWaitingForScoConnection = true;
+            mBluetoothHeadset = new BluetoothHeadset(this,
+                    mBluetoothHeadsetServiceListener);
 
-    private String getArg(String name) {
-        if (name == null) return null;
-        String arg = getIntent().getStringExtra(name);
-        if (arg != null) return arg;
-        arg = SystemProperties.get("app.voicedialer." + name);
-        return arg != null && arg.length() > 0 ? arg : null;
-    }
+            // initialize the text to speech system
+            mWaitingForTts = true;
+            mTts = new TextToSpeech(this, new TtsInitListener());
+            mTtsParams = new HashMap<String, String>();
+            mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                    String.valueOf(AudioManager.STREAM_VOICE_CALL));
+            // we need to wait for the TTS system and the SCO connection
+            // before we can start listening.
+        } else {
+            if (Config.LOGD) Log.d(TAG, "not using bluetooth");
+            mSampleRate = REGULAR_SAMPLE_RATE;
+            mCommandEngine.setMinimizeResults(false);
+            mCommandEngine.setAllowOpenEntries(true);
 
-    private static File newFile(String name) {
-        return name != null ? new File(name) : null;
-    }
-
-    private void startNextTest() {
-        mHandler.postDelayed(new Runnable() {
-            public void run() {
-                if (mVoiceDialerTester == null) {
-                    return;
-                }
-                if (!mVoiceDialerTester.stepToNextTest()) {
-                    mVoiceDialerTester.report();
-                    notifyText("Test completed!");
-                    finish();
-                    return;
-                }
-                File microphone = mVoiceDialerTester.getWavFile();
-                File contacts = newFile(getArg(CONTACTS_EXTRA));
-
-                notifyText("Testing\n" + microphone + "\n" + contacts);
-                mCommandEngine.recognize(mCommandClient, VoiceDialerActivity.this,
-                        microphone, SAMPLE_RATE);
-            }
-        }, 2000);
-    }
-
-    private int playSound(int toneType) {
-        int msecDelay = 1;
-
-        // use the MediaPlayer to prompt the user
-        if (mToneGenerator != null) {
-            mToneGenerator.startTone(toneType);
-            msecDelay = StrictMath.max(msecDelay, 300);
+            // we're not using bluetooth apparently, just start listening.
+            listenForCommand();
         }
-
-        // use the Vibrator to prompt the user
-        if ((mAudioManager != null) &&
-                (mAudioManager.shouldVibrate(AudioManager.VIBRATE_TYPE_RINGER))) {
-            final int VIBRATOR_TIME = 150;
-            final int VIBRATOR_GUARD_TIME = 150;
-            Vibrator vibrator = new Vibrator();
-            vibrator.vibrate(VIBRATOR_TIME);
-            msecDelay = StrictMath.max(msecDelay,
-                    VIBRATOR_TIME + VIBRATOR_GUARD_TIME);
-        }
-
-        return msecDelay;
     }
 
-    @Override
-    protected void onStop() {
-        if (Config.LOGD) Log.d(TAG, "onStop");
-
-        mAudioManager.abandonAudioFocus(null);
-
-        // no more tester
-        mVoiceDialerTester = null;
-
-        // shut down recognizer and wait for the thread to complete
-        if (mRecognizerThread !=  null) {
-            mRecognizerThread.interrupt();
-            try {
-                mRecognizerThread.join();
-            } catch (InterruptedException e) {
-                if (Config.LOGD) Log.d(TAG, "onStop mRecognizerThread.join exception " + e);
-            }
-            mRecognizerThread = null;
+    class ErrorRunnable implements Runnable {
+        private int mErrorMsg;
+        public ErrorRunnable(int errorMsg) {
+            mErrorMsg = errorMsg;
         }
-
-        // clean up UI
-        mHandler.removeCallbacks(mMicFlasher);
-        mHandler.removeMessages(0);
-
-        // clean up ToneGenerator
-        if (mToneGenerator != null) {
-            mToneGenerator.release();
-            mToneGenerator = null;
-        }
-
-        super.onStop();
-
-        // It makes no sense to have this activity maintain state when in
-        // background.  When it stops, it should just be destroyed.
-        finish();
-    }
-
-    private void notifyText(final CharSequence msg) {
-        Toast.makeText(VoiceDialerActivity.this, msg, Toast.LENGTH_SHORT).show();
-    }
-
-    private Runnable mMicFlasher = new Runnable() {
-        int visible = View.VISIBLE;
 
         public void run() {
-            findViewById(R.id.microphone_view).setVisibility(visible);
-            findViewById(R.id.state).setVisibility(visible);
-            visible = visible == View.VISIBLE ? View.INVISIBLE : View.VISIBLE;
-            mHandler.postDelayed(this, 750);
+            // put up an error and exit
+            mHandler.removeCallbacks(mMicFlasher);
+            ((TextView)findViewById(R.id.state)).setText(R.string.failure);
+            ((TextView)findViewById(R.id.substate)).setText(mErrorMsg);
+            ((TextView)findViewById(R.id.substate)).setText(
+                    R.string.headset_connection_lost);
+            findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
+            findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
+
+
+            if (!mUsingBluetooth) {
+                playSound(ToneGenerator.TONE_PROP_NACK);
+            }
         }
+    }
+
+    class OnTtsCompletionRunnable implements Runnable {
+        private boolean mFallback;
+
+        OnTtsCompletionRunnable(boolean fallback) {
+            mFallback = fallback;
+        }
+
+        public void run() {
+            if (mFallback) {
+                Log.e(TAG, "utterance completion not delivered, using fallback");
+            }
+            Log.d(TAG, "onTtsCompletionRunnable");
+            if (mState == SPEAKING_GREETING || mState == SPEAKING_TRY_AGAIN) {
+                listenForCommand();
+            } else if (mState == SPEAKING_CHOICES) {
+                listenForChoice();
+            } else if (mState == SPEAKING_GOODBYE) {
+                mState = EXITING;
+                finish();
+            } else if (mState == SPEAKING_CHOSEN_ACTION) {
+                mState = EXITING;
+                startActivityHelp(mChosenAction);
+                finish();
+            }
+        }
+    }
+
+    class GreetingRunnable implements Runnable {
+        public void run() {
+            mState = SPEAKING_GREETING;
+            mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                    SPEAK_NOW_UTTERANCE);
+            mTts.speak(getString(R.string.speak_now_tts),
+                TextToSpeech.QUEUE_FLUSH,
+                mTtsParams);
+            // Normally, we will begin listening for the command after the
+            // utterance completes.  As a fallback in case the utterance
+            // does not complete, post a delayed runnable to fire
+            // the intent.
+            mFallbackRunnable = new OnTtsCompletionRunnable(true);
+            mHandler.postDelayed(mFallbackRunnable, MAX_TTS_DELAY);
+        }
+    }
+
+    class TtsInitListener implements TextToSpeech.OnInitListener {
+        public void onInit(int status) {
+            // status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
+            if (Config.LOGD) Log.d(TAG, "onInit for tts");
+            if (status != TextToSpeech.SUCCESS) {
+                // Initialization failed.
+                Log.e(TAG, "Could not initialize TextToSpeech.");
+                mHandler.post(new ErrorRunnable(R.string.recognition_error));
+                exitActivity();
+                return;
+            }
+
+            if (mTts == null) {
+                Log.e(TAG, "null tts");
+                mHandler.post(new ErrorRunnable(R.string.recognition_error));
+                exitActivity();
+                return;
+            }
+
+            mTts.setOnUtteranceCompletedListener(new OnUtteranceCompletedListener());
+
+            // The TTS engine has been successfully initialized.
+            mWaitingForTts = false;
+
+            // TTS over bluetooth is really loud,
+            // Limit volume to -18dB. Stream volume range represents approximately 50dB
+            // (See AudioSystem.cpp linearToLog()) so the number of steps corresponding
+            // to 18dB is 18 / (50 / maxSteps).
+            mBluetoothVoiceVolume = mAudioManager.getStreamVolume(
+                    AudioManager.STREAM_BLUETOOTH_SCO);
+            int maxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_BLUETOOTH_SCO);
+            int volume = maxVolume - ((18 / (50/maxVolume)) + 1);
+            if (mBluetoothVoiceVolume > volume) {
+                mAudioManager.setStreamVolume(AudioManager.STREAM_BLUETOOTH_SCO, volume, 0);
+            }
+
+            if (mWaitingForScoConnection) {
+                // the bluetooth connection is not up yet, still waiting.
+            } else {
+                // we now have SCO connection and TTS, so we can start.
+                mHandler.postDelayed(new GreetingRunnable(), FIRST_UTTERANCE_DELAY);
+            }
+        }
+    }
+
+    class OnUtteranceCompletedListener
+            implements TextToSpeech.OnUtteranceCompletedListener {
+        public void onUtteranceCompleted(String utteranceId) {
+            Log.d(TAG, "onUtteranceCompleted " + utteranceId);
+            // since the utterance has completed, we no longer need the fallback.
+            mHandler.removeCallbacks(mFallbackRunnable);
+            mFallbackRunnable = null;
+            mHandler.post(new OnTtsCompletionRunnable(false));
+        }
+    }
+
+    private BluetoothHeadset.ServiceListener mBluetoothHeadsetServiceListener =
+            new BluetoothHeadset.ServiceListener() {
+        public void onServiceConnected() {
+            if (mBluetoothHeadset != null &&
+                    mBluetoothHeadset.getState() == BluetoothHeadset.STATE_CONNECTED) {
+                mBluetoothHeadset.startVoiceRecognition();
+            }
+
+            if (Config.LOGD) Log.d(TAG, "onServiceConnected");
+        }
+        public void onServiceDisconnected() {}
     };
 
+    private class VoiceDialerBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)) {
+                mBluetoothAudioState = intent.getIntExtra(
+                        BluetoothHeadset.EXTRA_AUDIO_STATE,
+                        BluetoothHeadset.STATE_ERROR);
+                if (Config.LOGD) Log.d(TAG, "HEADSET AUDIO_STATE_CHANGED -> " +
+                        mBluetoothAudioState);
 
-    protected Dialog onCreateDialog(int id, Bundle args) {
-        final Intent intents[] = (Intent[])args.getParcelableArray(INTENTS_KEY);
+                if (mBluetoothAudioState == BluetoothHeadset.AUDIO_STATE_CONNECTED &&
+                    mWaitingForScoConnection) {
+                    // SCO channel has just become available.
+                    mWaitingForScoConnection = false;
+                    if (mWaitingForTts) {
+                        // still waiting for the TTS to be set up.
+                    } else {
+                        // we now have SCO connection and TTS, so we can start.
+                        mHandler.postDelayed(new GreetingRunnable(), FIRST_UTTERANCE_DELAY);
+                    }
+                } else {
+                    if (!mWaitingForScoConnection) {
+                        // apparently our connection to the headset has dropped.
+                        // we won't be able to continue voicedialing.
+                        if (Config.LOGD) Log.d(TAG, "lost sco connection");
 
-        DialogInterface.OnClickListener clickListener =
-            new DialogInterface.OnClickListener() {
+                        mHandler.post(new ErrorRunnable(
+                                R.string.headset_connection_lost));
 
-            public void onClick(DialogInterface dialog, int which) {
-                if (Config.LOGD) Log.d(TAG, "clickListener.onClick " + which);
-                startActivityHelp(intents[which]);
-                dismissDialog(DIALOG_ID);
-                mAlertDialog = null;
-                finish();
+                        exitActivity();
+                    }
+                }
             }
-
-        };
-
-        DialogInterface.OnCancelListener cancelListener =
-            new DialogInterface.OnCancelListener() {
-
-            public void onCancel(DialogInterface dialog) {
-                if (Config.LOGD) Log.d(TAG, "cancelListener.onCancel");
-                dismissDialog(DIALOG_ID);
-                mAlertDialog = null;
-                finish();
-            }
-
-        };
-
-        DialogInterface.OnClickListener positiveListener =
-            new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int which) {
-                if (Config.LOGD) Log.d(TAG, "positiveListener.onClick " + which);
-                if (intents.length == 1 && which == -1) which = 0;
-                startActivityHelp(intents[which]);
-                dismissDialog(DIALOG_ID);
-                mAlertDialog = null;
-                finish();
-            }
-
-        };
-
-        DialogInterface.OnClickListener negativeListener =
-            new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int which) {
-                if (Config.LOGD) Log.d(TAG, "negativeListener.onClick " + which);
-                dismissDialog(DIALOG_ID);
-                mAlertDialog = null;
-                finish();
-            }
-
-        };
-
-        String[] sentences = new String[intents.length];
-        for (int i = 0; i < intents.length; i++) {
-            sentences[i] = intents[i].getStringExtra(
-                    RecognizerEngine.SENTENCE_EXTRA);
         }
+    }
 
-        mAlertDialog = intents.length > 1 ?
-                new AlertDialog.Builder(VoiceDialerActivity.this)
-                .setTitle(R.string.title)
-                .setItems(sentences, clickListener)
-                .setOnCancelListener(cancelListener)
-                .setNegativeButton(android.R.string.cancel, negativeListener)
-                .show()
-                :
-                new AlertDialog.Builder(VoiceDialerActivity.this)
-                .setTitle(R.string.title)
-                .setItems(sentences, clickListener)
-                .setOnCancelListener(cancelListener)
-                .setPositiveButton(android.R.string.ok, positiveListener)
-                .setNegativeButton(android.R.string.cancel, negativeListener)
-                .show();
+    private void askToTryAgain() {
+        // get work off UAPI thread
+        mHandler.post(new Runnable() {
+            public void run() {
+                if (mAlertDialog != null) {
+                    mAlertDialog.dismiss();
+                }
 
-        return mAlertDialog;
+                mHandler.removeCallbacks(mMicFlasher);
+                ((TextView)findViewById(R.id.state)).setText(R.string.please_try_again);
+                findViewById(R.id.state).setVisibility(View.VISIBLE);
+                findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
+                findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
+
+                if (mUsingBluetooth) {
+                    mState = SPEAKING_TRY_AGAIN;
+                    mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                            TRY_AGAIN_UTTERANCE);
+                    mTts.speak(getString(R.string.no_results_tts),
+                        TextToSpeech.QUEUE_FLUSH,
+                        mTtsParams);
+
+                    // Normally, the we will start listening after the
+                    // utterance completes.  As a fallback in case the utterance
+                    // does not complete, post a delayed runnable to fire
+                    // the intent.
+                    mFallbackRunnable = new OnTtsCompletionRunnable(true);
+                    mHandler.postDelayed(mFallbackRunnable, MAX_TTS_DELAY);
+                } else {
+                    try {
+                        Thread.sleep(playSound(ToneGenerator.TONE_PROP_NACK));
+                    } catch (InterruptedException e) {
+                    }
+                    // we are not using tts, so we just start listening again.
+                    listenForCommand();
+                }
+            }
+        });
+    }
+
+    private void performChoice() {
+        if (mUsingBluetooth) {
+            String sentenceSpoken = spaceOutDigits(
+                    mChosenAction.getStringExtra(
+                        RecognizerEngine.SENTENCE_EXTRA));
+
+            mState = SPEAKING_CHOSEN_ACTION;
+            mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                    CHOSEN_ACTION_UTTERANCE);
+            mTts.speak(sentenceSpoken,
+                TextToSpeech.QUEUE_FLUSH,
+                mTtsParams);
+
+            // Normally, the intent will be dispatched after the
+            // utterance completes.  As a fallback in case the utterance
+            // does not complete, post a delayed runnable to fire
+            // the intent.
+            mFallbackRunnable = new OnTtsCompletionRunnable(true);
+            mHandler.postDelayed(mFallbackRunnable, MAX_TTS_DELAY);
+        } else {
+            // just dispatch the intent
+            startActivityHelp(mChosenAction);
+            finish();
+        }
+    }
+
+    private void waitForChoice() {
+        if (mUsingBluetooth) {
+            // We are running in bluetooth mode, and we have
+            // multiple matches.  Speak the choices and let
+            // the user choose.
+
+            // We will not start listening until the utterance
+            // of the choice list completes.
+            speakChoices();
+
+            // Normally, listening will begin after the
+            // utterance completes.  As a fallback in case the utterance
+            // does not complete, post a delayed runnable to begin
+            // listening.
+            mFallbackRunnable = new OnTtsCompletionRunnable(true);
+            mHandler.postDelayed(mFallbackRunnable, MAX_TTS_DELAY);
+        } else {
+            // We are not running in bluetooth mode, so all
+            // we need to do is wait for the user to select
+            // a choice from the alert dialog.  We will wait
+            // indefinitely for this.
+            mState = WAITING_FOR_DIALOG_CHOICE;
+        }
     }
 
     private class CommandRecognizerClient implements RecognizerClient {
-        static final int MIN_VOLUME_TO_SKIP = 2;
-        /**
+         static final int MIN_VOLUME_TO_SKIP = 2;
+       /**
          * Called by the {@link RecognizerEngine} when the microphone is started.
          */
         public void onMicrophoneStart(InputStream mic) {
             if (Config.LOGD) Log.d(TAG, "onMicrophoneStart");
-            playSound(ToneGenerator.TONE_PROP_BEEP);
 
-            int ringVolume = mAudioManager.getStreamVolume(
-                    AudioManager.STREAM_RING);
-            Log.d(TAG, "ringVolume " + ringVolume);
+           if (!mUsingBluetooth) {
+               playSound(ToneGenerator.TONE_PROP_BEEP);
 
-            if (ringVolume >= MIN_VOLUME_TO_SKIP) {
-                // now we're playing a sound, and corrupting the input sample.
-                // So we need to pull that junk off of the input stream so that the
-                // recognizer won't see it.
-                try {
-                    skipBeep(mic);
-                } catch (java.io.IOException e) {
-                    Log.e(TAG, "IOException " + e);
+                int ringVolume = mAudioManager.getStreamVolume(
+                        AudioManager.STREAM_RING);
+                Log.d(TAG, "ringVolume " + ringVolume);
+
+                if (ringVolume >= MIN_VOLUME_TO_SKIP) {
+                    // now we're playing a sound, and corrupting the input sample.
+                    // So we need to pull that junk off of the input stream so that the
+                    // recognizer won't see it.
+                    try {
+                        skipBeep(mic);
+                    } catch (java.io.IOException e) {
+                        Log.e(TAG, "IOException " + e);
+                    }
+                } else {
+                    if (Config.LOGD) Log.d(TAG, "no tone");
                 }
-            } else {
-                Log.d(TAG, "no tone");
             }
-
-            if (mVoiceDialerTester != null) return;
 
             mHandler.post(new Runnable() {
                 public void run() {
-                    findViewById(R.id.microphone_loading_view).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.retry_view).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.microphone_loading_view).setVisibility(
+                            View.INVISIBLE);
                     ((TextView)findViewById(R.id.state)).setText(R.string.listening);
                     mHandler.post(mMicFlasher);
                 }
@@ -386,7 +579,7 @@ public class VoiceDialerActivity extends Activity {
         private static final int TOP = 2;                // beep constant energy detected
 
         void skipBeep(InputStream is) throws IOException {
-            int sampleCount = ((SAMPLE_RATE / SINE_FREQ) * NUM_PERIODS_BLOCK);
+            int sampleCount = ((mSampleRate / SINE_FREQ) * NUM_PERIODS_BLOCK);
             int blockSize = 2 * sampleCount; // energy averaging block
 
             if (is == null || blockSize == 0) {
@@ -394,7 +587,7 @@ public class VoiceDialerActivity extends Activity {
             }
 
             byte[] buf = new byte[blockSize];
-            int maxBytes = 2 * ((START_WINDOW_MS * SAMPLE_RATE) / 1000);
+            int maxBytes = 2 * ((START_WINDOW_MS * mSampleRate) / 1000);
             maxBytes = ((maxBytes-1) / blockSize + 1) * blockSize;
 
             int count = 0;
@@ -432,18 +625,18 @@ public class VoiceDialerActivity extends Activity {
                         if (energy > threshold && energy > (prevE * 2) && prevE != 0) {
                             // rising edge if energy doubled and > abs threshold
                             state = RISING;
-                            if (Config.LOGD) Log.d(TAG, "start RISING: " + count +" time: "+ (((1000*count)/2)/SAMPLE_RATE));
+                            if (Config.LOGD) Log.d(TAG, "start RISING: " + count +" time: "+ (((1000*count)/2)/mSampleRate));
                         }
                         break;
                     case RISING:
                         if (energy < threshold || energy < (prevE / 2)){
                             // energy fell back below half of previous, back to start
-                            if (Config.LOGD) Log.d(TAG, "back to START: " + count +" time: "+ (((1000*count)/2)/SAMPLE_RATE));
+                            if (Config.LOGD) Log.d(TAG, "back to START: " + count +" time: "+ (((1000*count)/2)/mSampleRate));
                             peak = 0;
                             state = START;
                         } else if (energy > (prevE / 2) && energy < (prevE * 2)) {
                             // Start of constant energy
-                            if (Config.LOGD) Log.d(TAG, "start TOP: " + count +" time: "+ (((1000*count)/2)/SAMPLE_RATE));
+                            if (Config.LOGD) Log.d(TAG, "start TOP: " + count +" time: "+ (((1000*count)/2)/mSampleRate));
                             if (peak < energy) {
                                 peak = energy;
                             }
@@ -453,7 +646,7 @@ public class VoiceDialerActivity extends Activity {
                     case TOP:
                         if (energy < threshold || energy < (peak / 2)) {
                             // e went to less than half of the peak
-                            if (Config.LOGD) Log.d(TAG, "end TOP: " + count +" time: "+ (((1000*count)/2)/SAMPLE_RATE));
+                            if (Config.LOGD) Log.d(TAG, "end TOP: " + count +" time: "+ (((1000*count)/2)/mSampleRate));
                             return;
                         }
                         break;
@@ -469,32 +662,8 @@ public class VoiceDialerActivity extends Activity {
          */
         public void onRecognitionFailure(final String msg) {
             if (Config.LOGD) Log.d(TAG, "onRecognitionFailure " + msg);
-
-            // get work off UAPI thread
-            mHandler.post(new Runnable() {
-                public void run() {
-                    // failure, so beep about it
-                    playSound(ToneGenerator.TONE_PROP_NACK);
-
-                    mHandler.removeCallbacks(mMicFlasher);
-                    ((TextView)findViewById(R.id.state)).setText(R.string.please_try_again);
-                    findViewById(R.id.state).setVisibility(View.VISIBLE);
-                    findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
-                    findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
-
-                    if (mVoiceDialerTester != null) {
-                        mVoiceDialerTester.onRecognitionFailure(msg);
-                        startNextTest();
-                        return;
-                    }
-
-                    mHandler.postDelayed(new Runnable() {
-                        public void run() {
-                            finish();
-                        }
-                    }, FAIL_PAUSE_MSEC);
-                }
-            });
+            // we had zero results.  Just try again.
+            askToTryAgain();
         }
 
         /**
@@ -502,33 +671,8 @@ public class VoiceDialerActivity extends Activity {
          */
         public void onRecognitionError(final String msg) {
             if (Config.LOGD) Log.d(TAG, "onRecognitionError " + msg);
-
-            // get work off UAPI thread
-            mHandler.post(new Runnable() {
-                public void run() {
-                    // error, so beep about it
-                    playSound(ToneGenerator.TONE_PROP_NACK);
-
-                    mHandler.removeCallbacks(mMicFlasher);
-                    ((TextView)findViewById(R.id.state)).setText(R.string.please_try_again);
-                    ((TextView)findViewById(R.id.substate)).setText(R.string.recognition_error);
-                    findViewById(R.id.state).setVisibility(View.VISIBLE);
-                    findViewById(R.id.microphone_view).setVisibility(View.INVISIBLE);
-                    findViewById(R.id.retry_view).setVisibility(View.VISIBLE);
-
-                    if (mVoiceDialerTester != null) {
-                        mVoiceDialerTester.onRecognitionError(msg);
-                        startNextTest();
-                        return;
-                    }
-
-                    mHandler.postDelayed(new Runnable() {
-                        public void run() {
-                            finish();
-                        }
-                    }, FAIL_PAUSE_MSEC);
-                }
-            });
+            mHandler.post(new ErrorRunnable(R.string.recognition_error));
+            exitActivity();
         }
 
         /**
@@ -539,51 +683,432 @@ public class VoiceDialerActivity extends Activity {
          * @param intents a list of Intents corresponding to the sentences.
          */
         public void onRecognitionSuccess(final Intent[] intents) {
-            if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess " + intents.length);
-            // repackage our intents as a bundle so that we can pass it into
-            // showDialog.  This in required so that we can handle it when
-            // orientation changes and the activity is destroyed and recreated.
-            final Bundle args = new Bundle();
-            args.putParcelableArray(INTENTS_KEY, intents);
+            if (Config.LOGD) Log.d(TAG, "CommandRecognizerClient onRecognitionSuccess " +
+                    intents.length);
+            if (mState != WAITING_FOR_COMMAND) {
+                if (Config.LOGD) Log.d(TAG, "not waiting for command, ignoring");
+                return;
+            }
+
+            // store the intents in a member variable so that we can access it
+            // later when the user chooses which action to perform.
+            mAvailableChoices = intents;
 
             mHandler.post(new Runnable() {
-
                 public void run() {
-                    // success, so beep about it
-                    playSound(ToneGenerator.TONE_PROP_ACK);
-
+                    if (!mUsingBluetooth) {
+                        playSound(ToneGenerator.TONE_PROP_ACK);
+                    }
                     mHandler.removeCallbacks(mMicFlasher);
 
-                    showDialog(DIALOG_ID, args);
+                    String[] sentences = new String[intents.length];
+                    for (int i = 0; i < intents.length; i++) {
+                        sentences[i] = intents[i].getStringExtra(
+                                RecognizerEngine.SENTENCE_EXTRA);
+                    }
 
-                    // start the next test
-                    if (mVoiceDialerTester != null) {
-                        mVoiceDialerTester.onRecognitionSuccess(intents);
-                        startNextTest();
-                        mHandler.postDelayed(new Runnable() {
-                            public void run() {
-                                dismissDialog(DIALOG_ID);
-                                mAlertDialog = null;
+                    if (intents.length == 0) {
+                        onRecognitionFailure("zero intents");
+                        return;
+                    }
+
+                    if (intents.length > 0) {
+                        // see if we the response was "exit" or "cancel".
+                        String value = intents[0].getStringExtra(
+                            RecognizerEngine.SEMANTIC_EXTRA);
+                        if (Config.LOGD) Log.d(TAG, "value " + value);
+                        if ("X".equals(value)) {
+                            exitActivity();
+                            return;
+                        }
+                    }
+
+                    if (mUsingBluetooth &&
+                            (intents.length == 1 ||
+                             !Intent.ACTION_CALL_PRIVILEGED.equals(
+                                    intents[0].getAction()))) {
+                        // When we're running in bluetooth mode, we expect
+                        // that the user is not looking at the screen and cannot
+                        // interact with the device in any way besides voice
+                        // commands.  In this case we need to minimize how many
+                        // interactions the user has to perform in order to call
+                        // someone.
+                        // So if there is only one match, instead of making the
+                        // user confirm, we just assume it's correct, speak
+                        // the choice over TTS, and then dispatch it.
+                        // If there are multiple matches for some intent type
+                        // besides "call", it's too difficult for the user to
+                        // explain which one they meant, so we just take the highest
+                        // confidence match and dispatch that.
+
+                        // Speak the sentence for the action we are about
+                        // to dispatch so that the user knows what is happening.
+                        mChosenAction = intents[0];
+                        performChoice();
+
+                        return;
+                    } else {
+                        // Either we are not running in bluetooth mode,
+                        // or we had multiple matches.  Either way, we need
+                        // the user to confirm the choice.
+                        // Put up a dialog from which the user can select
+                        // his/her choice.
+                        DialogInterface.OnCancelListener cancelListener =
+                            new DialogInterface.OnCancelListener() {
+
+                            public void onCancel(DialogInterface dialog) {
+                                if (Config.LOGD) {
+                                    Log.d(TAG, "cancelListener.onCancel");
+                                }
+                                dialog.dismiss();
+                                finish();
                             }
-                        }, 2000);
+                       };
+
+                        DialogInterface.OnClickListener clickListener =
+                            new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (Config.LOGD) {
+                                    Log.d(TAG, "clickListener.onClick " + which);
+                                }
+                                startActivityHelp(intents[which]);
+                                dialog.dismiss();
+                                finish();
+                            }
+                        };
+
+                        DialogInterface.OnClickListener negativeListener =
+                            new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (Config.LOGD) {
+                                    Log.d(TAG, "negativeListener.onClick " +
+                                        which);
+                                }
+                                dialog.dismiss();
+                                finish();
+                            }
+                        };
+
+                        mAlertDialog =
+                                new AlertDialog.Builder(VoiceDialerActivity.this)
+                                .setTitle(R.string.title)
+                                .setItems(sentences, clickListener)
+                                .setOnCancelListener(cancelListener)
+                                .setNegativeButton(android.R.string.cancel,
+                                        negativeListener)
+                                .show();
+
+                        waitForChoice();
                     }
                 }
             });
         }
     }
 
-    // post a Toast if not real contacts or microphone
-    private void startActivityHelp(Intent intent) {
-        if (getArg(MICROPHONE_EXTRA) == null &&
-                getArg(CONTACTS_EXTRA) == null) {
-            startActivity(intent);
-        } else {
-            notifyText(intent.
-                    getStringExtra(RecognizerEngine.SENTENCE_EXTRA) +
-                    "\n" + intent.toString());
+    private class ChoiceRecognizerClient implements RecognizerClient {
+        public void onRecognitionSuccess(final Intent[] intents) {
+            if (Config.LOGD) Log.d(TAG, "ChoiceRecognizerClient onRecognitionSuccess");
+            if (mState != WAITING_FOR_CHOICE) {
+                if (Config.LOGD) Log.d(TAG, "not waiting for choice, ignoring");
+                return;
+            }
+
+            if (mAlertDialog != null) {
+                mAlertDialog.dismiss();
+            }
+
+            // disregard all but the first intent.
+            if (intents.length > 0) {
+                String value = intents[0].getStringExtra(
+                    RecognizerEngine.SEMANTIC_EXTRA);
+                if (Config.LOGD) Log.d(TAG, "value " + value);
+                if ("R".equals(value)) {
+                    if (mUsingBluetooth) {
+                        mHandler.post(new GreetingRunnable());
+                    } else {
+                        listenForCommand();
+                    }
+                } else if ("X".equals(value)) {
+                    exitActivity();
+                } else {
+                    // it's a phone type response
+                    mChosenAction = null;
+                    for (int i = 0; i < mAvailableChoices.length; i++) {
+                        if (value.equalsIgnoreCase(
+                                mAvailableChoices[i].getStringExtra(
+                                        CommandRecognizerEngine.PHONE_TYPE_EXTRA))) {
+                            mChosenAction = mAvailableChoices[i];
+                        }
+                    }
+
+                    if (mChosenAction != null) {
+                        performChoice();
+                    } else {
+                        // invalid choice
+                        if (Config.LOGD) Log.d(TAG, "invalid choice" + value);
+
+                        if (mUsingBluetooth) {
+                            mTtsParams.remove(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID);
+                            mTts.speak(getString(R.string.invalid_choice_tts),
+                                TextToSpeech.QUEUE_FLUSH,
+                                mTtsParams);
+                        }
+                        waitForChoice();
+                    }
+                }
+            }
         }
 
+        public void onRecognitionFailure(String msg) {
+            if (Config.LOGD) Log.d(TAG, "ChoiceRecognizerClient onRecognitionFailure");
+            exitActivity();
+        }
+
+        public void onRecognitionError(String err) {
+            if (Config.LOGD) Log.d(TAG, "ChoiceRecognizerClient onRecognitionError");
+            mHandler.post(new ErrorRunnable(R.string.recognition_error));
+            exitActivity();
+        }
+
+        public void onMicrophoneStart(InputStream mic) {
+            if (Config.LOGD) Log.d(TAG, "ChoiceRecognizerClient onMicrophoneStart");
+        }
     }
+
+    private void speakChoices() {
+        if (Config.LOGD) Log.d(TAG, "speakChoices");
+        mState = SPEAKING_CHOICES;
+
+        String sentenceSpoken = spaceOutDigits(
+                mAvailableChoices[0].getStringExtra(
+                    RecognizerEngine.SENTENCE_EXTRA));
+
+        // When we have multiple choices, they will be of the form
+        // "call jack jones at home", "call jack jones on mobile".
+        // Speak the entire first sentence, then the last word from each
+        // of the remaining sentences.  This will come out to something
+        // like "call jack jones at home mobile or work".
+        StringBuilder builder = new StringBuilder();
+        builder.append(sentenceSpoken);
+
+        int count = mAvailableChoices.length;
+        for (int i=1; i < count; i++) {
+            if (i == count-1) {
+                builder.append(" or ");
+            } else {
+                builder.append(" ");
+            }
+            String tmpSentence = mAvailableChoices[i].getStringExtra(
+                    RecognizerEngine.SENTENCE_EXTRA);
+            String[] words = tmpSentence.trim().split(" ");
+            builder.append(words[words.length-1]);
+        }
+        mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                CHOICES_UTTERANCE);
+        mTts.speak(builder.toString(),
+            TextToSpeech.QUEUE_ADD,
+            mTtsParams);
+    }
+
+
+    private static String spaceOutDigits(String sentenceDisplay) {
+        // if we have a sentence of the form "dial 123 456 7890",
+        // we need to insert a space between each digit, otherwise
+        // the TTS engine will say "dial one hundred twenty three...."
+        // When there already is a space, we also insert a comma,
+        // so that it pauses between sections.  For the displayable
+        // sentence "dial 123 456 7890" it will speak
+        // "dial 1 2 3, 4 5 6, 7 8 9 0"
+        char buffer[] = sentenceDisplay.toCharArray();
+        StringBuilder builder = new StringBuilder();
+        boolean buildingNumber = false;
+        int l = sentenceDisplay.length();
+        for (int index = 0; index < l; index++) {
+            char c = buffer[index];
+            if (Character.isDigit(c)) {
+                if (buildingNumber) {
+                    builder.append(" ");
+                }
+                buildingNumber = true;
+                builder.append(c);
+            } else if (c == ' ') {
+                if (buildingNumber) {
+                    builder.append(",");
+                } else {
+                    builder.append(" ");
+                }
+            } else {
+                buildingNumber = false;
+                builder.append(c);
+            }
+        }
+        return builder.toString();
+    }
+
+    private void startActivityHelp(Intent intent) {
+        startActivity(intent);
+    }
+
+    private void listenForCommand() {
+        if (Config.LOGD) Log.d(TAG, ""
+                + "Command(): MICROPHONE_EXTRA: "+getArg(MICROPHONE_EXTRA)+
+                ", CONTACTS_EXTRA: "+getArg(CONTACTS_EXTRA));
+
+        mState = WAITING_FOR_COMMAND;
+        mRecognizerThread = new Thread() {
+            public void run() {
+                mCommandEngine.recognize(mCommandClient,
+                        VoiceDialerActivity.this,
+                        newFile(getArg(MICROPHONE_EXTRA)),
+                        mSampleRate);
+            }
+        };
+        mRecognizerThread.start();
+    }
+
+    private void listenForChoice() {
+        if (Config.LOGD) Log.d(TAG, "listenForChoice(): MICROPHONE_EXTRA: " +
+                getArg(MICROPHONE_EXTRA));
+
+        mState = WAITING_FOR_CHOICE;
+        mRecognizerThread = new Thread() {
+            public void run() {
+                mPhoneTypeChoiceEngine.recognize(mChoiceClient,
+                        VoiceDialerActivity.this,
+                        newFile(getArg(MICROPHONE_EXTRA)), mSampleRate);
+            }
+        };
+        mRecognizerThread.start();
+    }
+
+    private void exitActivity() {
+        synchronized(this) {
+            if (mState != EXITING) {
+                if (Config.LOGD) Log.d(TAG, "exitActivity");
+                mState = SPEAKING_GOODBYE;
+                if (mUsingBluetooth) {
+                    mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                            GOODBYE_UTTERANCE);
+                    mTts.speak(getString(R.string.goodbye_tts),
+                        TextToSpeech.QUEUE_FLUSH,
+                        mTtsParams);
+                    // Normally, the activity will finish() after the
+                    // utterance completes.  As a fallback in case the utterance
+                    // does not complete, post a delayed runnable finish the
+                    // activity.
+                    mFallbackRunnable = new OnTtsCompletionRunnable(true);
+                    mHandler.postDelayed(mFallbackRunnable, MAX_TTS_DELAY);
+                } else {
+                    mHandler.postDelayed(new Runnable() {
+                        public void run() {
+                            finish();
+                        }
+                    }, EXIT_DELAY);
+                }
+            }
+        }
+    }
+
+    private String getArg(String name) {
+        if (name == null) return null;
+        String arg = getIntent().getStringExtra(name);
+        if (arg != null) return arg;
+        arg = SystemProperties.get("app.voicedialer." + name);
+        return arg != null && arg.length() > 0 ? arg : null;
+    }
+
+    private static File newFile(String name) {
+        return name != null ? new File(name) : null;
+    }
+
+    private int playSound(int toneType) {
+        int msecDelay = 1;
+
+        // use the MediaPlayer to prompt the user
+        if (mToneGenerator != null) {
+            mToneGenerator.startTone(toneType);
+            msecDelay = StrictMath.max(msecDelay, 300);
+        }
+        // use the Vibrator to prompt the user
+        if (mAudioManager != null &&
+                mAudioManager.shouldVibrate(AudioManager.VIBRATE_TYPE_RINGER)) {
+            final int VIBRATOR_TIME = 150;
+            final int VIBRATOR_GUARD_TIME = 150;
+            Vibrator vibrator = new Vibrator();
+            vibrator.vibrate(VIBRATOR_TIME);
+            msecDelay = StrictMath.max(msecDelay,
+                    VIBRATOR_TIME + VIBRATOR_GUARD_TIME);
+        }
+
+
+        return msecDelay;
+    }
+
+    protected void onStop() {
+        if (Config.LOGD) Log.d(TAG, "onStop");
+
+        synchronized(this) {
+            mState = EXITING;
+        }
+
+        if (mAlertDialog != null) {
+            mAlertDialog.dismiss();
+        }
+
+        // set the volume back to the level it was before we started.
+        mAudioManager.setStreamVolume(AudioManager.STREAM_BLUETOOTH_SCO,
+                                      mBluetoothVoiceVolume, 0);
+        mAudioManager.abandonAudioFocus(null);
+
+        // shut down bluetooth, if it exists
+        if (mBluetoothHeadset != null) {
+            mBluetoothHeadset.stopVoiceRecognition();
+            mBluetoothHeadset.close();
+            mBluetoothHeadset = null;
+        }
+
+        // shut down recognizer and wait for the thread to complete
+        if (mRecognizerThread !=  null) {
+            mRecognizerThread.interrupt();
+            try {
+                mRecognizerThread.join();
+            } catch (InterruptedException e) {
+                if (Config.LOGD) Log.d(TAG, "onStop mRecognizerThread.join exception " + e);
+            }
+            mRecognizerThread = null;
+        }
+
+        // clean up UI
+        mHandler.removeCallbacks(mMicFlasher);
+        mHandler.removeMessages(0);
+
+        if (mTts != null) {
+            mTts.stop();
+            mTts.shutdown();
+            mTts = null;
+        }
+        unregisterReceiver(mReceiver);
+
+        super.onStop();
+
+        // It makes no sense to have this activity maintain state when in
+        // background.  When it stops, it should just be destroyed.
+        finish();
+    }
+
+    private Runnable mMicFlasher = new Runnable() {
+        int visible = View.VISIBLE;
+
+        public void run() {
+            findViewById(R.id.microphone_view).setVisibility(visible);
+            findViewById(R.id.state).setVisibility(visible);
+            visible = visible == View.VISIBLE ? View.INVISIBLE : View.VISIBLE;
+            mHandler.postDelayed(this, 750);
+        }
+    };
+
     @Override
     protected void onDestroy() {
         if (Config.LOGD) Log.d(TAG, "onDestroy");
