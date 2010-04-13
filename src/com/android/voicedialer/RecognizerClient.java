@@ -18,6 +18,8 @@ package com.android.voicedialer;
 
 import android.content.Intent;
 
+import java.io.InputStream;
+
 /**
  * This is an interface for clients of the RecognizerEngine.
  * A user should implement this interface, and then pass that implementation
@@ -33,5 +35,5 @@ interface RecognizerClient {
 
     public void onRecognitionError(String err);
 
-    public void onMicrophoneStart();
+    public void onMicrophoneStart(InputStream mic);
 }
