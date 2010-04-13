@@ -21,7 +21,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.DialogInterface;
-import android.content.res.Configuration;
 import android.media.ToneGenerator;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -34,6 +33,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
+import java.io.InputStream;
 
 /**
  * TODO: get rid of the anonymous classes
@@ -94,11 +94,6 @@ public class VoiceDialerActivity extends Activity {
         mAudioManager.requestAudioFocus(
                 null, AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-
-        // tell music player to shut up so we can hear
-        Intent i = new Intent("com.android.music.musicservicecommand");
-        i.putExtra("command", "pause");
-        sendBroadcast(i);
 
         // set up ToneGenerator
         // currently disabled because it crashes audio input
@@ -195,7 +190,8 @@ public class VoiceDialerActivity extends Activity {
         }
 
         // use the Vibrator to prompt the user
-        if ((mAudioManager != null) && (mAudioManager.shouldVibrate(AudioManager.VIBRATE_TYPE_RINGER))) {
+        if ((mAudioManager != null) &&
+                (mAudioManager.shouldVibrate(AudioManager.VIBRATE_TYPE_RINGER))) {
             final int VIBRATOR_TIME = 150;
             final int VIBRATOR_GUARD_TIME = 150;
             Vibrator vibrator = new Vibrator();
@@ -335,13 +331,22 @@ public class VoiceDialerActivity extends Activity {
         return mAlertDialog;
     }
 
-
     private class CommandRecognizerClient implements RecognizerClient {
         /**
          * Called by the {@link RecognizerEngine} when the microphone is started.
          */
-        public void onMicrophoneStart() {
+        public void onMicrophoneStart(InputStream mic) {
             if (Config.LOGD) Log.d(TAG, "onMicrophoneStart");
+            playSound(ToneGenerator.TONE_PROP_BEEP);
+
+            // now we're playing a sound, and corrupting the input sample.
+            // So we need to pull that junk off of the input stream so that the
+            // recognizer won't see it.
+            try {
+                skipBeep(mic);
+            } catch (java.io.IOException e) {
+                Log.e(TAG, "IOException " + e);
+            }
 
             if (mVoiceDialerTester != null) return;
 
@@ -352,6 +357,19 @@ public class VoiceDialerActivity extends Activity {
                     mHandler.post(mMicFlasher);
                 }
             });
+        }
+
+        private void skipBeep(InputStream mic) throws java.io.IOException {
+            final int MILLISECONDS_TO_DROP = 350;
+            int bytesNeeded = 2 * (MILLISECONDS_TO_DROP * 11025 / 1000);
+            byte buffer[] = new byte[64];
+            while (bytesNeeded > 0) {
+                int c = mic.read(buffer);
+                if (c % 2 != 0) {
+                    throw new java.io.IOException("odd number of bytes");
+                }
+                bytesNeeded -= c;
+            }
         }
 
         /**

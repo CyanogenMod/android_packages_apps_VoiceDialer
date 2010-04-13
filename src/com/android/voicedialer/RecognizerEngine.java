@@ -154,7 +154,7 @@ abstract public class RecognizerEngine {
             }
 
             // notify UI
-            recognizerClient.onMicrophoneStart();
+            recognizerClient.onMicrophoneStart(mic);
 
             // log audio if requested
             if (mLogger != null) mic = mLogger.logInputStream(mic, sampleRate);
