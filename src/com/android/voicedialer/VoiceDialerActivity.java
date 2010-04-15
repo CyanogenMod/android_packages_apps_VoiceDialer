@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
 import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * TODO: get rid of the anonymous classes
@@ -332,6 +333,7 @@ public class VoiceDialerActivity extends Activity {
     }
 
     private class CommandRecognizerClient implements RecognizerClient {
+        static final int MIN_VOLUME_TO_SKIP = 2;
         /**
          * Called by the {@link RecognizerEngine} when the microphone is started.
          */
@@ -339,13 +341,21 @@ public class VoiceDialerActivity extends Activity {
             if (Config.LOGD) Log.d(TAG, "onMicrophoneStart");
             playSound(ToneGenerator.TONE_PROP_BEEP);
 
-            // now we're playing a sound, and corrupting the input sample.
-            // So we need to pull that junk off of the input stream so that the
-            // recognizer won't see it.
-            try {
-                skipBeep(mic);
-            } catch (java.io.IOException e) {
-                Log.e(TAG, "IOException " + e);
+            int ringVolume = mAudioManager.getStreamVolume(
+                    AudioManager.STREAM_RING);
+            Log.d(TAG, "ringVolume " + ringVolume);
+
+            if (ringVolume >= MIN_VOLUME_TO_SKIP) {
+                // now we're playing a sound, and corrupting the input sample.
+                // So we need to pull that junk off of the input stream so that the
+                // recognizer won't see it.
+                try {
+                    skipBeep(mic);
+                } catch (java.io.IOException e) {
+                    Log.e(TAG, "IOException " + e);
+                }
+            } else {
+                Log.d(TAG, "no tone");
             }
 
             if (mVoiceDialerTester != null) return;
@@ -359,17 +369,94 @@ public class VoiceDialerActivity extends Activity {
             });
         }
 
-        private void skipBeep(InputStream mic) throws java.io.IOException {
-            final int MILLISECONDS_TO_DROP = 350;
-            int bytesNeeded = 2 * (MILLISECONDS_TO_DROP * 11025 / 1000);
-            byte buffer[] = new byte[64];
-            while (bytesNeeded > 0) {
-                int c = mic.read(buffer);
-                if (c % 2 != 0) {
-                    throw new java.io.IOException("odd number of bytes");
-                }
-                bytesNeeded -= c;
+        /**
+         *  Beep detection
+         */
+        private static final int START_WINDOW_MS = 500;  // Beep detection window duration in ms
+        private static final int SINE_FREQ = 400;        // base sine frequency on beep
+        private static final int NUM_PERIODS_BLOCK = 10; // number of sine periods in one energy averaging block
+        private static final int THRESHOLD = 8;          // absolute pseudo energy threshold
+        private static final int START = 0;              // beep detection start
+        private static final int RISING = 1;             // beep rising edge start
+        private static final int TOP = 2;                // beep constant energy detected
+
+        void skipBeep(InputStream is) throws IOException {
+            int sampleCount = ((SAMPLE_RATE / SINE_FREQ) * NUM_PERIODS_BLOCK);
+            int blockSize = 2 * sampleCount; // energy averaging block
+
+            if (is == null || blockSize == 0) {
+                return;
             }
+
+            byte[] buf = new byte[blockSize];
+            int maxBytes = 2 * ((START_WINDOW_MS * SAMPLE_RATE) / 1000);
+            maxBytes = ((maxBytes-1) / blockSize + 1) * blockSize;
+
+            int count = 0;
+            int state = START;  // detection state
+            long prevE = 0; // previous pseudo energy
+            long peak = 0;
+            int threshold =  THRESHOLD*sampleCount;  // absolute energy threshold
+            Log.d(TAG, "blockSize " + blockSize);
+
+            while (count < maxBytes) {
+                int cnt = 0;
+                while (cnt < blockSize) {
+                    int n = is.read(buf, cnt, blockSize-cnt);
+                    if (n < 0) {
+                        throw new java.io.IOException();
+                    }
+                    cnt += n;
+                }
+
+                // compute pseudo energy
+                cnt = blockSize;
+                long sumx = 0;
+                long sumxx = 0;
+                while (cnt >= 2) {
+                    short smp = (short)((buf[cnt - 1] << 8) + (buf[cnt - 2] & 0xFF));
+                    sumx += smp;
+                    sumxx += smp*smp;
+                    cnt -= 2;
+                }
+                long energy = (sumxx*sampleCount - sumx*sumx)/(sampleCount*sampleCount);
+                Log.d(TAG, "sumx " + sumx + " sumxx " + sumxx + " ee " + energy);
+
+                switch (state) {
+                    case START:
+                        if (energy > threshold && energy > (prevE * 2) && prevE != 0) {
+                            // rising edge if energy doubled and > abs threshold
+                            state = RISING;
+                            if (Config.LOGD) Log.d(TAG, "start RISING: " + count +" time: "+ (((1000*count)/2)/SAMPLE_RATE));
+                        }
+                        break;
+                    case RISING:
+                        if (energy < threshold || energy < (prevE / 2)){
+                            // energy fell back below half of previous, back to start
+                            if (Config.LOGD) Log.d(TAG, "back to START: " + count +" time: "+ (((1000*count)/2)/SAMPLE_RATE));
+                            peak = 0;
+                            state = START;
+                        } else if (energy > (prevE / 2) && energy < (prevE * 2)) {
+                            // Start of constant energy
+                            if (Config.LOGD) Log.d(TAG, "start TOP: " + count +" time: "+ (((1000*count)/2)/SAMPLE_RATE));
+                            if (peak < energy) {
+                                peak = energy;
+                            }
+                            state = TOP;
+                        }
+                        break;
+                    case TOP:
+                        if (energy < threshold || energy < (peak / 2)) {
+                            // e went to less than half of the peak
+                            if (Config.LOGD) Log.d(TAG, "end TOP: " + count +" time: "+ (((1000*count)/2)/SAMPLE_RATE));
+                            return;
+                        }
+                        break;
+                    }
+                prevE = energy;
+                count += blockSize;
+            }
+            if (Config.LOGD) Log.d(TAG, "no beep detected, timed out");
         }
 
         /**
