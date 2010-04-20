@@ -87,19 +87,20 @@ public class VoiceDialerActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle icicle) {
+        if (Config.LOGD) Log.d(TAG, "onCreate");
         super.onCreate(icicle);
-
-        if (Config.LOGD) Log.d(TAG, "onCreate ");
         mHandler = new Handler();
         mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+        mToneGenerator = new ToneGenerator(AudioManager.STREAM_RING,
+                ToneGenerator.MAX_VOLUME);
+    }
+
+    protected void onStart() {
+        if (Config.LOGD) Log.d(TAG, "onStart "  + getIntent());
+        super.onStart();
         mAudioManager.requestAudioFocus(
                 null, AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-
-        // set up ToneGenerator
-        // currently disabled because it crashes audio input
-        mToneGenerator = new ToneGenerator(AudioManager.STREAM_RING,
-                ToneGenerator.MAX_VOLUME);
 
         mCommandEngine.setContactsFile(newFile(getArg(CONTACTS_EXTRA)));
         mCommandClient = new CommandRecognizerClient();
@@ -235,6 +236,10 @@ public class VoiceDialerActivity extends Activity {
         }
 
         super.onStop();
+
+        // It makes no sense to have this activity maintain state when in
+        // background.  When it stops, it should just be destroyed.
+        finish();
     }
 
     private void notifyText(final CharSequence msg) {
@@ -563,8 +568,6 @@ public class VoiceDialerActivity extends Activity {
                         }, 2000);
                     }
                 }
-
-
             });
         }
     }
@@ -583,6 +586,7 @@ public class VoiceDialerActivity extends Activity {
     }
     @Override
     protected void onDestroy() {
+        if (Config.LOGD) Log.d(TAG, "onDestroy");
         super.onDestroy();
     }
 }
