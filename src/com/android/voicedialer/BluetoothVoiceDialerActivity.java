@@ -170,14 +170,20 @@ public class BluetoothVoiceDialerActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle icicle) {
+        if (Config.LOGD) Log.d(TAG, "onCreate");
         super.onCreate(icicle);
+        mHandler = new Handler();
+        mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+        mToneGenerator = new ToneGenerator(AudioManager.STREAM_RING,
+                ToneGenerator.MAX_VOLUME);
+    }
 
-        if (Config.LOGD) Log.d(TAG, "onCreate " + getIntent());
+    protected void onStart() {
+        if (Config.LOGD) Log.d(TAG, "onStart " + getIntent());
+        super.onStart();
 
         mState = INITIALIZING;
         mChosenAction = null;
-        mHandler = new Handler();
-        mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
         mAudioManager.requestAudioFocus(
                 null, AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
@@ -196,10 +202,6 @@ public class BluetoothVoiceDialerActivity extends Activity {
         if (RecognizerLogger.isEnabled(this)) {
             ((TextView) findViewById(R.id.substate)).setText(R.string.logging_enabled);
         }
-
-        // set up ToneGenerator
-        mToneGenerator = new ToneGenerator(AudioManager.STREAM_RING,
-                ToneGenerator.MAX_VOLUME);
 
         // Get handle to BluetoothHeadset object
         IntentFilter audioStateFilter;
@@ -896,7 +898,18 @@ public class BluetoothVoiceDialerActivity extends Activity {
         mHandler.removeCallbacks(mMicFlasher);
         mHandler.removeMessages(0);
 
+        if (mTts != null) {
+            mTts.stop();
+            mTts.shutdown();
+            mTts = null;
+        }
+        unregisterReceiver(mReceiver);
+
         super.onStop();
+
+        // It makes no sense to have this activity maintain state when in
+        // background.  When it stops, it should just be destroyed.
+        finish();
     }
 
     private Runnable mMicFlasher = new Runnable() {
@@ -912,14 +925,7 @@ public class BluetoothVoiceDialerActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        // Don't forget to shutdown!
-        if (mTts != null) {
-            mTts.stop();
-            mTts.shutdown();
-            mTts = null;
-        }
-        unregisterReceiver(mReceiver);
-
+        if (Config.LOGD) Log.d(TAG, "onDestroy");
         super.onDestroy();
     }
 }
