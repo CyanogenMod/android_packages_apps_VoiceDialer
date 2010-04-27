@@ -27,7 +27,6 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemProperties;
 import android.os.Vibrator;
@@ -224,36 +223,12 @@ public class VoiceDialerActivity extends Activity {
 
         mBluetoothAudioState = BluetoothHeadset.STATE_ERROR;
 
-        if (BluetoothHeadset.isBluetoothVoiceDialingEnabled(this) &&
-                Intent.ACTION_VOICE_COMMAND.equals(getIntent().getAction())) {
-            mUsingBluetooth = true;
-        } else {
-            mUsingBluetooth = false;
-        }
-
-        if (mUsingBluetooth) {
-            if (Config.LOGD) Log.d(TAG, "using bluetooth");
-            mSampleRate = BLUETOOTH_SAMPLE_RATE;
-            mCommandEngine.setMinimizeResults(true);
-            mCommandEngine.setAllowOpenEntries(false);
-
-            // we can't start recognizing until we get connected to the BluetoothHeadset
-            // and have a connected audio state.  We will listen for these
-            // states to change.
-            mWaitingForScoConnection = true;
+        if (BluetoothHeadset.isBluetoothVoiceDialingEnabled(this)) {
             mBluetoothHeadset = new BluetoothHeadset(this,
                     mBluetoothHeadsetServiceListener);
-
-            // initialize the text to speech system
-            mWaitingForTts = true;
-            mTts = new TextToSpeech(this, new TtsInitListener());
-            mTtsParams = new HashMap<String, String>();
-            mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-                    String.valueOf(AudioManager.STREAM_VOICE_CALL));
-            // we need to wait for the TTS system and the SCO connection
-            // before we can start listening.
         } else {
-            if (Config.LOGD) Log.d(TAG, "not using bluetooth");
+            mUsingBluetooth = false;
+            if (Config.LOGD) Log.d(TAG, "bluetooth unavailable");
             mSampleRate = REGULAR_SAMPLE_RATE;
             mCommandEngine.setMinimizeResults(false);
             mCommandEngine.setAllowOpenEntries(true);
@@ -261,6 +236,7 @@ public class VoiceDialerActivity extends Activity {
             // we're not using bluetooth apparently, just start listening.
             listenForCommand();
         }
+
     }
 
     class ErrorRunnable implements Runnable {
@@ -378,7 +354,7 @@ public class VoiceDialerActivity extends Activity {
     class OnUtteranceCompletedListener
             implements TextToSpeech.OnUtteranceCompletedListener {
         public void onUtteranceCompleted(String utteranceId) {
-            Log.d(TAG, "onUtteranceCompleted " + utteranceId);
+            if (Config.LOGD) Log.d(TAG, "onUtteranceCompleted " + utteranceId);
             // since the utterance has completed, we no longer need the fallback.
             mHandler.removeCallbacks(mFallbackRunnable);
             mFallbackRunnable = null;
@@ -389,9 +365,40 @@ public class VoiceDialerActivity extends Activity {
     private BluetoothHeadset.ServiceListener mBluetoothHeadsetServiceListener =
             new BluetoothHeadset.ServiceListener() {
         public void onServiceConnected() {
-            if (mBluetoothHeadset != null &&
-                    mBluetoothHeadset.getState() == BluetoothHeadset.STATE_CONNECTED) {
+            if (Config.LOGD) Log.d(TAG, "headset status " + mBluetoothHeadset.getState());
+
+            if (mBluetoothHeadset.getState() == BluetoothHeadset.STATE_CONNECTED) {
+                if (Config.LOGD) Log.d(TAG, "using bluetooth");
+                mUsingBluetooth = true;
+
                 mBluetoothHeadset.startVoiceRecognition();
+
+                mSampleRate = BLUETOOTH_SAMPLE_RATE;
+                mCommandEngine.setMinimizeResults(true);
+                mCommandEngine.setAllowOpenEntries(false);
+
+                // we can't start recognizing until we get connected to the BluetoothHeadset
+                // and have a connected audio state.  We will listen for these
+                // states to change.
+                mWaitingForScoConnection = true;
+
+                // initialize the text to speech system
+                mWaitingForTts = true;
+                mTts = new TextToSpeech(VoiceDialerActivity.this, new TtsInitListener());
+                mTtsParams = new HashMap<String, String>();
+                mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                        String.valueOf(AudioManager.STREAM_VOICE_CALL));
+                // we need to wait for the TTS system and the SCO connection
+                // before we can start listening.
+            } else {
+                if (Config.LOGD) Log.d(TAG, "not using bluetooth");
+                mUsingBluetooth = false;
+                mSampleRate = REGULAR_SAMPLE_RATE;
+                mCommandEngine.setMinimizeResults(false);
+                mCommandEngine.setAllowOpenEntries(true);
+
+                // we're not using bluetooth apparently, just start listening.
+                listenForCommand();
             }
 
             if (Config.LOGD) Log.d(TAG, "onServiceConnected");
