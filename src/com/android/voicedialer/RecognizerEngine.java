@@ -1172,7 +1172,7 @@ public class RecognizerEngine {
             else if ("Intent".equalsIgnoreCase(commands[0])) {
                 for (int i = 1; i < commands.length; i++) {
                     try {
-                        Intent intent = Intent.getIntent(commands[i]);
+                        Intent intent = Intent.parseUri(commands[i], 0);
                         if (intent.getStringExtra(SENTENCE_EXTRA) == null) {
                             intent.putExtra(SENTENCE_EXTRA, literal);
                         }
