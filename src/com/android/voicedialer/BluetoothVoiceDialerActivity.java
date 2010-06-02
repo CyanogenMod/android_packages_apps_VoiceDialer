@@ -18,6 +18,7 @@ package com.android.voicedialer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -364,9 +365,11 @@ public class BluetoothVoiceDialerActivity extends Activity {
     private BluetoothHeadset.ServiceListener mBluetoothHeadsetServiceListener =
             new BluetoothHeadset.ServiceListener() {
         public void onServiceConnected() {
-            if (mBluetoothHeadset != null &&
-                    mBluetoothHeadset.getState() == BluetoothHeadset.STATE_CONNECTED) {
-                mBluetoothHeadset.startVoiceRecognition();
+            if (mBluetoothHeadset != null) {
+                BluetoothDevice device = mBluetoothHeadset.getCurrentHeadset();
+                if (mBluetoothHeadset.getState(device) == BluetoothHeadset.STATE_CONNECTED) {
+                    mBluetoothHeadset.startVoiceRecognition();
+                }
             }
 
             if (Config.LOGD) Log.d(TAG, "onServiceConnected");
