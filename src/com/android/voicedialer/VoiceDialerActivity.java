@@ -365,9 +365,10 @@ public class VoiceDialerActivity extends Activity {
     private BluetoothHeadset.ServiceListener mBluetoothHeadsetServiceListener =
             new BluetoothHeadset.ServiceListener() {
         public void onServiceConnected() {
-            if (Config.LOGD) Log.d(TAG, "headset status " + mBluetoothHeadset.getState());
+            BluetoothDevice device = mBluetoothHeadset.getCurrentHeadset();
+            if (Config.LOGD) Log.d(TAG, "headset status " + mBluetoothHeadset.getState(device));
 
-            if (mBluetoothHeadset.getState() == BluetoothHeadset.STATE_CONNECTED) {
+            if (mBluetoothHeadset.getState(device) == BluetoothHeadset.STATE_CONNECTED) {
                 if (Config.LOGD) Log.d(TAG, "using bluetooth");
                 mUsingBluetooth = true;
 
