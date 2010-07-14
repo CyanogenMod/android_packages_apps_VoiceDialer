@@ -41,6 +41,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
+
 /**
  * TODO: get rid of the anonymous classes
  *
@@ -168,6 +171,8 @@ public class BluetoothVoiceDialerActivity extends Activity {
     private AlertDialog mAlertDialog;
     private Runnable mFallbackRunnable;
 
+    private WakeLock mWakeLock;
+
     @Override
     protected void onCreate(Bundle icicle) {
         if (Config.LOGD) Log.d(TAG, "onCreate");
@@ -181,6 +186,8 @@ public class BluetoothVoiceDialerActivity extends Activity {
     protected void onStart() {
         if (Config.LOGD) Log.d(TAG, "onStart " + getIntent());
         super.onStart();
+
+        acquireWakeLock(this);
 
         mState = INITIALIZING;
         mChosenAction = null;
@@ -907,9 +914,26 @@ public class BluetoothVoiceDialerActivity extends Activity {
 
         super.onStop();
 
+        releaseWakeLock();
+
         // It makes no sense to have this activity maintain state when in
         // background.  When it stops, it should just be destroyed.
         finish();
+    }
+
+    private void acquireWakeLock(Context context) {
+        if (mWakeLock == null) {
+            PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BluetoothVoiceDialer");
+            mWakeLock.acquire();
+        }
+    }
+
+    private void releaseWakeLock() {
+        if (mWakeLock != null) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
     }
 
     private Runnable mMicFlasher = new Runnable() {
