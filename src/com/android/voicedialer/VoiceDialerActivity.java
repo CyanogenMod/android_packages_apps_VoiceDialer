@@ -29,6 +29,8 @@ import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.os.SystemProperties;
 import android.os.Vibrator;
 import android.speech.tts.TextToSpeech;
@@ -173,6 +175,7 @@ public class VoiceDialerActivity extends Activity {
     private Runnable mFallbackRunnable;
     private boolean mUsingBluetooth = false;
     private int mSampleRate;
+    private WakeLock mWakeLock;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -187,6 +190,8 @@ public class VoiceDialerActivity extends Activity {
     protected void onStart() {
         if (Config.LOGD) Log.d(TAG, "onStart " + getIntent());
         super.onStart();
+
+        acquireWakeLock(this);
 
         mState = INITIALIZING;
         mChosenAction = null;
@@ -1102,9 +1107,26 @@ public class VoiceDialerActivity extends Activity {
 
         super.onStop();
 
+        releaseWakeLock();
+
         // It makes no sense to have this activity maintain state when in
         // background.  When it stops, it should just be destroyed.
         finish();
+    }
+
+    private void acquireWakeLock(Context context) {
+        if (mWakeLock == null) {
+            PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "VoiceDialer");
+            mWakeLock.acquire();
+        }
+    }
+
+    private void releaseWakeLock() {
+        if (mWakeLock != null) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
     }
 
     private Runnable mMicFlasher = new Runnable() {
