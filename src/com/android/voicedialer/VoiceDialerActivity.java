@@ -18,8 +18,10 @@ package com.android.voicedialer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,9 +41,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Set;
 import java.io.IOException;
 
 /**
@@ -161,10 +165,11 @@ public class VoiceDialerActivity extends Activity {
     private Thread mRecognizerThread = null;
     private AudioManager mAudioManager;
     private BluetoothHeadset mBluetoothHeadset;
+    private BluetoothDevice mBluetoothDevice;
+    private BluetoothAdapter mAdapter;
     private TextToSpeech mTts;
     private HashMap<String, String> mTtsParams;
     private VoiceDialerBroadcastReceiver mReceiver;
-    private int mBluetoothAudioState;
     private boolean mWaitingForTts;
     private boolean mWaitingForScoConnection;
     private Intent[] mAvailableChoices;
@@ -217,6 +222,7 @@ public class VoiceDialerActivity extends Activity {
         // Get handle to BluetoothHeadset object
         IntentFilter audioStateFilter;
         audioStateFilter = new IntentFilter();
+        audioStateFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
         audioStateFilter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
         mReceiver = new VoiceDialerBroadcastReceiver();
         registerReceiver(mReceiver, audioStateFilter);
@@ -227,11 +233,13 @@ public class VoiceDialerActivity extends Activity {
         mCommandClient = new CommandRecognizerClient();
         mChoiceClient = new ChoiceRecognizerClient();
 
-        mBluetoothAudioState = BluetoothHeadset.STATE_ERROR;
+        mAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (BluetoothHeadset.isBluetoothVoiceDialingEnabled(this) && mAdapter != null) {
+           if (!mAdapter.getProfileProxy(this, mBluetoothHeadsetServiceListener,
+                                         BluetoothProfile.HEADSET)) {
+               Log.e(TAG, "Getting Headset Proxy failed");
+           }
 
-        if (BluetoothHeadset.isBluetoothVoiceDialingEnabled(this)) {
-            mBluetoothHeadset = new BluetoothHeadset(this,
-                    mBluetoothHeadsetServiceListener);
         } else {
             mUsingBluetooth = false;
             if (Config.LOGD) Log.d(TAG, "bluetooth unavailable");
@@ -368,63 +376,92 @@ public class VoiceDialerActivity extends Activity {
         }
     }
 
-    private BluetoothHeadset.ServiceListener mBluetoothHeadsetServiceListener =
-            new BluetoothHeadset.ServiceListener() {
-        public void onServiceConnected() {
-            BluetoothDevice device = mBluetoothHeadset.getCurrentHeadset();
-            if (Config.LOGD) Log.d(TAG, "headset status " + mBluetoothHeadset.getState(device));
+    private void updateBluetoothParameters(boolean connected) {
+        if (connected) {
+            if (Config.LOGD) Log.d(TAG, "using bluetooth");
+            mUsingBluetooth = true;
 
-            if (mBluetoothHeadset.getState(device) == BluetoothHeadset.STATE_CONNECTED) {
-                if (Config.LOGD) Log.d(TAG, "using bluetooth");
-                mUsingBluetooth = true;
+            mBluetoothHeadset.startVoiceRecognition(mBluetoothDevice);
 
-                mBluetoothHeadset.startVoiceRecognition();
+            mSampleRate = BLUETOOTH_SAMPLE_RATE;
+            mCommandEngine.setMinimizeResults(true);
+            mCommandEngine.setAllowOpenEntries(false);
 
-                mSampleRate = BLUETOOTH_SAMPLE_RATE;
-                mCommandEngine.setMinimizeResults(true);
-                mCommandEngine.setAllowOpenEntries(false);
+            // we can't start recognizing until we get connected to the BluetoothHeadset
+            // and have a connected audio state.  We will listen for these
+            // states to change.
+            mWaitingForScoConnection = true;
 
-                // we can't start recognizing until we get connected to the BluetoothHeadset
-                // and have a connected audio state.  We will listen for these
-                // states to change.
-                mWaitingForScoConnection = true;
+            // initialize the text to speech system
+            mWaitingForTts = true;
+            mTts = new TextToSpeech(VoiceDialerActivity.this, new TtsInitListener());
+            mTtsParams = new HashMap<String, String>();
+            mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                    String.valueOf(AudioManager.STREAM_VOICE_CALL));
+            // we need to wait for the TTS system and the SCO connection
+            // before we can start listening.
+        } else {
+            if (Config.LOGD) Log.d(TAG, "not using bluetooth");
+            mUsingBluetooth = false;
+            mSampleRate = REGULAR_SAMPLE_RATE;
+            mCommandEngine.setMinimizeResults(false);
+            mCommandEngine.setAllowOpenEntries(true);
 
-                // initialize the text to speech system
-                mWaitingForTts = true;
-                mTts = new TextToSpeech(VoiceDialerActivity.this, new TtsInitListener());
-                mTtsParams = new HashMap<String, String>();
-                mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-                        String.valueOf(AudioManager.STREAM_VOICE_CALL));
-                // we need to wait for the TTS system and the SCO connection
-                // before we can start listening.
-            } else {
-                if (Config.LOGD) Log.d(TAG, "not using bluetooth");
-                mUsingBluetooth = false;
-                mSampleRate = REGULAR_SAMPLE_RATE;
-                mCommandEngine.setMinimizeResults(false);
-                mCommandEngine.setAllowOpenEntries(true);
-
-                // we're not using bluetooth apparently, just start listening.
-                listenForCommand();
-            }
-
-            if (Config.LOGD) Log.d(TAG, "onServiceConnected");
+            // we're not using bluetooth apparently, just start listening.
+            listenForCommand();
         }
-        public void onServiceDisconnected() {}
+    }
+
+    private BluetoothProfile.ServiceListener mBluetoothHeadsetServiceListener =
+            new BluetoothProfile.ServiceListener() {
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+            if (Config.LOGD) Log.d(TAG, "onServiceConnected");
+            mBluetoothHeadset = (BluetoothHeadset) proxy;
+
+            Set<BluetoothDevice> deviceSet = mBluetoothHeadset.getConnectedDevices();
+            BluetoothDevice[] devices = deviceSet.toArray(new BluetoothDevice[deviceSet.size()]);
+
+            if (devices.length > 0) {
+                mBluetoothDevice = devices[0];
+                int state = mBluetoothHeadset.getConnectionState(mBluetoothDevice);
+                if (Config.LOGD) Log.d(TAG, "headset status " + state);
+
+                // We are already connnected to a headset
+                if (state == BluetoothHeadset.STATE_CONNECTED) {
+                    updateBluetoothParameters(true);
+                    return;
+                }
+            }
+            updateBluetoothParameters(false);
+        }
+
+        public void onServiceDisconnected(int profile) {
+            mBluetoothHeadset = null;
+        }
     };
 
     private class VoiceDialerBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (action.equals(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)) {
-                mBluetoothAudioState = intent.getIntExtra(
-                        BluetoothHeadset.EXTRA_AUDIO_STATE,
-                        BluetoothHeadset.STATE_ERROR);
-                if (Config.LOGD) Log.d(TAG, "HEADSET AUDIO_STATE_CHANGED -> " +
-                        mBluetoothAudioState);
+            if (action.equals(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)) {
 
-                if (mBluetoothAudioState == BluetoothHeadset.AUDIO_STATE_CONNECTED &&
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1);
+
+                if (Config.LOGD) Log.d(TAG, "HEADSET STATE -> " + state);
+
+                if (state == BluetoothProfile.STATE_CONNECTED) {
+                    mBluetoothDevice = device;
+                    updateBluetoothParameters(true);
+                } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
+                    mBluetoothDevice = null;
+                    updateBluetoothParameters(false);
+                }
+            } else if (action.equals(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)) {
+                int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1);
+                int prevState = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1);
+                if (state == BluetoothHeadset.STATE_AUDIO_CONNECTED &&
                     mWaitingForScoConnection) {
                     // SCO channel has just become available.
                     mWaitingForScoConnection = false;
@@ -434,7 +471,7 @@ public class VoiceDialerActivity extends Activity {
                         // we now have SCO connection and TTS, so we can start.
                         mHandler.postDelayed(new GreetingRunnable(), FIRST_UTTERANCE_DELAY);
                     }
-                } else {
+                } else if (prevState == BluetoothHeadset.STATE_AUDIO_CONNECTED) {
                     if (!mWaitingForScoConnection) {
                         // apparently our connection to the headset has dropped.
                         // we won't be able to continue voicedialing.
@@ -1078,8 +1115,8 @@ public class VoiceDialerActivity extends Activity {
 
         // shut down bluetooth, if it exists
         if (mBluetoothHeadset != null) {
-            mBluetoothHeadset.stopVoiceRecognition();
-            mBluetoothHeadset.close();
+            mBluetoothHeadset.stopVoiceRecognition(mBluetoothDevice);
+            mAdapter.closeProfileProxy(BluetoothProfile.HEADSET, mBluetoothHeadset);
             mBluetoothHeadset = null;
         }
 
