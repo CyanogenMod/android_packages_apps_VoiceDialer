@@ -28,13 +28,7 @@
         <activity android:name="BluetoothVoiceDialerActivity"
                   android:screenOrientation="portrait">
             <intent-filter>
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity android:name="VoiceDialerLauncher">
-            <intent-filter>
-                <action android:name="android.intent.action.VOICE_COMMAND" />
+                <action android:name="android.intent.action.VOICE_COMMAND"/>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
