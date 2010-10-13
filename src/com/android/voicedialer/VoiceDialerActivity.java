@@ -540,11 +540,39 @@ public class VoiceDialerActivity extends Activity {
          */
         public void onRecognitionSuccess(final Intent[] intents) {
             if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess " + intents.length);
+
+            // Pull any intents that are not valid to display in a dialog or
+            // call "startActivity" with.
+            // ACTION_RECOGNIZER_RESULT intents are only used when in Bluetooth
+            // mode, to control the behavior of the voicedialer app, rather
+            // than to actually place calls or open apps.
+            int runnableCount = 0;
+            for (int i=0; i < intents.length; i++) {
+                if (!RecognizerEngine.ACTION_RECOGNIZER_RESULT.equals(
+                        intents[i].getAction())) {
+                    runnableCount++;
+                }
+            }
+            Intent runnableIntents[] = new Intent[runnableCount];
+            int j = 0;
+            for (int i=0; i < intents.length; i++) {
+                if (!RecognizerEngine.ACTION_RECOGNIZER_RESULT.equals(
+                        intents[i].getAction())) {
+                    runnableIntents[j] = intents[i];
+                    j++;
+                }
+            }
+
+            if (runnableIntents.length == 0) {
+                // no usable intents
+                onRecognitionFailure("No displayable intents");
+                return;
+            }
             // repackage our intents as a bundle so that we can pass it into
             // showDialog.  This in required so that we can handle it when
             // orientation changes and the activity is destroyed and recreated.
             final Bundle args = new Bundle();
-            args.putParcelableArray(INTENTS_KEY, intents);
+            args.putParcelableArray(INTENTS_KEY, runnableIntents);
 
             mHandler.post(new Runnable() {
 

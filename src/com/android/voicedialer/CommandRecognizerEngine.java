@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
@@ -1088,14 +1089,16 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                     }
                 }
 
-                //
-                // if no other entries were generated, use the personId
-                //
 
                 // add 'CALL JACK JONES', with valid personId
                 if (count == 0 && contactId != VoiceContact.ID_UNDEFINED) {
-                    addCallIntent(intents, ContentUris.withAppendedId(
-                            Contacts.CONTENT_URI, contactId), literal, "", 0);
+                    // TODO: what should really happen here is, we find
+                    // all phones for this contact, and create a label that
+                    // says "call person X at phone type Y", and add intents
+                    // for each of them to the return list.
+                    // It's too late in Gingerbread to add the strings that
+                    // would be required for this, so we'll just ignore
+                    // this person.
                 }
             }
 
