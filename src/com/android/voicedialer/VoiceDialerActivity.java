@@ -43,10 +43,10 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Set;
-import java.io.IOException;
+import java.util.List;
 
 /**
  * TODO: get rid of the anonymous classes
@@ -418,11 +418,10 @@ public class VoiceDialerActivity extends Activity {
             if (Config.LOGD) Log.d(TAG, "onServiceConnected");
             mBluetoothHeadset = (BluetoothHeadset) proxy;
 
-            Set<BluetoothDevice> deviceSet = mBluetoothHeadset.getConnectedDevices();
-            BluetoothDevice[] devices = deviceSet.toArray(new BluetoothDevice[deviceSet.size()]);
+            List<BluetoothDevice> deviceList = mBluetoothHeadset.getConnectedDevices();
 
-            if (devices.length > 0) {
-                mBluetoothDevice = devices[0];
+            if (deviceList.size() > 0) {
+                mBluetoothDevice = deviceList.get(0);
                 int state = mBluetoothHeadset.getConnectionState(mBluetoothDevice);
                 if (Config.LOGD) Log.d(TAG, "headset status " + state);
 
