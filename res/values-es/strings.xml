@@ -34,7 +34,7 @@
     <string name="at_other" msgid="1863773841760953063">" a otro número"</string>
     <string name="logging_enabled" msgid="8702018587287436548">"Se ha habilitado el registro de la marcación por voz."</string>
     <string name="logging_disabled" msgid="5992352601321824322">"Se ha inhabilitado el registro de la marcación por voz."</string>
-    <string name="speak_now_tts" msgid="1343363077871348876">"Hablar ahora"</string>
+    <string name="speak_now_tts" msgid="1343363077871348876">"Habla ahora"</string>
     <string name="no_results_tts" msgid="7292876061536755253">"No se ha encontrado ningún resultado. Vuelve a intentarlo."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"La selección no es válida."</string>
     <string name="goodbye_tts" msgid="2034746843726531134">"Adiós"</string>
