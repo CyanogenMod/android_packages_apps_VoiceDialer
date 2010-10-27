@@ -22,8 +22,8 @@
     <string name="examples" msgid="2100807337052050741">" Beispiele: "<b>" "\n"\"Max Schmidt anrufen\" "\n"\"Max Schmidt zu Hause anrufen, …\" "\n"\"Mailbox anrufen\" "\n"\"(040) 123 4567 wählen\" "\n"\"110, 112, … wählen\" "\n"\"+44 7333 444 555 wählen\" "\n"\"Wahlwiederholung\" "\n"\"Kalender öffnen\" "</b></string>
     <string name="title" msgid="60788431860720964">"Sprachwahl"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth-Voice-Dialer"</string>
-    <string name="initializing" msgid="3146934028021025628">"Startvorgang wird ausgeführt."</string>
-    <string name="listening" msgid="6886486282595802147">"Spracheingabe erfolgt..."</string>
+    <string name="initializing" msgid="3146934028021025628">"Startvorgang"</string>
+    <string name="listening" msgid="6886486282595802147">"Jetzt sprechen..."</string>
     <string name="please_try_again" msgid="1427744152996396950">"Bitte versuchen Sie es erneut."</string>
     <string name="failure" msgid="3985785889820564626">"Fehler"</string>
     <string name="recognition_error" msgid="1807947152844267364">"Sie können das Telefon auch neu starten."</string>
@@ -34,7 +34,7 @@
     <string name="at_other" msgid="1863773841760953063">" Sonstige"</string>
     <string name="logging_enabled" msgid="8702018587287436548">"Sprachwahl-Protokollierung ist aktiviert."</string>
     <string name="logging_disabled" msgid="5992352601321824322">"Sprachwahl-Protokollierung ist deaktiviert."</string>
-    <string name="speak_now_tts" msgid="1343363077871348876">"Sprechen Sie jetzt."</string>
+    <string name="speak_now_tts" msgid="1343363077871348876">"Jetzt sprechen..."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Keine Ergebnisse, versuchen Sie es erneut."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Ungültige Auswahl"</string>
     <string name="goodbye_tts" msgid="2034746843726531134">"Bis bald."</string>
