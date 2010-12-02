@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="voiceDialer">Marcador de veu</string>
+  <string name="tool_tip_title">Sabies que…</string>
+  <string name="tool_tip_message">Mantenint premut el botó verd de trucada s\'obre el marcador de veu.</string>
+  <string name="examples">
+      Exemples:
+      <b>
+            \n\"Call John Doe\"
+            \n\"Call John Doe at home, \u2026\"
+            \n\"Call voicemail\"
+            \n\"Dial (866) 555 0123\"
+            \n\"Dial 911, 811, \u2026\"
+            \n\"Dial +44 7333 444 555\"
+            \n\"Redial\"
+            \n\"Open Calendar\"
+      </b>
+  </string>
+  <string name="title">Marcador de veu</string>
+  <string name="bluetooth_title">Marcador de veu bluetooth</string>
+  <string name="initializing">S\'està iniciant.</string>
+  <string name="listening">Escoltant…</string>
+  <string name="please_try_again">Torna-ho a intentar.</string>
+  <string name="failure">Ha fallat</string>
+  <string name="recognition_error">També pots provar de reiniciar el telèfon.</string>
+  <string name="headset_connection_lost">S\'ha perdut la connexió amb l\'auricular.</string>
+  <string name="at_home"> a casa</string>
+  <string name="on_mobile"> al mòbil</string>
+  <string name="at_work"> a la feina</string>
+  <string name="at_other"> en d\'altres</string>
+  <string name="logging_enabled">El registre del marcador de veu està activat.</string>
+  <string name="logging_disabled">El registre del marcador de veu està desactivat.</string>
+  <string name="speak_now_tts">Parla ara.</string>
+  <string name="no_results_tts">No hi ha resultats, torna a intentar-ho.</string>
+  <string name="invalid_choice_tts">Elecció no vàlida.</string>
+  <string name="goodbye_tts">Adéu.</string>
+</resources>
