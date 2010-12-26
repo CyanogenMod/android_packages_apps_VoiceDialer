@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2006 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+  
+          http://www.apache.org/licenses/LICENSE-2.0
+  
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <!-- The name of the Voice Dialer application. -->
+    <string name="voiceDialer">Hangtárcsázó</string>
+
+    <!-- title to the Tool Tip window.  open when VoiceDialer not launched
+        by green Call button -->
+    <string name="tool_tip_title">Tudta?</string>
+
+    <!-- message in the Tool Tip window.  purpose is to notify user of green
+        Call button launch -->
+    <string name="tool_tip_message">A zöld Hívás gomb nyomva tartása elindítja a hangtárcsázó funkciót.</string>
+
+    <!-- present on the VoiceDialer main screen to give examples of valid
+            speech input -->
+    <string name="examples">Példák:<b>
+            \n\"Call John Doe\"
+            \n\"Call John Doe at home, \u2026\"
+            \n\"Call voicemail\"
+            \n\"Dial (866) 555 0123\"
+            \n\"Dial 911, 811, \u2026\"
+            \n\"Dial +44 7333 444 555\"
+            \n\"Redial\"
+            \n\"Open Calendar\"
+        </b>
+    </string>
+
+    <!-- title to the VoiceDialer main screen -->
+    <string name="title">Hangtárcsázó</string>
+
+    <!-- title to the VoiceDialer main screen -->
+    <string name="bluetooth_title">Bluetooth hangtárcsázó</string>
+
+    <!-- displayed on the VoiceDialer main screen while initializing -->
+    <string name="initializing">Indítás...</string>
+
+    <!-- displayed on the VoiceDialer main screen while listening to speech -->
+    <string name="listening">Hallgatás\u2026</string>
+
+    <!-- displayed on the VoiceDialer main screen upon failure -->
+    <string name="please_try_again">Kérjük, próbálja újra.</string>
+
+
+    <!--displayed when there is a fatal error on initialization or
+        recognition-->
+    <string name="failure">Hiba</string>
+
+    <!-- displayed on the VoiceDialer main screen after unrecoverable error.
+            when present, this message follows the one above -->
+    <string name="recognition_error">Megpróbálhatja újraindítani a telefont.</string>
+
+    <!-- displayed when the connection tot he bluetooth headset is lost -->
+    <string name="headset_connection_lost">A kapcsolat a headsettel megszakadt.</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'home' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
+	<string name="at_home">" otthon"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'mobile' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
+	<string name="on_mobile">" a mobilján"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'work' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
+	<string name="at_work">" munkahelyén"</string>
+
+    <!-- appended to recognition result from VoiceDialer.grxml to
+            indicate a 'other' number.
+            'Call John Smith' becomes 'Call John Smith at home'  -->
+	<string name="at_other">" egyéb számon"</string>
+
+    <!-- message in popup which indicates that VoiceDialer logging
+            has been enabled -->
+    <string name="logging_enabled">A hangtárcsázó-naplózás be van kapcsolva.</string>
+    
+    <!-- message in popup which indicates that VoiceDialer logging
+            has been disabled -->
+    <string name="logging_disabled">A hangtárcsázó-naplózás ki van kapcsolva.</string>
+
+    <!-- message that is spoken to indicate that the user can begin speaking.
+    -->
+    <string name="speak_now_tts">Most beszéljen.</string>
+
+    <!-- message that is spoken when we get no results
+    -->
+    <string name="no_results_tts">Nincs találat, próbálja újra.</string>
+
+    <!-- message that is spoken when the user asks for a choice that
+            is not available -->
+    <string name="invalid_choice_tts">Érvénytelen választás.</string>
+
+    <!-- message that is spoken to inform the user that the application
+            is shutting down.-->
+    <string name="goodbye_tts">Viszontlátásra!</string>
+
+</resources>
