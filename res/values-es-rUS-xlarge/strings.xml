@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- XL -->
+    <string name="tool_tip_message" msgid="2717730148362615400">"Si mantienes presionado el botón verde para llamar, se abre Marcador de voz."</string>
+    <!-- XL -->
+    <string name="bluetooth_title" msgid="4147445999718630119">"Voice Dialer de Bluetooth"</string>
+    <!-- XL -->
+    <string name="at_home" msgid="3193766051611409922">" a casa"</string>
+    <!-- XL -->
+    <string name="logging_enabled" msgid="4382520071589595315">"El acceso a Marcador de voz está activado."</string>
+    <!-- XL -->
+    <string name="logging_disabled" msgid="6893582942973845155">"El acceso a Marcado de voz está desactivado."</string>
+</resources>
