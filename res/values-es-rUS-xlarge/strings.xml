@@ -4,6 +4,8 @@
     <!-- XL -->
     <string name="tool_tip_message" msgid="2717730148362615400">"Si mantienes presionado el botón verde para llamar, se abre Marcador de voz."</string>
     <!-- XL -->
+    <string name="examples" msgid="8803021610887097572">" Ejemplos: "<b>" "\n"\"Llamar a Juan Pérez\" "\n"\"Llamar a Juan Pérez al hogar, ...\" "\n"\"Llamar al correo de voz\""\n"\"Marcar (866) 555 0123\" "\n"\"Marcar 911, 811, …\" "\n"\"Marcar +44 7333 444 555\" "\n"\"Volver a marcar\" "\n"\"Abrir Calendar\""</b></string>
+    <!-- XL -->
     <string name="bluetooth_title" msgid="4147445999718630119">"Voice Dialer de Bluetooth"</string>
     <!-- XL -->
     <string name="at_home" msgid="3193766051611409922">" a casa"</string>
