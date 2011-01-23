@@ -316,16 +316,14 @@ public class BluetoothVoiceDialerActivity extends Activity {
             mWaitingForTts = false;
 
             mTts.setOnUtteranceCompletedListener(new OnUtteranceCompletedListener());
-            // TTS over bluetooth is really loud,
+            // TTS over bluetooth will distort if set too loud, so we will
             // store the current volume away, and then turn it down.
-            // we will restore it in onStop.
-            // Limit volume to -18dB. Stream volume range represents approximately 50dB
-            // (See AudioSystem.cpp linearToLog()) so the number of steps corresponding
-            // to 18dB is 18 / (50 / maxSteps).
+            // We will restore it in onStop.
+            // Limit volume to roughly 75% of the max volume level for STREAM_BLUETOOTH_SCO
             mBluetoothVoiceVolume = mAudioManager.getStreamVolume(
                     AudioManager.STREAM_BLUETOOTH_SCO);
             int maxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_BLUETOOTH_SCO);
-            int volume = maxVolume - ((18 / (50/maxVolume)) + 1);
+            int volume = (int) (maxVolume / 1.3);
             if (mBluetoothVoiceVolume > volume) {
                 mAudioManager.setStreamVolume(AudioManager.STREAM_BLUETOOTH_SCO, volume, 0);
             }
