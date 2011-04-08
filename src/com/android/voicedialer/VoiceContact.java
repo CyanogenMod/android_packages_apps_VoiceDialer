@@ -21,7 +21,6 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.CallLog;
-import android.util.Config;
 import android.util.Log;
 import java.io.BufferedReader;
 import java.io.File;
@@ -103,7 +102,7 @@ public class VoiceContact {
      * the contact list content provider.
      */
     public static List<VoiceContact> getVoiceContacts(Activity activity) {
-        if (Config.LOGD) Log.d(TAG, "VoiceContact.getVoiceContacts");
+        if (false) Log.d(TAG, "VoiceContact.getVoiceContacts");
 
         List<VoiceContact> contacts = new ArrayList<VoiceContact>();
 
@@ -150,7 +149,7 @@ public class VoiceContact {
             long personIdAtCursor = cursor.getLong(personIdColumn);
 
             /*
-            if (Config.LOGD) {
+            if (false) {
                 Log.d(TAG, "phoneId=" + phoneIdAtCursor
                         + " type=" + typeAtCursor
                         + " isPrimary=" + isPrimaryAtCursor
@@ -235,7 +234,7 @@ public class VoiceContact {
         // clean up cursor
         cursor.close();
 
-        if (Config.LOGD) Log.d(TAG, "VoiceContact.getVoiceContacts " + contacts.size());
+        if (false) Log.d(TAG, "VoiceContact.getVoiceContacts " + contacts.size());
 
         return contacts;
     }
@@ -246,7 +245,7 @@ public class VoiceContact {
      * @return a List of {@link VoiceContact} in a File.
      */
     public static List<VoiceContact> getVoiceContactsFromFile(File contactsFile) {
-        if (Config.LOGD) Log.d(TAG, "getVoiceContactsFromFile " + contactsFile);
+        if (false) Log.d(TAG, "getVoiceContactsFromFile " + contactsFile);
 
         List<VoiceContact> contacts = new ArrayList<VoiceContact>();
 
@@ -261,17 +260,17 @@ public class VoiceContact {
             }
         }
         catch (IOException e) {
-            if (Config.LOGD) Log.d(TAG, "getVoiceContactsFromFile failed " + e);
+            if (false) Log.d(TAG, "getVoiceContactsFromFile failed " + e);
         }
         finally {
             try {
                 br.close();
             } catch (IOException e) {
-                if (Config.LOGD) Log.d(TAG, "getVoiceContactsFromFile failed during close " + e);
+                if (false) Log.d(TAG, "getVoiceContactsFromFile failed during close " + e);
             }
         }
 
-        if (Config.LOGD) Log.d(TAG, "getVoiceContactsFromFile " + contacts.size());
+        if (false) Log.d(TAG, "getVoiceContactsFromFile " + contacts.size());
 
         return contacts;
     }
@@ -295,7 +294,7 @@ public class VoiceContact {
         }
         cursor.close();
 
-        if (Config.LOGD) Log.d(TAG, "redialNumber " + number);
+        if (false) Log.d(TAG, "redialNumber " + number);
 
         return number;
     }

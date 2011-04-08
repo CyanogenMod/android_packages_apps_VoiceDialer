@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.BroadcastReceiver;
 import android.provider.Telephony.Intents;
-import android.util.Config;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -30,7 +29,7 @@ public class VoiceDialerReceiver extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Config.LOGD) Log.d(TAG, "onReceive " + intent);
+        if (false) Log.d(TAG, "onReceive " + intent);
 
         // fetch up useful stuff
         String action = intent.getAction();

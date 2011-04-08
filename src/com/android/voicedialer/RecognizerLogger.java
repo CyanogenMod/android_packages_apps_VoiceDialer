@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.speech.srec.WaveHeader;
 import android.text.format.DateFormat;
-import android.util.Config;
 import android.util.Log;
 
 import java.io.BufferedWriter;
@@ -107,7 +106,7 @@ public class RecognizerLogger {
      * @param dataDir directory to contain the log files.
      */
     public RecognizerLogger(Context context) throws IOException {
-        if (Config.LOGD) Log.d(TAG, "RecognizerLogger");
+        if (false) Log.d(TAG, "RecognizerLogger");
         
         // generate new root filename
         File dir = context.getDir(LOGDIR, 0);

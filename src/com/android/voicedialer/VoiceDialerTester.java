@@ -17,7 +17,6 @@
 package com.android.voicedialer;
 
 import android.content.Intent;
-import android.util.Config;
 import android.util.Log;
 import java.io.File;
 import java.io.FileFilter;
@@ -54,7 +53,7 @@ public class VoiceDialerTester {
      * Sweep directory of directories, listing all WAV files.
      */
     public VoiceDialerTester(File dir) {
-        if (Config.LOGD) {
+        if (false) {
             Log.d(TAG, "VoiceDialerTester " + dir);
         }
 
@@ -220,7 +219,7 @@ public class VoiceDialerTester {
     }
 
     private void reportSummary(String label, FileFilter filter) {
-        if (!Config.LOGD) return;
+        if (!false) return;
 
         // log cumulative stats
         int total = 0;

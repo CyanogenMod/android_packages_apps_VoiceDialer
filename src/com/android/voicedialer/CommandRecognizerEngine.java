@@ -26,7 +26,6 @@ import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 import android.speech.srec.Recognizer;
-import android.util.Config;
 import android.util.Log;
 import java.io.File;
 import java.io.FileFilter;
@@ -119,8 +118,8 @@ public class CommandRecognizerEngine extends RecognizerEngine {
 
     protected void setupGrammar() throws IOException, InterruptedException {
         // fetch the contact list
-        if (Config.LOGD) Log.d(TAG, "start getVoiceContacts");
-        if (Config.LOGD) Log.d(TAG, "contactsFile is " + (mContactsFile == null ?
+        if (false) Log.d(TAG, "start getVoiceContacts");
+        if (false) Log.d(TAG, "contactsFile is " + (mContactsFile == null ?
             "null" : "not null"));
         List<VoiceContact> contacts = mContactsFile != null ?
                 VoiceContact.getVoiceContactsFromFile(mContactsFile) :
@@ -142,12 +141,12 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             }
 
             // load the empty Grammar
-            if (Config.LOGD) Log.d(TAG, "start new Grammar");
+            if (false) Log.d(TAG, "start new Grammar");
             mSrecGrammar = mSrec.new Grammar(SREC_DIR + "/grammars/VoiceDialer.g2g");
             mSrecGrammar.setupRecognizer();
 
             // reset slots
-            if (Config.LOGD) Log.d(TAG, "start grammar.resetAllSlots");
+            if (false) Log.d(TAG, "start grammar.resetAllSlots");
             mSrecGrammar.resetAllSlots();
 
             // add names to the grammar
@@ -159,18 +158,18 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             }
 
             // compile the grammar
-            if (Config.LOGD) Log.d(TAG, "start grammar.compile");
+            if (false) Log.d(TAG, "start grammar.compile");
             mSrecGrammar.compile();
 
             // update g2g file
-            if (Config.LOGD) Log.d(TAG, "start grammar.save " + g2g.getPath());
+            if (false) Log.d(TAG, "start grammar.save " + g2g.getPath());
             g2g.getParentFile().mkdirs();
             mSrecGrammar.save(g2g.getPath());
         }
 
         // g2g file exists, but is not loaded
         else if (mSrecGrammar == null) {
-            if (Config.LOGD) Log.d(TAG, "start new Grammar loading " + g2g);
+            if (false) Log.d(TAG, "start new Grammar loading " + g2g);
             mSrecGrammar = mSrec.new Grammar(g2g.getPath());
             mSrecGrammar.setupRecognizer();
         }
@@ -187,7 +186,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
      */
     private void addNameEntriesToGrammar(List<VoiceContact> contacts)
             throws InterruptedException {
-        if (Config.LOGD) Log.d(TAG, "addNameEntriesToGrammar " + contacts.size());
+        if (false) Log.d(TAG, "addNameEntriesToGrammar " + contacts.size());
 
         HashSet<String> entries = new HashSet<String>();
         StringBuffer sb = new StringBuffer();
@@ -221,7 +220,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
      * add a list of application labels to the 'open x' grammar
      */
     private void loadOpenEntriesTable() throws InterruptedException, IOException {
-        if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar");
+        if (false) Log.d(TAG, "addOpenEntriesToGrammar");
 
         // fill this
         File oe = mActivity.getFileStreamPath(OPEN_ENTRIES);
@@ -278,7 +277,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             }
 
             // write list
-            if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar writing " + oe);
+            if (false) Log.d(TAG, "addOpenEntriesToGrammar writing " + oe);
             try {
                  FileOutputStream fos = new FileOutputStream(oe);
                  try {
@@ -296,7 +295,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
 
         // read the list
         else {
-            if (Config.LOGD) Log.d(TAG, "addOpenEntriesToGrammar reading " + oe);
+            if (false) Log.d(TAG, "addOpenEntriesToGrammar reading " + oe);
             try {
                 FileInputStream fis = new FileInputStream(oe);
                 try {
@@ -451,7 +450,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
         File[] files = context.getFilesDir().listFiles(ff);
         if (files != null) {
             for (File file : files) {
-                if (Config.LOGD) Log.d(TAG, "deleteAllG2GFiles " + file);
+                if (false) Log.d(TAG, "deleteAllG2GFiles " + file);
                 file.delete();
             }
         }
@@ -465,7 +464,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
     public static void deleteCachedGrammarFiles(Context context) {
         deleteAllG2GFiles(context);
         File oe = context.getFileStreamPath(OPEN_ENTRIES);
-        if (Config.LOGD) Log.v(TAG, "deleteCachedGrammarFiles " + oe);
+        if (false) Log.v(TAG, "deleteCachedGrammarFiles " + oe);
         if (oe.exists()) oe.delete();
     }
 
@@ -934,7 +933,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
      */
     protected  void onRecognitionSuccess(RecognizerClient recognizerClient)
             throws InterruptedException {
-        if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess");
+        if (false) Log.d(TAG, "onRecognitionSuccess");
 
         if (mLogger != null) mLogger.logNbestHeader();
 
@@ -953,11 +952,11 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             String literal = mSrec.getResult(result, Recognizer.KEY_LITERAL);
             String semantic = mSrec.getResult(result, Recognizer.KEY_MEANING);
             String msg = "conf=" + conf + " lit=" + literal + " sem=" + semantic;
-            if (Config.LOGD) Log.d(TAG, msg);
+            if (false) Log.d(TAG, msg);
             int confInt = Integer.parseInt(conf);
             if (highestConfidence < confInt) highestConfidence = confInt;
             if (confInt < MINIMUM_CONFIDENCE || confInt * 2 < highestConfidence) {
-                if (Config.LOGD) Log.d(TAG, "confidence too low, dropping");
+                if (false) Log.d(TAG, "confidence too low, dropping");
                 break;
             }
             if (mLogger != null) mLogger.logLine(msg);
@@ -1131,7 +1130,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                         }
                         addIntent(intents, intent);
                     } catch (URISyntaxException e) {
-                        if (Config.LOGD) {
+                        if (false) {
                             Log.d(TAG, "onRecognitionSuccess: poorly " +
                                     "formed URI in grammar" + e);
                         }
@@ -1175,7 +1174,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
 
             // can't parse result
             else {
-                if (Config.LOGD) Log.d(TAG, "onRecognitionSuccess: parse error");
+                if (false) Log.d(TAG, "onRecognitionSuccess: parse error");
             }
         }
 
