@@ -33,7 +33,7 @@
     <string name="at_work" msgid="2946111016850670818">" para o número do trabalho"</string>
     <string name="at_other" msgid="1863773841760953063">" para outro número"</string>
     <string name="logging_enabled" msgid="8702018587287436548">"O início de sessão do Marcador por voz foi activado."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"O início de sessão do Marcador por voz foi desactivado."</string>
+    <string name="logging_disabled" msgid="5992352601321824322">"Registo do Marcador por Voz desativado."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Falar agora."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Sem resultados; tente novamente."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Escolha inválida."</string>
