@@ -450,6 +450,9 @@ public class VoiceDialerActivity extends Activity {
                 if (false) Log.d(TAG, "HEADSET STATE -> " + state);
 
                 if (state == BluetoothProfile.STATE_CONNECTED) {
+                    if (device == null) {
+                        return;
+                    }
                     mBluetoothDevice = device;
                     updateBluetoothParameters(true);
                 } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
