@@ -183,17 +183,18 @@ public class VoiceDialerActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle icicle) {
-        if (false) Log.d(TAG, "onCreate");
         super.onCreate(icicle);
+        // TODO: All of this state management and holding of
+        // connections to the TTS engine and recognizer really
+        // belongs in a service.  The activity can be stopped or deleted
+        // and recreated for lots of reasons.
+        // It's way too late in the ICS release cycle for a change
+        // like this now though.
+        // MHibdon Sept 20 2011
         mHandler = new Handler();
         mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
         mToneGenerator = new ToneGenerator(AudioManager.STREAM_RING,
                 ToneGenerator.MAX_VOLUME);
-    }
-
-    protected void onStart() {
-        if (false) Log.d(TAG, "onStart " + getIntent());
-        super.onStart();
 
         acquireWakeLock(this);
 
@@ -1098,9 +1099,7 @@ public class VoiceDialerActivity extends Activity {
         return msecDelay;
     }
 
-    protected void onStop() {
-        if (false) Log.d(TAG, "onStop");
-
+    protected void onDestroy() {
         synchronized(this) {
             mState = EXITING;
         }
@@ -1143,19 +1142,16 @@ public class VoiceDialerActivity extends Activity {
         }
         unregisterReceiver(mReceiver);
 
-        super.onStop();
+        super.onDestroy();
 
         releaseWakeLock();
-
-        // It makes no sense to have this activity maintain state when in
-        // background.  When it stops, it should just be destroyed.
-        finish();
     }
 
     private void acquireWakeLock(Context context) {
         if (mWakeLock == null) {
             PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
-            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "VoiceDialer");
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                                       "VoiceDialer");
             mWakeLock.acquire();
         }
     }
@@ -1177,10 +1173,4 @@ public class VoiceDialerActivity extends Activity {
             mHandler.postDelayed(this, 750);
         }
     };
-
-    @Override
-    protected void onDestroy() {
-        if (false) Log.d(TAG, "onDestroy");
-        super.onDestroy();
-    }
 }
