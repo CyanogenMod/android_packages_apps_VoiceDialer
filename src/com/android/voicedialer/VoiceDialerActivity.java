@@ -845,7 +845,8 @@ public class VoiceDialerActivity extends Activity {
                         };
 
                         mAlertDialog =
-                                new AlertDialog.Builder(VoiceDialerActivity.this)
+                                new AlertDialog.Builder(VoiceDialerActivity.this,
+                                        AlertDialog.THEME_HOLO_DARK)
                                 .setTitle(R.string.title)
                                 .setItems(sentences, clickListener)
                                 .setOnCancelListener(cancelListener)
