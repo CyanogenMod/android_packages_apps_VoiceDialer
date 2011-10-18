@@ -16,12 +16,12 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="voiceDialer" msgid="5948204210436590941">"โปรแกรมโทรออกด้วยเสียง"</string>
+    <string name="voiceDialer" msgid="5948204210436590941">"โทรออกด้วยเสียง"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"คุณรู้ไหมว่า..."</string>
-    <string name="tool_tip_message" msgid="8624998371709530611">"การกดปุ่มโทรออกสีเขียวค้างไว้จะเปิดโปรแกรมโทรออกด้วยเสียง"</string>
+    <string name="tool_tip_message" msgid="8624998371709530611">"กดปุ่มโทรออกสีเขียวค้างไว้จะเปิดโปรแกรมโทรออกด้วยเสียง"</string>
     <string name="examples" msgid="2100807337052050741">" ตัวอย่าง: "<b>" "\n"\"โทรหานาย ก.\" "\n"\"โทรหานาย ก.ที่บ้าน …\" "\n"\"โทรฟังข้อความเสียง\" "\n"\"โทร (866) 555 0123\" "\n"โทร 911, 811, …\" "\n"\"โทร +44 7333 444 555\" "\n"\"โทรซ้ำ\" "\n"\"เปิดปฏิทิน\" "</b></string>
-    <string name="title" msgid="60788431860720964">"โปรแกรมโทรออกด้วยเสียง"</string>
-    <string name="bluetooth_title" msgid="1018603170854746529">"โปรแกรมโทรออกด้วยเสียงผ่านบลูทูธ"</string>
+    <string name="title" msgid="60788431860720964">"โทรออกด้วยเสียง"</string>
+    <string name="bluetooth_title" msgid="1018603170854746529">"โทรออกด้วยเสียงผ่านบลูทูธ"</string>
     <string name="initializing" msgid="3146934028021025628">"กำลังเริ่มต้น"</string>
     <string name="listening" msgid="6886486282595802147">"กำลังฟัง..."</string>
     <string name="please_try_again" msgid="1427744152996396950">"โปรดลองอีกครั้ง"</string>
@@ -32,8 +32,8 @@
     <string name="on_mobile" msgid="5739841127369724804">" บนมือถือ"</string>
     <string name="at_work" msgid="2946111016850670818">" ที่ทำงาน"</string>
     <string name="at_other" msgid="1863773841760953063">" ที่อื่น"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"เปิดใช้งานการบันทึกสำหรับโปรแกรมโทรออกด้วยเสียง"</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"ปิดใช้งานการบันทึกสำหรับโปรแกรมโทรออกด้วยเสียง"</string>
+    <string name="logging_enabled" msgid="8702018587287436548">"เปิดบันทึกการใช้งานโทรออกด้วยเสียง"</string>
+    <string name="logging_disabled" msgid="5992352601321824322">"ปิดบันทึกการใช้งานโทรออกด้วยเสียง"</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"พูดได้เลย"</string>
     <string name="no_results_tts" msgid="7292876061536755253">"ไม่พบผลลัพธ์ ลองอีกครั้ง"</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"ตัวเลือกไม่ถูกต้อง"</string>
