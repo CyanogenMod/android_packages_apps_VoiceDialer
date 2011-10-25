@@ -22,7 +22,7 @@
     <string name="examples" msgid="2100807337052050741">" Esempi: "<b>" "\n"\"Chiama Mario Rossi\" "\n"\"Chiama Mario Rossi a casa, …\" "\n"\"Messaggio in segreteria\" "\n"\"Componi (866) 555 0123\" "\n"\"Componi 911, 811, …\" "\n"\"Componi +44 7333 444 555\" "\n"\"Ricomponi\" "\n"\"Apri Calendario\" "</b></string>
     <string name="title" msgid="60788431860720964">"Compositore vocale"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Compositore vocale Bluetooth"</string>
-    <string name="initializing" msgid="3146934028021025628">"Avvio in corso."</string>
+    <string name="initializing" msgid="3146934028021025628">"Avvio..."</string>
     <string name="listening" msgid="6886486282595802147">"In ascolto..."</string>
     <string name="please_try_again" msgid="1427744152996396950">"Riprova."</string>
     <string name="failure" msgid="3985785889820564626">"Errore"</string>
