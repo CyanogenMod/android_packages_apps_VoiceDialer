@@ -1093,8 +1093,17 @@ public class CommandRecognizerEngine extends RecognizerEngine {
 
                 // add 'CALL JACK JONES', with valid personId
                 if (count == 0 && contactId != VoiceContact.ID_UNDEFINED) {
-                    addCallIntent(intents, ContentUris.withAppendedId(
-                            Contacts.CONTENT_URI, contactId), literal, "", 0);
+                    // TODO: what should really happen here is, we find
+                    // all phones for this contact, and create a label that
+                    // says "call person X at phone type Y", and add intents
+                    // for each of them to the return list.
+                    // It's too late in <del>Gingerbread</del> ICS to add the strings that
+                    // would be required for this, so we'll just ignore this person.
+                    // See also issue 3090362 and 5551677
+
+                    // ACTION_CALL_PRIVILEGED does not work with Contacts.CONTENT_URI.
+                    // addCallIntent(intents, ContentUris.withAppendedId(
+                    //         Contacts.CONTENT_URI, contactId), literal, "", 0);
                 }
             }
 
