@@ -52,23 +52,23 @@
     <string name="bluetooth_title">Bluetooth Voice Dialer</string>
 
     <!-- displayed on the VoiceDialer main screen while initializing -->
-    <string name="initializing">Starting up.</string>
+    <string name="initializing">Starting up\u2026</string>
 
     <!-- displayed on the VoiceDialer main screen while listening to speech -->
     <string name="listening">Listening\u2026</string>
 
     <!-- displayed on the VoiceDialer main screen upon failure -->
-    <string name="please_try_again">Please try again.</string>
+    <string name="please_try_again">Try again.</string>
 
 
     <!--displayed when there is a fatal error on initialization or
         recognition-->
-    <string name="failure">Failure</string>
+    <string name="failure">Couldn\'t initialize</string>
 
     <!-- displayed on the VoiceDialer main screen after unrecoverable error.
             when present, this message follows the one above -->
     <string name="recognition_error">
-        You can also try restarting your phone.
+        Restart your phone then try again.
     </string>
 
     <!-- displayed when the connection tot he bluetooth headset is lost -->
@@ -98,11 +98,11 @@
 
     <!-- message in popup which indicates that VoiceDialer logging
             has been enabled -->
-    <string name="logging_enabled">Voice Dialer logging is enabled.</string>
+    <string name="logging_enabled">Voice Dialer logging is turned on.</string>
     
     <!-- message in popup which indicates that VoiceDialer logging
             has been disabled -->
-    <string name="logging_disabled">Voice Dialer logging is disabled.</string>
+    <string name="logging_disabled">Voice Dialer logging is turned off.</string>
 
     <!-- message that is spoken to indicate that the user can begin speaking.
     -->
