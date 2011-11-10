@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" ምሳሌዎች፡"<b>\n"\" ለከበደ ሚካኤል ደውል\" "\n"\" ከበደ ሚካኤል ቤትደውል....\""\n"\" በድምፅ መልዕክት ደውል\""\n"\" (011) 012 3456 ደውል\""\n"\"911፣997 ደውል\""\n"\" +251 1234 567 890 ደውል\""\n"\" ድጋሚ ደውል\""\n"\" ቀን መቁጠሪያ ክፈት\""</b></string>
     <string name="title" msgid="60788431860720964">"የድምፅ ደዋይ"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"የብሉቱዝ ድምፅ ደዋይ"</string>
-    <string name="initializing" msgid="3146934028021025628">"በመጀመር ላይ።"</string>
+    <string name="initializing" msgid="1455696989718692334">"በመጀመር ላይ…"</string>
     <string name="listening" msgid="6886486282595802147">"በማዳመጥ ላይ..."</string>
-    <string name="please_try_again" msgid="1427744152996396950">"እባክህ እንደገና ሞክር።"</string>
-    <string name="failure" msgid="3985785889820564626">"መሳን"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"ስልክዎን ድጋሚ ለማስጀመር ይሞክሩ።"</string>
+    <string name="please_try_again" msgid="6612157920739645345">"እንደገና ሞክር::"</string>
+    <string name="failure" msgid="4363633038755445209">"ማስጀመር አልተቻለም"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"ስልክህን ዳግም አስጀምር እና እንደገና ሞክር፡፡"</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"የተያያዥ ማዳመጫ ጠፍቷል።"</string>
     <string name="at_home" msgid="8478880812967663328">" በመነሻ ገፅ"</string>
     <string name="on_mobile" msgid="5739841127369724804">" በተንቀሳቃሽላይ"</string>
     <string name="at_work" msgid="2946111016850670818">" በሥራ"</string>
     <string name="at_other" msgid="1863773841760953063">" በሌላ"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"የድምፅ ደዋይ ግባ ነቅቷል።"</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"የድምፅደዋይ ግባ ቦዝኗል።"</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"የድምፅ ደዋይ ግባ ተነስቷል፡፡"</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"የድምፅ ደዋይ ግባ ጠፍቷል፡፡"</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"አሁን ተናገር።"</string>
     <string name="no_results_tts" msgid="7292876061536755253">"ምንም ውጤቶች የሉም፣ እንደገና ሞክር"</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"ትክክል ያልሆነ ምርጫ"</string>

@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Exemple: "<b>" "\n"„Apelaţi-l pe Ion Popescu” "\n"„Apelaţi-l pe Ion Popescu acasă, …” "\n"„Apelaţi mesageria vocală” "\n"„Apelaţi 0722334455” "\n"„Apelaţi 112, 981, …” "\n"„Apelaţi +44 7333 444 555” "\n"„Reapelaţi” "\n"„Deschideţi calendarul” "</b></string>
     <string name="title" msgid="60788431860720964">"Apelare vocală"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Apelare vocală Bluetooth"</string>
-    <string name="initializing" msgid="3146934028021025628">"Porneşte."</string>
+    <string name="initializing" msgid="1455696989718692334">"Porneşte..."</string>
     <string name="listening" msgid="6886486282595802147">"Se ascultă..."</string>
-    <string name="please_try_again" msgid="1427744152996396950">"Încercaţi din nou."</string>
-    <string name="failure" msgid="3985785889820564626">"Nereuşită"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"De asemenea, puteţi încerca să reporniţi telefonul."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Încercaţi din nou."</string>
+    <string name="failure" msgid="4363633038755445209">"Nu s-a putut iniţializa"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"Reporniţi telefonul şi încercaţi din nou."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Conexiunea cu casca s-a întrerupt."</string>
     <string name="at_home" msgid="8478880812967663328">" acasă"</string>
     <string name="on_mobile" msgid="5739841127369724804">" pe mobil"</string>
     <string name="at_work" msgid="2946111016850670818">" la birou"</string>
     <string name="at_other" msgid="1863773841760953063">" pe un alt număr"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"Înregistrarea în jurnal pentru apelarea vocală este activată."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"Înregistrarea în jurnal pentru apelarea vocală este dezactivată."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"Înregistrarea în jurnal pentru aplicaţia Apelare vocală este activată."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"Înregistrarea în jurnal pentru aplicaţia Apelare vocală este dezactivată."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Vorbiţi acum."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Niciun rezultat, încercaţi din nou."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Opţiune nevalidă."</string>

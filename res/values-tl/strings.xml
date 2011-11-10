@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Mga halimbawa: "<b>" "\n"\"Tawagan si John Doe\" "\n"\"Tawagan si John Doe sa tahanan, …\" "\n"\"Tumawag sa voicemail\" "\n"\"I-dial ang (866) 555 0123\" "\n"\"I-dial ang 911, 811, …\" "\n"\"I-dial ang +44 7333 444 555\" "\n"\"Mag-redial\" "\n"\"Magbukas ng Kalendaryo\" "</b></string>
     <string name="title" msgid="60788431860720964">"Voice Dialer"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth Voice Dialer"</string>
-    <string name="initializing" msgid="3146934028021025628">"Pagsisimula."</string>
+    <string name="initializing" msgid="1455696989718692334">"Nagsisimula…"</string>
     <string name="listening" msgid="6886486282595802147">"Nakikinig…"</string>
-    <string name="please_try_again" msgid="1427744152996396950">"Pakisubukang muli."</string>
-    <string name="failure" msgid="3985785889820564626">"Pagkabigo"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"Maaari mo ring subukang i-restart ang iyong telepono."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Subukang muli."</string>
+    <string name="failure" msgid="4363633038755445209">"Hindi masimulan"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"I-restart ang iyong telepono at subukang muli."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Nawala ang koneksyon sa headset."</string>
     <string name="at_home" msgid="8478880812967663328">" sa tahanan"</string>
     <string name="on_mobile" msgid="5739841127369724804">" sa mobile"</string>
     <string name="at_work" msgid="2946111016850670818">" sa trabaho"</string>
     <string name="at_other" msgid="1863773841760953063">" sa iba"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"Pinagana ang pag-log sa Voice Dialer."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"Hindi pinagana ang pag-log sa Voice Dialer."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"Naka-on ang pag-log sa Voice Dialer."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"Naka-off ang pag-log sa Voice Dialer."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Magsalita na ngayon."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Walang mga resulta, subukang muli."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Di-wastong pagpipilian."</string>

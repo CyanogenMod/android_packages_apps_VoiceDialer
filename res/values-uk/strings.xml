@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Прикл.: "<b>" "\n"\"Дзв. Ів.Кліщу\" "\n"\"Дзв. Ів.Кліщу на дом., …\" "\n"\"Дзв. на гол.пошту\" "\n"\"Наб. (866) 555 0123\" "\n"\"Наб. 911, 811, …\" "\n"\"Наб. +44 7333 444 555\" "\n"\"Наб. ще\" "\n"\"Відкр. Календ.\" "</b></string>
     <string name="title" msgid="60788431860720964">"Голос. набір"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Голос.набір ч-з Bluetooth"</string>
-    <string name="initializing" msgid="3146934028021025628">"Запускається."</string>
+    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"Запускається."</string>
     <string name="listening" msgid="6886486282595802147">"Прослухов…"</string>
-    <string name="please_try_again" msgid="1427744152996396950">"Спробуйте ще."</string>
-    <string name="failure" msgid="3985785889820564626">"Помилка"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"Можна також спробувати перезавант. тел."</string>
+    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"Спробуйте ще."</string>
+    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"Помилка"</string>
+    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"Можна також спробувати перезавант. тел."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Підключ. до гарнітури втрач."</string>
     <string name="at_home" msgid="8478880812967663328">" на домашн."</string>
     <string name="on_mobile" msgid="5739841127369724804">" на мобільний"</string>
     <string name="at_work" msgid="2946111016850670818">" на робоч."</string>
     <string name="at_other" msgid="1863773841760953063">" на інший"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"Запис. голос. набору в журн. увімк."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"Запис. голос. набору в журн. вимк."</string>
+    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"Запис. голос. набору в журн. увімк."</string>
+    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"Запис. голос. набору в журн. вимк."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Диктуйте."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Нема результ., спроб. ще."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Недійсний вибір."</string>

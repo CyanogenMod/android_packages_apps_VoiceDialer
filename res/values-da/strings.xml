@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Eksempler: "<b>" "\n"\"Ring til Peter Hansen\" "\n"\"Ring til Peter Hansen hjemme, …\" "\n"\"Ring til voicemail\" "\n"\"Ring til 55 12 34 56\" "\n"\"Ring til 119, 118, …\" "\n"\"Ring til +45 55 44 33 22\" "\n"\"Ring igen\" "\n"\"Åbn kalender\" "</b></string>
     <string name="title" msgid="60788431860720964">"Stemmeopkald"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Stemmeopkald via Bluetooth"</string>
-    <string name="initializing" msgid="3146934028021025628">"Starter."</string>
+    <string name="initializing" msgid="1455696989718692334">"Starter..."</string>
     <string name="listening" msgid="6886486282595802147">"Lytter ..."</string>
-    <string name="please_try_again" msgid="1427744152996396950">"Prøv igen."</string>
-    <string name="failure" msgid="3985785889820564626">"Fejl"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"Du kan også prøve at genstarte din telefon."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Prøv igen."</string>
+    <string name="failure" msgid="4363633038755445209">"Der kunne ikke initialiseres"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"Genstart telefonen, og prøv igen."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Forbindelsen til headsettet blev afbrudt."</string>
     <string name="at_home" msgid="8478880812967663328">" hjemme"</string>
     <string name="on_mobile" msgid="5739841127369724804">" på mobilen"</string>
     <string name="at_work" msgid="2946111016850670818">" på arbejde"</string>
     <string name="at_other" msgid="1863773841760953063">" på andet"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"Stemmeopkaldsregistrering er aktiveret."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"Stemmeopkaldsregistrering er deaktiveret."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"Logføring i Stemmeopkald er aktiveret."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"Logføring i Stemmeopkald er deaktiveret."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Tal nu."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Ingen resultater. Prøv igen."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Ugyldigt valg."</string>

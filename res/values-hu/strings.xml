@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Például: "<b>" "\n"\"John Doe hívása\" "\n"\"John Doe hívása otthon, …\" "\n"\"Hangposta hívása\" "\n"\"(866) 555 0123 tárcsázása\" "\n"\"911, 811, … tárcsázása\" "\n"\"+44 7333 444 555 tárcsázása\" "\n"\"Újratárcsázás\" "\n"\"Naptár megnyitása\" "</b></string>
     <string name="title" msgid="60788431860720964">"Hangtárcsázó"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth hangtárcsázó"</string>
-    <string name="initializing" msgid="3146934028021025628">"Indítás."</string>
+    <string name="initializing" msgid="1455696989718692334">"Indítás..."</string>
     <string name="listening" msgid="6886486282595802147">"Figyelés..."</string>
-    <string name="please_try_again" msgid="1427744152996396950">"Próbálkozzon újra."</string>
-    <string name="failure" msgid="3985785889820564626">"Hiba"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"Megpróbálhatja újraindítani is a telefonját."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Próbálkozzon újra."</string>
+    <string name="failure" msgid="4363633038755445209">"Az előkészítés sikertelen"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"Indítsa újra a telefont, majd próbálkozzon újra."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Megszakadt a kapcsolat a headsettel."</string>
     <string name="at_home" msgid="8478880812967663328">" otthon"</string>
     <string name="on_mobile" msgid="5739841127369724804">" mobilon"</string>
     <string name="at_work" msgid="2946111016850670818">" munkahelyen"</string>
     <string name="at_other" msgid="1863773841760953063">" máshol"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"A hangtárcsázó naplózása bekapcsolva."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"A hangtárcsázó naplózása kikapcsolva."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"A hangtárcsázó naplózása bekapcsolva."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"A hangtárcsázó naplózása kikapcsolva."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Most beszéljen."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Nincs találat, próbálja újra."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Érvénytelen választás."</string>

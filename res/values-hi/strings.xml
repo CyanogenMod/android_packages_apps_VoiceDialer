@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" उदाहरण: "<b>" "\n"\"जॉन डो को कॉल करें\" "\n"\"जॉन डो को घर पर कॉल करें, …\" "\n"\"ध्वनिमेल को कॉल करें\" "\n"\"(866) 555 0123 डायल करें\" "\n"\"911, 811, … डायल करें\" "\n"\"+44 7333 444 555 डायल करें\" "\n"\"पुनः डायल करें\" "\n"\"कैलेंडर खोलें\" "</b></string>
     <string name="title" msgid="60788431860720964">"ध्वनि डायलर"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth ध्वनि डायलर"</string>
-    <string name="initializing" msgid="3146934028021025628">"प्रारंभ हो रहा है."</string>
+    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"प्रारंभ हो रहा है."</string>
     <string name="listening" msgid="6886486282595802147">"सुन रहा है..."</string>
-    <string name="please_try_again" msgid="1427744152996396950">"कृपया पुन: प्रयास करें."</string>
-    <string name="failure" msgid="3985785889820564626">"विफलता"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"आप अपने फ़ोन को पुन: प्रारंभ करने का प्रयास भी कर सकते हैं."</string>
+    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"कृपया पुन: प्रयास करें."</string>
+    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"विफलता"</string>
+    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"आप अपने फ़ोन को पुन: प्रारंभ करने का प्रयास भी कर सकते हैं."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"हेडसेट से कनेक्शन टूट गया."</string>
     <string name="at_home" msgid="8478880812967663328">" घर पर"</string>
     <string name="on_mobile" msgid="5739841127369724804">" मोबाइल पर"</string>
     <string name="at_work" msgid="2946111016850670818">" कार्य पर"</string>
     <string name="at_other" msgid="1863773841760953063">" दूसरे पर"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"ध्वनि डायलर लॉगिंग सक्षम की गई है."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"ध्वनि डायलर लॉगिंग अक्षम की गई है."</string>
+    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"ध्वनि डायलर लॉगिंग सक्षम की गई है."</string>
+    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"ध्वनि डायलर लॉगिंग अक्षम की गई है."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"अब बोलें."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"कोई परिणाम नहीं, पुनः प्रयास करें."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"अमान्य पसंद."</string>

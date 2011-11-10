@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" 例:"<b>\n"「Call John Doe」"\n"「Call John Doe at home, …」"\n"「Call voicemail」"\n"「Dial (866) 555 0123」"\n"「Dial 911, 811, …」"\n"「Dial +44 7333 444 555」"\n"「Redial」"\n"「Open Calendar」"</b></string>
     <string name="title" msgid="60788431860720964">"ボイスダイヤル"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetoothボイスダイヤル"</string>
-    <string name="initializing" msgid="3146934028021025628">"起動しています"</string>
+    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"起動しています"</string>
     <string name="listening" msgid="6886486282595802147">"聞き取り中..."</string>
-    <string name="please_try_again" msgid="1427744152996396950">"もう一度試してください。"</string>
-    <string name="failure" msgid="3985785889820564626">"失敗"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"端末の電源を入れ直すとエラーが解決することがあります。"</string>
+    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"もう一度試してください。"</string>
+    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"失敗"</string>
+    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"端末の電源を入れ直すとエラーが解決することがあります。"</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"ヘッドセットとの接続が切断されました。"</string>
     <string name="at_home" msgid="8478880812967663328">" at home"</string>
     <string name="on_mobile" msgid="5739841127369724804">" on mobile"</string>
     <string name="at_work" msgid="2946111016850670818">" at work"</string>
     <string name="at_other" msgid="1863773841760953063">" at other"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"ボイスダイヤルの記録をONにしました。"</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"ボイスダイヤルの記録をOFFにしました。"</string>
+    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"ボイスダイヤルの記録をONにしました。"</string>
+    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"ボイスダイヤルの記録をOFFにしました。"</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"お話しください。"</string>
     <string name="no_results_tts" msgid="7292876061536755253">"結果が見つかりません。もう一度お試しください。"</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"選択が無効です。"</string>

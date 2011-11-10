@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Примеры: "<b>" "\n"\"Позвонить Ивану Петрову\" "\n"\"Позвонить Ивану Петрову домой, …\" "\n"\"Позвонить в голосовую почту\" "\n"\"Набрать (866) 555 0123\" "\n"\"Набрать 911, 811, …\" "\n"\"Набрать +44 7333 444 555\" "\n"\"Повторить набор\" "\n"\"Открыть календарь\" "</b></string>
     <string name="title" msgid="60788431860720964">"Голосовой набор"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Голосовой набор Bluetooth"</string>
-    <string name="initializing" msgid="3146934028021025628">"Подготовка к работе."</string>
+    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"Подготовка к работе."</string>
     <string name="listening" msgid="6886486282595802147">"Слушаю..."</string>
-    <string name="please_try_again" msgid="1427744152996396950">"Попробуйте еще раз."</string>
-    <string name="failure" msgid="3985785889820564626">"Ошибка"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"Можно также перезапустить телефон."</string>
+    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"Попробуйте еще раз."</string>
+    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"Ошибка"</string>
+    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"Можно также перезапустить телефон."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Связь с наушниками потеряна."</string>
     <string name="at_home" msgid="8478880812967663328">" , домашний"</string>
     <string name="on_mobile" msgid="5739841127369724804">" , мобильный"</string>
     <string name="at_work" msgid="2946111016850670818">" , работа"</string>
     <string name="at_other" msgid="1863773841760953063">" , другой номер"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"Журнал Голосового набора включен."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"Журнал Голосового набора выключен."</string>
+    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"Журнал Голосового набора включен."</string>
+    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"Журнал Голосового набора выключен."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Говорите."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Безрезультатно, повторите попытку."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Неверный выбор."</string>

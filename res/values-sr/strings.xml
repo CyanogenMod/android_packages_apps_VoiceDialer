@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Примери: "<b>" "\n"„Позови Петра Петровића“ "\n"„Позови Петра Петровића код куће, …“ "\n"„Позови говорну пошту“ "\n"„Позови(866) 555 0123“ "\n"„Позови 911, 811, …“ "\n"„Позови +44 7333 444 555“ "\n"„Поново позови“ "\n"„Oтвори календар“ "</b></string>
     <string name="title" msgid="60788431860720964">"Бирач гласом"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth бирач гласом"</string>
-    <string name="initializing" msgid="3146934028021025628">"Покреће се."</string>
+    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"Покреће се."</string>
     <string name="listening" msgid="6886486282595802147">"Слушање..."</string>
-    <string name="please_try_again" msgid="1427744152996396950">"Покушајте поново."</string>
-    <string name="failure" msgid="3985785889820564626">"Неуспешно"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"Такође можете да поново покренете телефон."</string>
+    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"Покушајте поново."</string>
+    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"Неуспешно"</string>
+    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"Такође можете да поново покренете телефон."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Прекинута је веза са слушалицама."</string>
     <string name="at_home" msgid="8478880812967663328">" код куће"</string>
     <string name="on_mobile" msgid="5739841127369724804">" на број мобилног телефона"</string>
     <string name="at_work" msgid="2946111016850670818">" на послу"</string>
     <string name="at_other" msgid="1863773841760953063">" на други"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"Пријављивање бирача гласом је омогућено."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"Пријављивање бирача гласом је онемогућено."</string>
+    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"Пријављивање бирача гласом је омогућено."</string>
+    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"Пријављивање бирача гласом је онемогућено."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Говорите сада."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Нема резултата, покушајте поново."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Неважећи избор."</string>
