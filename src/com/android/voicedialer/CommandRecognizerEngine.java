@@ -24,9 +24,9 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.provider.ContactsContract.Contacts;
 import android.speech.srec.Recognizer;
 import android.util.Log;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -181,6 +181,11 @@ public class CommandRecognizerEngine extends RecognizerEngine {
     }
 
     /**
+     * Number of phone ids appended to a grammer in {@link #addNameEntriesToGrammar(List)}.
+     */
+    private static final int PHONE_ID_COUNT = 7;
+
+    /**
      * Add a list of names to the grammar
      * @param contacts list of VoiceContacts to be added.
      */
@@ -189,20 +194,22 @@ public class CommandRecognizerEngine extends RecognizerEngine {
         if (false) Log.d(TAG, "addNameEntriesToGrammar " + contacts.size());
 
         HashSet<String> entries = new HashSet<String>();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int count = 0;
         for (VoiceContact contact : contacts) {
             if (Thread.interrupted()) throw new InterruptedException();
             String name = scrubName(contact.mName);
             if (name.length() == 0 || !entries.add(name)) continue;
             sb.setLength(0);
+            // The number of ids appended here must be same as PHONE_ID_COUNT.
             sb.append("V='");
             sb.append(contact.mContactId).append(' ');
             sb.append(contact.mPrimaryId).append(' ');
             sb.append(contact.mHomeId).append(' ');
             sb.append(contact.mMobileId).append(' ');
             sb.append(contact.mWorkId).append(' ');
-            sb.append(contact.mOtherId);
+            sb.append(contact.mOtherId).append(' ');
+            sb.append(contact.mFallbackId);
             sb.append("'");
             try {
                 mSrecGrammar.addWordToSlot("@Names", name, null, 1, sb.toString());
@@ -975,14 +982,17 @@ public class CommandRecognizerEngine extends RecognizerEngine {
             }
 
             // CALL JACK JONES
-            else if ("CALL".equalsIgnoreCase(commands[0]) && commands.length >= 7) {
+            // commands should become ["CALL", id, id, ..] reflecting addNameEntriesToGrammar().
+            else if ("CALL".equalsIgnoreCase(commands[0])
+                    && commands.length >= PHONE_ID_COUNT + 1) {
                 // parse the ids
                 long contactId = Long.parseLong(commands[1]); // people table
-                long phoneId   = Long.parseLong(commands[2]); // phones table
+                long primaryId   = Long.parseLong(commands[2]); // phones table
                 long homeId    = Long.parseLong(commands[3]); // phones table
                 long mobileId  = Long.parseLong(commands[4]); // phones table
                 long workId    = Long.parseLong(commands[5]); // phones table
                 long otherId   = Long.parseLong(commands[6]); // phones table
+                long fallbackId = Long.parseLong(commands[7]); // phones table
                 Resources res  = mActivity.getResources();
 
                 int count = 0;
@@ -992,44 +1002,46 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                 //
 
                 // 'CALL JACK JONES AT HOME|MOBILE|WORK|OTHER'
-                if (commands.length == 8) {
+                if (commands.length == PHONE_ID_COUNT + 2) {
+                    // The last command should imply the type of the phone number.
+                    final String spokenPhoneIdCommand = commands[PHONE_ID_COUNT + 1];
                     long spokenPhoneId =
-                            "H".equalsIgnoreCase(commands[7]) ? homeId :
-                            "M".equalsIgnoreCase(commands[7]) ? mobileId :
-                            "W".equalsIgnoreCase(commands[7]) ? workId :
-                            "O".equalsIgnoreCase(commands[7]) ? otherId :
+                            "H".equalsIgnoreCase(spokenPhoneIdCommand) ? homeId :
+                            "M".equalsIgnoreCase(spokenPhoneIdCommand) ? mobileId :
+                            "W".equalsIgnoreCase(spokenPhoneIdCommand) ? workId :
+                            "O".equalsIgnoreCase(spokenPhoneIdCommand) ? otherId :
                              VoiceContact.ID_UNDEFINED;
                     if (spokenPhoneId != VoiceContact.ID_UNDEFINED) {
                         addCallIntent(intents, ContentUris.withAppendedId(
                                 Phone.CONTENT_URI, spokenPhoneId),
-                                literal, commands[7], 0);
+                                literal, spokenPhoneIdCommand, 0);
                         count++;
                     }
                 }
 
                 // 'CALL JACK JONES', with valid default phoneId
-                else if (commands.length == 7) {
+                else if (commands.length == PHONE_ID_COUNT + 1) {
                     String phoneType = null;
                     CharSequence phoneIdMsg = null;
-                    if (phoneId == VoiceContact.ID_UNDEFINED) {
+                    if (primaryId == VoiceContact.ID_UNDEFINED) {
                         phoneType = null;
                         phoneIdMsg = null;
-                    } else if (phoneId == homeId) {
+                    } else if (primaryId == homeId) {
                         phoneType = "H";
                         phoneIdMsg = res.getText(R.string.at_home);
-                    } else if (phoneId == mobileId) {
+                    } else if (primaryId == mobileId) {
                         phoneType = "M";
                         phoneIdMsg = res.getText(R.string.on_mobile);
-                    } else if (phoneId == workId) {
+                    } else if (primaryId == workId) {
                         phoneType = "W";
                         phoneIdMsg = res.getText(R.string.at_work);
-                    } else if (phoneId == otherId) {
+                    } else if (primaryId == otherId) {
                         phoneType = "O";
                         phoneIdMsg = res.getText(R.string.at_other);
                     }
                     if (phoneIdMsg != null) {
                         addCallIntent(intents, ContentUris.withAppendedId(
-                                Phone.CONTENT_URI, phoneId),
+                                Phone.CONTENT_URI, primaryId),
                                 literal + phoneIdMsg, phoneType, 0);
                         count++;
                     }
@@ -1042,7 +1054,7 @@ public class CommandRecognizerEngine extends RecognizerEngine {
 
                     // trim last two words, ie 'at home', etc
                     String lit = literal;
-                    if (commands.length == 8) {
+                    if (commands.length == PHONE_ID_COUNT + 2) {
                         String[] words = literal.trim().split(" ");
                         StringBuffer sb = new StringBuffer();
                         for (int i = 0; i < words.length - 2; i++) {
@@ -1085,25 +1097,13 @@ public class CommandRecognizerEngine extends RecognizerEngine {
                                 lit + res.getText(R.string.at_other), "O", 0);
                         count++;
                     }
-                }
 
-                //
-                // if no other entries were generated, use the personId
-                //
-
-                // add 'CALL JACK JONES', with valid personId
-                if (count == 0 && contactId != VoiceContact.ID_UNDEFINED) {
-                    // TODO: what should really happen here is, we find
-                    // all phones for this contact, and create a label that
-                    // says "call person X at phone type Y", and add intents
-                    // for each of them to the return list.
-                    // It's too late in <del>Gingerbread</del> ICS to add the strings that
-                    // would be required for this, so we'll just ignore this person.
-                    // See also issue 3090362 and 5551677
-
-                    // ACTION_CALL_PRIVILEGED does not work with Contacts.CONTENT_URI.
-                    // addCallIntent(intents, ContentUris.withAppendedId(
-                    //         Contacts.CONTENT_URI, contactId), literal, "", 0);
+                    if (fallbackId != VoiceContact.ID_UNDEFINED) {
+                        addCallIntent(intents, ContentUris.withAppendedId(
+                                Phone.CONTENT_URI, fallbackId),
+                                lit, "", 0);
+                        count++;
+                    }
                 }
             }
 
@@ -1206,10 +1206,10 @@ public class CommandRecognizerEngine extends RecognizerEngine {
     // only add if different
     private static void addCallIntent(ArrayList<Intent> intents, Uri uri, String literal,
             String phoneType, int flags) {
-        Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED, uri).
-        setFlags(flags).
-        putExtra(SENTENCE_EXTRA, literal).
-        putExtra(PHONE_TYPE_EXTRA, phoneType);
+        Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED, uri)
+                .setFlags(flags)
+                .putExtra(SENTENCE_EXTRA, literal)
+                .putExtra(PHONE_TYPE_EXTRA, phoneType);
         addIntent(intents, intent);
     }
 }
