@@ -474,7 +474,7 @@ public class VoiceDialerActivity extends Activity {
                         mHandler.postDelayed(new GreetingRunnable(), FIRST_UTTERANCE_DELAY);
                     }
                 } else if (prevState == BluetoothHeadset.STATE_AUDIO_CONNECTED) {
-                    if (!mWaitingForScoConnection) {
+                    if (!mWaitingForScoConnection && mState != EXITING) {
                         // apparently our connection to the headset has dropped.
                         // we won't be able to continue voicedialing.
                         if (false) Log.d(TAG, "lost sco connection");
