@@ -24,9 +24,9 @@
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth-Voice-Dialer"</string>
     <string name="initializing" msgid="1455696989718692334">"Startvorgang..."</string>
     <string name="listening" msgid="6886486282595802147">"Jetzt sprechen..."</string>
-    <string name="please_try_again" msgid="6612157920739645345">"Bitte versuchen Sie es noch einmal."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Bitte versuchen Sie es erneut."</string>
     <string name="failure" msgid="4363633038755445209">"Initialisierung nicht möglich"</string>
-    <string name="recognition_error" msgid="6171111971593859630">"Starten Sie Ihr Telefon neu und versuchen Sie es dann noch einmal."</string>
+    <string name="recognition_error" msgid="6171111971593859630">"Starten Sie Ihr Telefon neu und versuchen Sie es dann erneut."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Keine Headset-Verbindung"</string>
     <string name="at_home" msgid="8478880812967663328">" Privat"</string>
     <string name="on_mobile" msgid="5739841127369724804">" Mobil"</string>

@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Izibonelo: "<b>" "\n"\"Shayela u-John Doe\" "\n"\"Shayela u-John Doe ekhaya, …\" "\n"\"Shayela imeyili yezwi\" "\n"\"Dayela (866) 555 0123\" "\n"\"Dayela 911, 811, …\" "\n"\"Dayela +44 7333 444 555\" "\n"\"Dayela futhi\" "\n"\"Vula Ikhalenda\" "</b></string>
     <string name="title" msgid="60788431860720964">"Ukudayela Ngezwi"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Isidayeli Sezwi se-Bluetooth"</string>
-    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"Iyaqalisa."</string>
+    <string name="initializing" msgid="1455696989718692334">"Iyaqalisa."</string>
     <string name="listening" msgid="6886486282595802147">"Iyalalela..."</string>
-    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"Sicela uzame futhi."</string>
-    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"Ukwehluleka"</string>
-    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"Ungase futhi uzame ukuqalisa phansi ifoni yakho."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Zama futhi."</string>
+    <string name="failure" msgid="4363633038755445209">"Yehlulekile ukuqala"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"Qala phansi ifoni yakho bese uyazama futhi."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Uxhumano lwe-headset lulahlekile."</string>
     <string name="at_home" msgid="8478880812967663328">" ekhaya"</string>
     <string name="on_mobile" msgid="5739841127369724804">" kwiselula"</string>
     <string name="at_work" msgid="2946111016850670818">" emsebenzini"</string>
     <string name="at_other" msgid="1863773841760953063">" kokunye"</string>
-    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"Ukugcina umininingwane yokudayela ngezwi akusebenzi."</string>
-    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"Ukugcina imininingwane yokudayela ngezwi akusebenzi."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"Ukushaya Ngephimbo kuvuliwe."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"Ukushaya Ngephimbo kuvaliwe."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Khuluma manje."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Ayikho imiphumela, zama futhi."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Inketho engalungile."</string>

@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" 範例："<b>\n"「打電話給王小明」"\n"「打王小明家裡的電話...」"\n"「聽留言」"\n"「撥打 (866) 555 0123」"\n"「撥打 119、110...」"\n"「撥打 +44 7333 444 555」"\n"「重新撥號」"\n"「開啟日曆」"</b></string>
     <string name="title" msgid="60788431860720964">"語音撥號"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"藍芽語音撥號"</string>
-    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"起始中"</string>
+    <string name="initializing" msgid="1455696989718692334">"啟動中..."</string>
     <string name="listening" msgid="6886486282595802147">"等候語音指令…"</string>
-    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"請再試一次。"</string>
-    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"失敗"</string>
-    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"您也可以試著重新啟動手機"</string>
+    <string name="please_try_again" msgid="6612157920739645345">"請再試一次。"</string>
+    <string name="failure" msgid="4363633038755445209">"無法初始化"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"請重新啟動您的手機，然後再試一次。"</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"與耳機連線中斷。"</string>
     <string name="at_home" msgid="8478880812967663328">" 住宅電話"</string>
     <string name="on_mobile" msgid="5739841127369724804">" 行動電話"</string>
     <string name="at_work" msgid="2946111016850670818">" 工作電話"</string>
     <string name="at_other" msgid="1863773841760953063">" 其他電話"</string>
-    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"語音撥號記錄已啟用。"</string>
-    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"語音撥號記錄已停用。"</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"語音撥號記錄已開啟。"</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"語音撥號記錄已關閉。"</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"請說話。"</string>
     <string name="no_results_tts" msgid="7292876061536755253">"沒有結果，請再試一次。"</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"選項無效。"</string>

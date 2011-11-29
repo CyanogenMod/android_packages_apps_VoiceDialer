@@ -34,7 +34,7 @@
     <string name="at_other" msgid="1863773841760953063">" theo số khác"</string>
     <string name="logging_enabled" msgid="1797105104286961324">"Đã bật tính năng ghi nhật ký của Trình quay số bằng giọng nói."</string>
     <string name="logging_disabled" msgid="5851271054900000063">"Đã tắt tính năng ghi nhật ký của Trình quay số bằng giọng nói."</string>
-    <string name="speak_now_tts" msgid="1343363077871348876">"Xin mời nói."</string>
+    <string name="speak_now_tts" msgid="1343363077871348876">"Nói ngay."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Không có kết quả nào, hãy thử lại."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Lựa chọn không hợp lệ."</string>
     <string name="goodbye_tts" msgid="2034746843726531134">"Tạm biệt."</string>

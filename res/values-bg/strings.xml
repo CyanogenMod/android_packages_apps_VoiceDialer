@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Примери: "<b>" "\n"„Обаждане на Иван Петров“ "\n"„Обаждане на Иван Петров вкъщи, …“ "\n"„Обаждане на гласовата поща“ "\n"„Набиране на (866) 555 0123“ "\n"„Набиране на 911, 811, ...“ "\n"„Набиране на +44 7333 444 555“ "\n"„Повторно набиране на“ "\n"„Отваряне на Календар“ "</b></string>
     <string name="title" msgid="60788431860720964">"Гласово набиране"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Гласово набиране с Bluetooth"</string>
-    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"Стартира се."</string>
+    <string name="initializing" msgid="1455696989718692334">"Стартира се..."</string>
     <string name="listening" msgid="6886486282595802147">"Слуша се..."</string>
-    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"Моля, опитайте отново."</string>
-    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"Неуспех"</string>
-    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"Можете също да опитате да рестартирате телефона си."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Опитайте отново."</string>
+    <string name="failure" msgid="4363633038755445209">"Не можа да започне"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"Рестартирайте телефона си, след което опитайте отново."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Връзката със слушалките е загубена."</string>
     <string name="at_home" msgid="8478880812967663328">" вкъщи"</string>
     <string name="on_mobile" msgid="5739841127369724804">" на мобилния"</string>
     <string name="at_work" msgid="2946111016850670818">" на служебния"</string>
     <string name="at_other" msgid="1863773841760953063">" на други"</string>
-    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"Влизането с Гласово набиране е активирано."</string>
-    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"Влизането в профила с Гласово набиране е деактивирано."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"Влизането с Гласово набиране е включено."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"Влизането с Гласово набиране е изключено."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Говорете сега."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Няма резултати, опитайте отново."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Невалиден избор."</string>

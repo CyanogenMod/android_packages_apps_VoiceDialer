@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Exemples : "<b>" "\n"\"Appeler Thomas Durand\" "\n"\"Appeler Thomas Durand à la maison, …\" "\n"\"Appeler la messagerie vocale\" "\n"\"Composer le 01 23 45 67 89\" "\n"\"Composer le 15, 112, …\" "\n"\"Composer le +33 6 12 34 56 78\" "\n"\"Recomposer\" "\n"\"Ouvrir Google Agenda\" "</b></string>
     <string name="title" msgid="60788431860720964">"Reconnaissance vocale"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Appels par reconnaissance vocale via le Bluetooth"</string>
-    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"Démarrage en cours"</string>
+    <string name="initializing" msgid="1455696989718692334">"Démarrage…"</string>
     <string name="listening" msgid="6886486282595802147">"Écoute en cours…"</string>
-    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"Veuillez réessayer."</string>
-    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"Échec"</string>
-    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"Vous pouvez également essayer de redémarrer votre téléphone."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Veuillez réessayer."</string>
+    <string name="failure" msgid="4363633038755445209">"Impossible de procéder à l\'initialisation."</string>
+    <string name="recognition_error" msgid="6171111971593859630">"Rallumez votre téléphone, puis réessayez."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Connexion au casque perdue"</string>
     <string name="at_home" msgid="8478880812967663328">" à la maison"</string>
     <string name="on_mobile" msgid="5739841127369724804">" sur le téléphone portable"</string>
     <string name="at_work" msgid="2946111016850670818">" au bureau"</string>
     <string name="at_other" msgid="1863773841760953063">" autre"</string>
-    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"La connexion à l\'application Reconnaissance vocale est activée."</string>
-    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"La connexion à l\'application Reconnaissance vocale est désactivée."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"La connexion à l\'application Reconnaissance vocale est activée."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"La connexion à l\'application Reconnaissance vocale est désactivée."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Parlez maintenant."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Aucun résultat, réessayez."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Choix incorrect"</string>

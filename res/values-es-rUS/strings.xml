@@ -32,8 +32,8 @@
     <string name="on_mobile" msgid="5739841127369724804">" al celular"</string>
     <string name="at_work" msgid="2946111016850670818">" al trabajo"</string>
     <string name="at_other" msgid="1863773841760953063">" a otro número"</string>
-    <string name="logging_enabled" msgid="1797105104286961324">"El acceso a Marcación por voz está activado."</string>
-    <string name="logging_disabled" msgid="5851271054900000063">"El acceso a Marcación por voz está desactivado."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"El acceso a Marcador de voz está activado."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"El acceso a Marcador de voz está desactivado."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Habla ahora."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"No se encontraron resultados, vuelve a intentarlo."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Elección no válida"</string>
