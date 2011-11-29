@@ -16,7 +16,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="voiceDialer" msgid="5948204210436590941">"Kipigai simu ya Sauti"</string>
+    <string name="voiceDialer" msgid="5948204210436590941">"Piga kwa Kutamka"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Ulijua kuwa..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Kubonyeza &amp; kushikilia kitufe cha kijani cha Kupiga simu hufungua Kipigaji simu ya Sauti."</string>
     <string name="examples" msgid="2100807337052050741">" Mifano: "<b>" "\n"\"Pigia simu John Doe\" "\n"\"Pigia John Doe simu akiwa nyumbani, …\" "\n"\"Piga simu ya barua ya sauti\" "\n"\"Piga (866) 555 0123\" "\n"\"Piga 911, 811, …\" "\n"\"Piga +44 7333 444 555\" "\n"\"Piga tena\" "\n"\"Fungua Kalenda\" "</b></string>
