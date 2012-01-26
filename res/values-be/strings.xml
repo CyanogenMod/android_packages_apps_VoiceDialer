@@ -22,18 +22,18 @@
     <string name="examples" msgid="2100807337052050741">" Прыклады: "<b>" "\n" \"Выклікаць Джона Доу\" "\n" \"Выклікаць хатні нумар Джона Доу?\"? "\n" \"Выклікаць галасавую пошту\" "\n" \"Набраць (866) 555 0123\" "\n" \"Набраць 911, 811,??\" "\n" Раўторна набраць \"+ 44 7333 444 555 \" "\n" \"Паўторна набраць\" "\n" \"Адчыніць каляндар\" "</b></string>
     <string name="title" msgid="60788431860720964">"Галасавы набор"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Галасавы набор Bluetooth"</string>
-    <string name="initializing" msgid="3146934028021025628">"Стартаванне"</string>
+    <string name="initializing" msgid="1455696989718692334">"Запуск..."</string>
     <string name="listening" msgid="6886486282595802147">"Слухаю??"</string>
-    <string name="please_try_again" msgid="1427744152996396950">"Паспрабуйце яшчэ раз."</string>
-    <string name="failure" msgid="3985785889820564626">"Памылка"</string>
-    <string name="recognition_error" msgid="1807947152844267364">"Вы таксама можаце паспрабаваць перазагрузіць тэлефон."</string>
+    <string name="please_try_again" msgid="6612157920739645345">"Паўтарыце спробу"</string>
+    <string name="failure" msgid="4363633038755445209">"Памылка ініцыялізацыi"</string>
+    <string name="recognition_error" msgid="6171111971593859630">"Перазагрузіце тэлефон i паўтарыце спробу."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Падлучэнне да гарнітуры страчанае."</string>
     <string name="at_home" msgid="8478880812967663328">" хатні"</string>
     <string name="on_mobile" msgid="5739841127369724804">" на мабільны"</string>
     <string name="at_work" msgid="2946111016850670818">" працоўны"</string>
     <string name="at_other" msgid="1863773841760953063">" на іншым"</string>
-    <string name="logging_enabled" msgid="8702018587287436548">"Вядзенне логу галасавога набору ўключана."</string>
-    <string name="logging_disabled" msgid="5992352601321824322">"Галасавы набор адключаны."</string>
+    <string name="logging_enabled" msgid="1797105104286961324">"Вядзенне дзённіка галасавога набору ўключана."</string>
+    <string name="logging_disabled" msgid="5851271054900000063">"Вядзенне дзённіка галасавога набору выключана."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"Гаварыце."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"Вынікаў няма, паспрабуйце яшчэ раз."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Недапушчальны выбар."</string>

@@ -22,18 +22,24 @@
     <string name="examples" msgid="2100807337052050741">" \"Exempels: "<b>" "\n"«Telefonar a Gieri Arquint» "\n"«Telefonar a Gieri Arquint, privat» "\n"«Telefonar a Mailbox» "\n"«Cumponer 081 258 32 22» "\n"«Cumponer 117, 118, … » "\n"«Cumponer +44 7333 444 555» "\n"«Repetiziun dal clom» "\n"«Avrir il chalender» "</b>"\""</string>
     <string name="title" msgid="60788431860720964">"Renconuschientscha vocala"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Telefonar per bluetooth cun renconuschientscha vocala"</string>
-    <!-- outdated translation 3146934028021025628 -->     <string name="initializing" msgid="1455696989718692334">"Aviar…"</string>
+    <!-- no translation found for initializing (1455696989718692334) -->
+    <skip />
     <string name="listening" msgid="6886486282595802147">"Endataziun vocala…"</string>
-    <!-- outdated translation 1427744152996396950 -->     <string name="please_try_again" msgid="6612157920739645345">"Empruvai per plaschair anc ina giada."</string>
-    <!-- outdated translation 3985785889820564626 -->     <string name="failure" msgid="4363633038755445209">"Errur"</string>
-    <!-- outdated translation 1807947152844267364 -->     <string name="recognition_error" msgid="6171111971593859630">"Vus pudais era empruvar da reaviar il telefonin."</string>
+    <!-- no translation found for please_try_again (6612157920739645345) -->
+    <skip />
+    <!-- no translation found for failure (4363633038755445209) -->
+    <skip />
+    <!-- no translation found for recognition_error (6171111971593859630) -->
+    <skip />
     <string name="headset_connection_lost" msgid="3809295858472462650">"Nagina connexiun als uregliers"</string>
     <string name="at_home" msgid="8478880812967663328">" Privat"</string>
     <string name="on_mobile" msgid="5739841127369724804">" telefonin"</string>
     <string name="at_work" msgid="2946111016850670818">" da fatschenta"</string>
     <string name="at_other" msgid="1863773841760953063">" auter"</string>
-    <!-- outdated translation 8702018587287436548 -->     <string name="logging_enabled" msgid="1797105104286961324">"La protocollaziun da la renconuschientscha vocala è activada."</string>
-    <!-- outdated translation 5992352601321824322 -->     <string name="logging_disabled" msgid="5851271054900000063">"La protocollaziun da la renconuschientscha vocala è deactivada."</string>
+    <!-- no translation found for logging_enabled (1797105104286961324) -->
+    <skip />
+    <!-- no translation found for logging_disabled (5851271054900000063) -->
+    <skip />
     <string name="speak_now_tts" msgid="1343363077871348876">"Dictai ussa."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"\"Nagins resultats, empruvai danovamain.\""</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"Tscherna nunvalida"</string>
