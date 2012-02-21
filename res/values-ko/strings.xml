@@ -34,7 +34,7 @@
     <string name="at_other" msgid="1863773841760953063">" (기타)"</string>
     <string name="logging_enabled" msgid="1797105104286961324">"음성 다이얼 로깅을 사용하도록 설정했습니다."</string>
     <string name="logging_disabled" msgid="5851271054900000063">"음성 다이얼 로깅을 사용 중지했습니다."</string>
-    <string name="speak_now_tts" msgid="1343363077871348876">"지금 말씀하세요."</string>
+    <string name="speak_now_tts" msgid="1343363077871348876">"지금 말하세요."</string>
     <string name="no_results_tts" msgid="7292876061536755253">"검색결과가 없습니다. 다시 시도해 주세요."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"선택이 잘못되었습니다."</string>
     <string name="goodbye_tts" msgid="2034746843726531134">"종료됩니다."</string>
