@@ -1090,7 +1090,7 @@ public class VoiceDialerActivity extends Activity {
                 mAudioManager.shouldVibrate(AudioManager.VIBRATE_TYPE_RINGER)) {
             final int VIBRATOR_TIME = 150;
             final int VIBRATOR_GUARD_TIME = 150;
-            Vibrator vibrator = new Vibrator();
+            Vibrator vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
             vibrator.vibrate(VIBRATOR_TIME);
             msecDelay = StrictMath.max(msecDelay,
                     VIBRATOR_TIME + VIBRATOR_GUARD_TIME);
