@@ -16,6 +16,12 @@
 
 package com.android.voicedialer;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -35,17 +41,13 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.SystemProperties;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
+import android.widget.Toast;
 
 /**
  * TODO: get rid of the anonymous classes
@@ -184,6 +186,17 @@ public class VoiceDialerActivity extends Activity {
     @Override
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+        
+        while ( true ) {
+        	int voicedialer_enabled = Settings.System.getInt(getContentResolver(), Settings.System.VOICE_VOICEDIALER_ENABLED, Settings.System.VOICE_VOICEDIALER_ENABLED_DEFAULT);
+        	if ( voicedialer_enabled != 0 ) break;
+        	
+        	Toast.makeText(this, "voice dialer disabled", Toast.LENGTH_SHORT).show();
+        	mState = EXITING;
+        	finish();
+        	return;
+        }
+        
         // TODO: All of this state management and holding of
         // connections to the TTS engine and recognizer really
         // belongs in a service.  The activity can be stopped or deleted
@@ -1105,10 +1118,16 @@ public class VoiceDialerActivity extends Activity {
             mState = EXITING;
         }
 
+        // finish() in onCreate()
+        if ( mHandler == null ) {
+        	super.onDestroy();
+        	return;
+        }
+        
         if (mAlertDialog != null) {
             mAlertDialog.dismiss();
         }
-
+        
         // set the volume back to the level it was before we started.
         mAudioManager.setStreamVolume(AudioManager.STREAM_BLUETOOTH_SCO,
                                       mBluetoothVoiceVolume, 0);
