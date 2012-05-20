@@ -187,13 +187,10 @@ public class VoiceDialerActivity extends Activity {
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
-        while (true) {
-            int voicedialer_enabled = Settings.System.getInt(getContentResolver(),
-                    Settings.System.VOICE_VOICEDIALER_ENABLED,
-                    Settings.System.VOICE_VOICEDIALER_ENABLED_DEFAULT);
-            if (voicedialer_enabled != 0)
-                break; // continue normal operation
-
+        // test for disabled voicedialer
+        if (Settings.System.getInt(getContentResolver(),
+                Settings.System.VOICE_VOICEDIALER_ENABLED,
+                Settings.System.VOICE_VOICEDIALER_ENABLED_DEFAULT) == 0) {
             Toast.makeText(this, "voice dialer disabled", Toast.LENGTH_SHORT).show();
             mState = EXITING;
             finish();
@@ -1121,7 +1118,7 @@ public class VoiceDialerActivity extends Activity {
             mState = EXITING;
         }
 
-        // finish() in onCreate()
+        // finish() called in onCreate() - voicedialer disabled
         if (mHandler == null) {
             super.onDestroy();
             return;
