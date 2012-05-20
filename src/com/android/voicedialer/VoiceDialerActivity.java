@@ -35,11 +35,15 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.SystemProperties;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.voicedialer.R;
 
 import java.io.File;
 import java.io.IOException;
@@ -184,6 +188,17 @@ public class VoiceDialerActivity extends Activity {
     @Override
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
+        // test for disabled voicedialer
+        if (Settings.System.getInt(getContentResolver(),
+                Settings.System.VOICE_VOICEDIALER_ENABLED,
+                Settings.System.VOICE_VOICEDIALER_ENABLED_DEFAULT) == 0) {
+            Toast.makeText(this, R.string.voicedialer_disabled, Toast.LENGTH_SHORT).show();
+            mState = EXITING;
+            finish();
+            return; // voice dialer disabled
+        }
+
         // TODO: All of this state management and holding of
         // connections to the TTS engine and recognizer really
         // belongs in a service.  The activity can be stopped or deleted
@@ -1103,6 +1118,12 @@ public class VoiceDialerActivity extends Activity {
     protected void onDestroy() {
         synchronized(this) {
             mState = EXITING;
+        }
+
+        // finish() called in onCreate() - voicedialer disabled - just bail out
+        if (mHandler == null) {
+            super.onDestroy();
+            return;
         }
 
         if (mAlertDialog != null) {
