@@ -20,7 +20,7 @@ package com.android.voicedialer;
 import android.content.Context;
 import android.content.Intent;
 import android.content.BroadcastReceiver;
-import android.provider.Telephony.Intents;
+import com.android.internal.telephony.TelephonyIntents;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -50,13 +50,13 @@ public class VoiceDialerReceiver extends BroadcastReceiver {
         }
 
         // Voice Dialer Logging Enabled, *#*#8351#*#*
-        else if (Intents.SECRET_CODE_ACTION.equals(action) && "8351".equals(host)) {
+        else if (TelephonyIntents.SECRET_CODE_ACTION.equals(action) && "8351".equals(host)) {
             RecognizerLogger.enable(context);
             Toast.makeText(context, R.string.logging_enabled, Toast.LENGTH_LONG).show();
         }
 
         // Voice Dialer Logging Disabled, *#*#8350#*#*
-        else if (Intents.SECRET_CODE_ACTION.equals(action) && "8350".equals(host)) {
+        else if (TelephonyIntents.SECRET_CODE_ACTION.equals(action) && "8350".equals(host)) {
             RecognizerLogger.disable(context);
             Toast.makeText(context, R.string.logging_disabled, Toast.LENGTH_LONG).show();
         }
