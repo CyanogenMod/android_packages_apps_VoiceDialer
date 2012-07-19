@@ -35,7 +35,7 @@
     <string name="logging_enabled" msgid="1797105104286961324">"گزارش‌گیری شماره‌گیر صوتی فعال شده است."</string>
     <string name="logging_disabled" msgid="5851271054900000063">"گزارش‌گیری شماره‌گیر صوتی غیر فعال است."</string>
     <string name="speak_now_tts" msgid="1343363077871348876">"اکنون صحبت کنید."</string>
-    <string name="no_results_tts" msgid="7292876061536755253">"نتیجه ای یافت نشد، دوباره امتحان کنید."</string>
+    <string name="no_results_tts" msgid="7292876061536755253">"نتیجه‌ای یافت نشد، دوباره امتحان کنید."</string>
     <string name="invalid_choice_tts" msgid="1871918597940504468">"انتخاب نامعتبر است."</string>
     <string name="goodbye_tts" msgid="2034746843726531134">"خداحافظ."</string>
 </resources>
