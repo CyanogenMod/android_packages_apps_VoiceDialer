@@ -17,19 +17,19 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="voiceDialer" msgid="5948204210436590941">"Marcación por voz"</string>
-    <string name="tool_tip_title" msgid="9092247761265706709">"¿Sabías que...?"</string>
+    <string name="tool_tip_title" msgid="9092247761265706709">"¿Sabías que\u2026?"</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Para abrir la ventana de marcación por voz, mantén pulsado el botón verde de llamada."</string>
-    <string name="examples" msgid="2100807337052050741">" Ejemplos: "<b>" "\n"\"Llamar a Juan Díaz\" "\n"\"Llamar a Juan Díaz a casa, …\" "\n"\"Llamar al buzón de voz\" "\n"\"Marcar (866) 555 0123\" "\n"\"Marcar 911, 811, …\" "\n"\"Marcar +44 7333 444 555\" "\n"\"Volver a marcar\" "\n"\"Abrir Calendar\" "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Ejemplos: "<b>" "\n"\u00ABLlamar a Juan Díaz\u00BB "\n"\u00ABLlamar a Juan Díaz a casa, \u2026\u00BB "\n"\u00ABLlamar al buzón de voz\u00BB "\n"\u00ABMarcar (866) 555 0123\u00BB "\n"\u00ABMarcar 911, 811, \u2026\u00BB" "\n"\u00ABMarcar +44 7333 444 555\u00BB "\n"\u00ABVolver a marcar\u00BB "\n"\u00ABAbrir Calendario\u00BB "</b></string>
     <string name="title" msgid="60788431860720964">"Marcación por voz"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Marcación por voz a través de Bluetooth"</string>
-    <string name="initializing" msgid="1455696989718692334">"Iniciando..."</string>
-    <string name="listening" msgid="6886486282595802147">"Escuchando..."</string>
+    <string name="initializing" msgid="1455696989718692334">"Iniciando\u2026"</string>
+    <string name="listening" msgid="6886486282595802147">"Escuchando\u2026"</string>
     <string name="please_try_again" msgid="6612157920739645345">"Inténtalo de nuevo."</string>
     <string name="failure" msgid="4363633038755445209">"No se ha podido iniciar."</string>
     <string name="recognition_error" msgid="6171111971593859630">"Reinicia el teléfono y vuelve a intentarlo."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Se ha perdido la conexión con los auriculares."</string>
     <string name="at_home" msgid="8478880812967663328">" a casa"</string>
-    <string name="on_mobile" msgid="5739841127369724804">" en móvil"</string>
+    <string name="on_mobile" msgid="5739841127369724804">" al móvil"</string>
     <string name="at_work" msgid="2946111016850670818">" al trabajo"</string>
     <string name="at_other" msgid="1863773841760953063">" a otro número"</string>
     <string name="logging_enabled" msgid="1797105104286961324">"Se ha activado el registro de la marcación por voz."</string>
