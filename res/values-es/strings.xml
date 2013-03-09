@@ -29,7 +29,7 @@
     <string name="recognition_error" msgid="6171111971593859630">"Reinicia el teléfono y vuelve a intentarlo."</string>
     <string name="headset_connection_lost" msgid="3809295858472462650">"Se ha perdido la conexión con los auriculares."</string>
     <string name="at_home" msgid="8478880812967663328">" a casa"</string>
-    <string name="on_mobile" msgid="5739841127369724804">" en móvil"</string>
+    <string name="on_mobile" msgid="5739841127369724804">" al móvil"</string>
     <string name="at_work" msgid="2946111016850670818">" al trabajo"</string>
     <string name="at_other" msgid="1863773841760953063">" a otro número"</string>
     <string name="logging_enabled" msgid="1797105104286961324">"Se ha activado el registro de la marcación por voz."</string>
