@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Discador por voz"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Você sabia..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Pressionar e manter pressionado o botão verde de chamada abre o Discador por voz."</string>
-    <string name="examples" msgid="2100807337052050741">" Exemplos: "<b>" "\n"\"Chamar José da Silva\" "\n"\"Chamar José da Silva em casa, …\" "\n"\"Chamar correio de voz\" "\n"\"Discar (866) 555 0123\" "\n"\"Discar 911, 811, …\" "\n"\"Discar +44 7333 444 555\" "\n"\"Rediscar\" "\n"\"Abrir Agenda\" "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Exemplos: "<b>" \n\"Chamar José da Silva\" \n\"Chamar José da Silva em casa, …\" \n\"Chamar correio de voz\" \n\"Discar (866) 555 0123\" \n\"Discar 911, 811, …\" \n\"Discar +44 7333 444 555\" \n\"Rediscar\" \n\"Abrir Agenda\" "</b></string>
     <string name="title" msgid="60788431860720964">"Discador por voz"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Discagem por voz Bluetooth"</string>
     <string name="initializing" msgid="1455696989718692334">"Iniciando..."</string>

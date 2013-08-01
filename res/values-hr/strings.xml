@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Glasovno biranje"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Jeste li znali…"</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Ako pritisnete i držite zelenu tipku za pozivanje otvorit ćete Glasovno biranje."</string>
-    <string name="examples" msgid="2100807337052050741">" Primjeri: "<b>" "\n"\"Nazovi Ivana Ivića\" "\n"\"Nazovi Ivana Ivića kod kuće, …\" "\n"\"Nazovi govornu poštu\" "\n"\"Biraj (866) 555 0123\" "\n"\"Biraj 911, 811, …\" "\n"\"Biraj +44 7333 444 555\" "\n"\"Ponovno biraj\" "\n"\"Otvori kalendar\" "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Primjeri: "<b>" \n\"Nazovi Ivana Ivića\" \n\"Nazovi Ivana Ivića kod kuće, …\" \n\"Nazovi govornu poštu\" \n\"Biraj (866) 555 0123\" \n\"Biraj 911, 811, …\" \n\"Biraj +44 7333 444 555\" \n\"Ponovno biraj\" \n\"Otvori kalendar\" "</b></string>
     <string name="title" msgid="60788431860720964">"Glasovno biranje"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth Glasovno biranje"</string>
     <string name="initializing" msgid="1455696989718692334">"Pokretanje..."</string>

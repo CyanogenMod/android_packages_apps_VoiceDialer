@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Äänipuhelu"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Tiesitkö..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Voit avata Äänipuhelut pitämällä vihreää puhelupainiketta painettuna."</string>
-    <string name="examples" msgid="2100807337052050741">" Esimerkkejä: "<b>" "\n"\"Soita kohteelle Matti Meikäläinen\" "\n"\"Soita kohteelle Matti Meikäläinen kotinumeroon, …\" "\n"\"Soita kohteelle vastaaja\" "\n"\"Soita numeroon (866) 555 0123\" "\n"\"Soita numeroon 911, 811, …\" "\n"\"Soita numeroon +44 7333 444 555\" "\n"\"Soita uudelleen\" "\n"\"Avaa kalenteri\" "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Esimerkkejä: "<b>" \n\"Soita kohteelle Matti Meikäläinen\" \n\"Soita kohteelle Matti Meikäläinen kotinumeroon, …\" \n\"Soita kohteelle vastaaja\" \n\"Soita numeroon (866) 555 0123\" \n\"Soita numeroon 911, 811, …\" \n\"Soita numeroon +44 7333 444 555\" \n\"Soita uudelleen\" \n\"Avaa kalenteri\" "</b></string>
     <string name="title" msgid="60788431860720964">"Äänipuhelu"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth Voice Dialer"</string>
     <string name="initializing" msgid="1455696989718692334">"Käynnistyy..."</string>
