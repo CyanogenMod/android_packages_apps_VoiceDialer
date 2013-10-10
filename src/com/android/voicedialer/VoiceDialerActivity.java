@@ -395,7 +395,7 @@ public class VoiceDialerActivity extends Activity {
             mTts = new TextToSpeech(VoiceDialerActivity.this, new TtsInitListener());
             mTtsParams = new HashMap<String, String>();
             mTtsParams.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-                    String.valueOf(AudioManager.STREAM_VOICE_CALL));
+                    String.valueOf(AudioManager.STREAM_BLUETOOTH_SCO));
             // we need to wait for the TTS system and the SCO connection
             // before we can start listening.
         } else {
