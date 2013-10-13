@@ -9,6 +9,10 @@ LOCAL_PACKAGE_NAME := VoiceDialer
 
 LOCAL_REQUIRED_MODULES := libsrec_jni
 
+LOCAL_RESOURCE_DIR := $(addprefix $(LOCAL_PATH)/, res res-override)
+
+LOCAL_AAPT_FLAGS := --auto-add-overlay
+
 include $(BUILD_PACKAGE)
 
 # Install the srec data files if VoiceDialer.apk is installed to system image.
