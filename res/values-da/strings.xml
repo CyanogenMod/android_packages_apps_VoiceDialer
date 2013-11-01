@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Stemmeopkald"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Vidste du ..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Hvis du trykker og holder på den grønne opkaldsknap åbnes Stemmeopkald."</string>
-    <string name="examples" msgid="2100807337052050741">" Eksempler: "<b>" "\n"\"Ring til Peter Hansen\" "\n"\"Ring til Peter Hansen hjemme, …\" "\n"\"Ring til voicemail\" "\n"\"Ring til 55 12 34 56\" "\n"\"Ring til 119, 118, …\" "\n"\"Ring til +45 55 44 33 22\" "\n"\"Ring igen\" "\n"\"Åbn kalender\" "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Eksempler: "<b>" \n\"Ring til Peter Hansen\" \n\"Ring til Peter Hansen hjemme, …\" \n\"Ring til voicemail\" \n\"Ring til 55 12 34 56\" \n\"Ring til 119, 118, …\" \n\"Ring til +45 55 44 33 22\" \n\"Ring igen\" \n\"Åbn kalender\" "</b></string>
     <string name="title" msgid="60788431860720964">"Stemmeopkald"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Stemmeopkald via Bluetooth"</string>
     <string name="initializing" msgid="1455696989718692334">"Starter..."</string>

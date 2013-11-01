@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Marcación por voz"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"¿Sabías que...?"</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Para abrir la ventana de marcación por voz, mantén pulsado el botón verde de llamada."</string>
-    <string name="examples" msgid="2100807337052050741">" Ejemplos: "<b>" "\n"\"Llamar a Juan Díaz\" "\n"\"Llamar a Juan Díaz a casa, …\" "\n"\"Llamar al buzón de voz\" "\n"\"Marcar (866) 555 0123\" "\n"\"Marcar 911, 811, …\" "\n"\"Marcar +44 7333 444 555\" "\n"\"Volver a marcar\" "\n"\"Abrir Calendar\" "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Ejemplos: "<b>" \n\"Llamar a Juan Díaz\" \n\"Llamar a Juan Díaz a casa, …\" \n\"Llamar al buzón de voz\" \n\"Marcar (866) 555 0123\" \n\"Marcar 911, 811, …\" \n\"Marcar +44 7333 444 555\" \n\"Volver a marcar\" \n\"Abrir Calendar\" "</b></string>
     <string name="title" msgid="60788431860720964">"Marcación por voz"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Marcación por voz a través de Bluetooth"</string>
     <string name="initializing" msgid="1455696989718692334">"Iniciando..."</string>

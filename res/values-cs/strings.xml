@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Hlasové vytáčení"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Víte, že..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Stisknutím a přidržením zeleného tlačítka Volat spustíte hlasové vytáčení."</string>
-    <string name="examples" msgid="2100807337052050741">" Příklady: "<b>" "\n"„Volat Karel Vacek“ "\n"„Volat Karel Vacek domů, ...“ "\n"„Volat hlasová schránka“ "\n"„Vytočit 2 22 33 911 55“ "\n"„Vytočit 155, 555, ...“ "\n"„Vytočit +420 2 22 33 44 55“ "\n"„Znovu vytočit“ "\n"„Otevřít Kalendář“ "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Příklady: "<b>" \n„Volat Karel Vacek“ \n„Volat Karel Vacek domů, ...“ \n„Volat hlasová schránka“ \n„Vytočit 2 22 33 911 55“ \n„Vytočit 155, 555, ...“ \n„Vytočit +420 2 22 33 44 55“ \n„Znovu vytočit“ \n„Otevřít Kalendář“ "</b></string>
     <string name="title" msgid="60788431860720964">"Hlasové vytáčení"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Hlasové vytáčení Bluetooth"</string>
     <string name="initializing" msgid="1455696989718692334">"Spouštění..."</string>

@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Numerio rinkiklis balsu"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Ar žinojote..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Paspaudus ir palaikius žalią mygtuką „Skambinti“, atsidaro numerio rinkiklis balsu."</string>
-    <string name="examples" msgid="2100807337052050741">" Pavyzdžiai: "<b>" "\n"„Call John Doe“ "\n"„Call John Doe at home, …“ "\n"„Call voicemail“ "\n"„Dial (866) 555 0123“ "\n"„Dial 911, 811, …“ "\n"„Dial +44 7333 444 555“ "\n"„Redial“ "\n"„Open Calendar“ "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Pavyzdžiai: "<b>" \n„Call John Doe“ \n„Call John Doe at home, …“ \n„Call voicemail“ \n„Dial (866) 555 0123“ \n„Dial 911, 811, …“ \n„Dial +44 7333 444 555“ \n„Redial“ \n„Open Calendar“ "</b></string>
     <string name="title" msgid="60788431860720964">"Numerio rinkiklis balsu"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"„Bluetooth“ numerio rinkiklis balsu"</string>
     <string name="initializing" msgid="1455696989718692334">"Paleidžiama..."</string>

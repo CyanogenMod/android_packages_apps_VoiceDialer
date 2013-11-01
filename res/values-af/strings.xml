@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Stembeller"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Het jy geweet…"</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Druk en en hou die groen Bel-knoppie in om die Stembeller te open."</string>
-    <string name="examples" msgid="2100807337052050741">" Voorbeelde: "<b>" "\n"\"Bel Piet Pompies\" "\n"\"Bel Piet Pompies tuis, ...\" "\n"\"Bel stempos\" "\n"\"Bel (866) 555 0123\" "\n"\"Bel 911, 811, ...\" "\n"\"Bel +27 7333 444 555\" "\n"\"Bel weer\" "\n"\"Open kalender\" "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Voorbeelde: "<b>" \n\"Bel Piet Pompies\" \n\"Bel Piet Pompies tuis, ...\" \n\"Bel stempos\" \n\"Bel (866) 555 0123\" \n\"Bel 911, 811, ...\" \n\"Bel +27 7333 444 555\" \n\"Bel weer\" \n\"Open kalender\" "</b></string>
     <string name="title" msgid="60788431860720964">"Stembeller"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetooth-stembeller"</string>
     <string name="initializing" msgid="1455696989718692334">"Begin tans..."</string>

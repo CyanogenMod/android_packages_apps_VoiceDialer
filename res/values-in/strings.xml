@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Aplikasi Telepon via Suara"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Mungkin Anda tahu..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Menekan &amp; menahan tombol Panggil warna hijau akan membuka Aplikasi Telepon via Suara."</string>
-    <string name="examples" msgid="2100807337052050741">" Contoh: "<b>" "\n"\"Panggil Budi Setiawan\" "\n"\"Panggil John Doe di rumah, …\" "\n"\"Panggil kotak pesan\" "\n"\"Hubungi (866) 555 0123\" "\n"\"Hubungi 911, 811, …\" "\n"\"Hubungi +44 7333 444 555\" "\n"\"Hubungi Kembali\" "\n"\"Buka Kalender\" "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Contoh: "<b>" \n\"Panggil Budi Setiawan\" \n\"Panggil John Doe di rumah, …\" \n\"Panggil kotak pesan\" \n\"Hubungi (866) 555 0123\" \n\"Hubungi 911, 811, …\" \n\"Hubungi +44 7333 444 555\" \n\"Hubungi Kembali\" \n\"Buka Kalender\" "</b></string>
     <string name="title" msgid="60788431860720964">"Aplikasi Telepon via Suara"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Aplikasi Telepon via Suara Bluetooth"</string>
     <string name="initializing" msgid="1455696989718692334">"Memulai..."</string>

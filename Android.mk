@@ -9,6 +9,8 @@ LOCAL_PACKAGE_NAME := VoiceDialer
 
 LOCAL_REQUIRED_MODULES := libsrec_jni
 
+LOCAL_PRIVILEGED_MODULE := true
+
 include $(BUILD_PACKAGE)
 
 # Install the srec data files if VoiceDialer.apk is installed to system image.

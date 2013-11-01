@@ -19,7 +19,7 @@
     <string name="voiceDialer" msgid="5948204210436590941">"Glasovni klicalnik"</string>
     <string name="tool_tip_title" msgid="9092247761265706709">"Ste vedeli ..."</string>
     <string name="tool_tip_message" msgid="8624998371709530611">"Glasovni klicalnik odprete tako, da pritisnete in držite zeleni gumb »Pokliči«."</string>
-    <string name="examples" msgid="2100807337052050741">" Primeri: "<b>" "\n"»Pokliči Janeza Kovača« "\n"»Pokliči Janeza Kovača domov …« "\n"»Pokliči tajnico« "\n"»Pokliči (866) 555 0123« "\n"»Pokliči 911, 811 …« "\n"»Pokliči +44 7333 444 555« "\n"»Pokliči isto številko« "\n"»Odpri koledar« "</b></string>
+    <string name="examples" msgid="2100807337052050741">" Primeri: "<b>" \n»Pokliči Janeza Kovača« \n»Pokliči Janeza Kovača domov …« \n»Pokliči tajnico« \n»Pokliči (866) 555 0123« \n»Pokliči 911, 811 …« \n»Pokliči +44 7333 444 555« \n»Pokliči isto številko« \n»Odpri koledar« "</b></string>
     <string name="title" msgid="60788431860720964">"Glasovni klicalnik"</string>
     <string name="bluetooth_title" msgid="1018603170854746529">"Bluetoothov glasovni klicalnik"</string>
     <string name="initializing" msgid="1455696989718692334">"Zagon ..."</string>
