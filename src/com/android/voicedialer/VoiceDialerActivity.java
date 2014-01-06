@@ -378,12 +378,9 @@ public class VoiceDialerActivity extends Activity {
     }
 
     private void updateBluetoothParameters(boolean connected) {
-        if (connected) {
+        if (connected && mBluetoothHeadset.startVoiceRecognition(mBluetoothDevice)) {
             if (false) Log.d(TAG, "using bluetooth");
             mUsingBluetooth = true;
-
-            mBluetoothHeadset.startVoiceRecognition(mBluetoothDevice);
-
             mSampleRate = BLUETOOTH_SAMPLE_RATE;
             mCommandEngine.setMinimizeResults(true);
             mCommandEngine.setAllowOpenEntries(false);
