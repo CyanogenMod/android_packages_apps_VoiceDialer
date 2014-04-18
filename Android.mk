@@ -7,7 +7,7 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src) \
 
 LOCAL_PACKAGE_NAME := VoiceDialer
 
-LOCAL_REQUIRED_MODULES := libsrec_jni
+LOCAL_JNI_SHARED_LIBRARIES := libsrec_jni
 
 LOCAL_PRIVILEGED_MODULE := true
 
