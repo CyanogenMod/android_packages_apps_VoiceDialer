@@ -39,6 +39,7 @@
   <string name="initializing">Starten\u2026</string>
   <string name="listening">Lauschteren\u2026</string>
   <string name="please_try_again">Probéier nees.</string>
+  <string name="failure">Gouf net initialiséiert</string>
   <string name="recognition_error">
         Start däin Telefon nei a probéier nees.
     </string>
