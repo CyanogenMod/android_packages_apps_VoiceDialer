@@ -17,7 +17,8 @@
   
     <application android:theme="@android:style/Theme.Dialog"
         android:label="@string/voiceDialer"
-        android:icon="@drawable/app_voicedialer">
+        android:icon="@drawable/app_voicedialer"
+        android:supportsRtl="true">
         <!--  Initial Page -->
         <activity android:name="VoiceDialerActivity">
             <intent-filter>
