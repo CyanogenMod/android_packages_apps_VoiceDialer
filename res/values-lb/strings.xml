@@ -43,11 +43,15 @@
   <string name="recognition_error">
         Start däin Telefon nei a probéier nees.
     </string>
+  <string name="headset_connection_lost">Connectioun mam Kopfhörer verluer.</string>
   <string name="at_home">" doheem"</string>
   <string name="on_mobile">" um Handy"</string>
   <string name="at_work">" op der Aarbecht"</string>
   <string name="at_other">" op enger anerer Plaz"</string>
+  <string name="logging_enabled">D\'Protokolléierung vum Wielen duerch d\'Stëmm ass ageschalt.</string>
+  <string name="logging_disabled">D\'Protokolléierung vum Wielen duerch d\'Stëmm ass ausgeschalt.</string>
   <string name="speak_now_tts">Schwätz elo.</string>
+  <string name="no_results_tts">Kee Resultat, probéier nees.</string>
   <string name="invalid_choice_tts">Ongëltege Choix.</string>
   <string name="goodbye_tts">Äddi.</string>
 </resources>
