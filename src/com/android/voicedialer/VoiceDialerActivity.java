@@ -1000,7 +1000,11 @@ public class VoiceDialerActivity extends Activity {
     }
 
     private void startActivityHelp(Intent intent) {
-        startActivity(intent);
+        try {
+            startActivity(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to start activity");
+        }
     }
 
     private void listenForCommand() {
