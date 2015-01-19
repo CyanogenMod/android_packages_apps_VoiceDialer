@@ -34,9 +34,11 @@
             \n\"Open Calendar\"
         </b>
     </string>
+  <string name="title">ژمارەگری دەنگی</string>
   <string name="bluetooth_title">پەیکەی دەنگی بلوتوس</string>
   <string name="initializing">دەستپێکردن\u2026</string>
   <string name="listening">گوێگرتن\u2026</string>
+  <string name="please_try_again">سەرلەنوێ هەوڵبدەوە.</string>
   <string name="failure">پێدانی نرخی سەرەتایی ناتوانیت</string>
   <string name="recognition_error">        موبایلەکەت دووبارە داگیرسێنەوە و پاشان دووبارە هەوڵبدەرەوە.
     </string>
